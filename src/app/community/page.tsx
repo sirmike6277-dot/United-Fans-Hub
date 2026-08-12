@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Navbar } from "@/components/layout/Navbar";
-import { Brand } from "@/components/layout/Brand";
-import { Footer } from "@/components/layout/Footer";
+import { AppShell } from "@/components/layout/AppShell";
+import { SectionBanner } from "@/components/layout/SectionBanner";
 import { Feed } from "@/components/community/Feed";
+import { CommunityRail } from "@/components/community/CommunityRail";
 import { fetchFeedPage, POSTS_PAGE_SIZE } from "@/lib/community/posts";
+import { fetchUpcomingMatches } from "@/lib/matches/matches";
+import { fetchFanLeaderboard } from "@/lib/leaderboard/leaderboard";
 
 export const metadata: Metadata = {
   title: "Community — United Fans Hub",
@@ -41,17 +43,31 @@ export default async function CommunityPage() {
     );
   }
 
-  const { posts, error } = await fetchFeedPage(supabase, {
-    from: 0,
-    to: POSTS_PAGE_SIZE - 1,
-    currentUserId: userId,
-  });
+  const [{ posts, error }, { matches: upcoming }, { entries: topFans }] = await Promise.all([
+    fetchFeedPage(supabase, { from: 0, to: POSTS_PAGE_SIZE - 1, currentUserId: userId }),
+    fetchUpcomingMatches(supabase, { clubId: club.id, limit: 1 }),
+    fetchFanLeaderboard(supabase, { from: 0, to: 2 }),
+  ]);
 
   return (
-    <>
-      <Navbar brand={<Brand />} />
+    <AppShell
+      rail={<CommunityRail nextMatch={upcoming[0] ?? null} topFans={topFans} currentUserId={userId} />}
+    >
       <main className="flex-1 bg-bg-void">
+        <div className="mb-6 max-w-2xl pt-6 sm:pt-8">
+          <SectionBanner
+            imageSrc="/images/stadium/old-trafford-interior.jpg"
+            imageAlt="A packed Old Trafford stand, seen from inside the ground"
+            kicker="Community"
+            title="Every fan has a voice here."
+            quote={{
+              quote: "Manchester United is a religion, not a football club.",
+              attribution: "Sir Matt Busby",
+            }}
+          />
+        </div>
         <Feed
+          hideHeader
           currentUser={{
             id: profile.id,
             username: profile.username,
@@ -65,7 +81,6 @@ export default async function CommunityPage() {
           initialHasMore={posts.length === POSTS_PAGE_SIZE}
         />
       </main>
-      <Footer />
-    </>
+    </AppShell>
   );
 }

@@ -39,7 +39,22 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isAuthPage = pathname === "/login" || pathname === "/signup";
-  const isProtected = pathname.startsWith("/profile") || pathname.startsWith("/community");
+  const isProtected =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/community") ||
+    pathname.startsWith("/notifications") ||
+    pathname.startsWith("/messages") ||
+    pathname.startsWith("/members") ||
+    pathname.startsWith("/predictions") ||
+    // Added with their pages (Phase 15/16) — missing here meant the page's
+    // own redirect("/login") was the only guard, and for these two
+    // specifically that produced a 200 with the redirect only embedded in
+    // the streamed RSC payload rather than a real HTTP 307 (visible via a
+    // plain curl GET, not just a browser) — this is the actual fix, not
+    // the page-level redirect, which was already correct.
+    pathname.startsWith("/achievements") ||
+    pathname.startsWith("/settings");
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
@@ -48,8 +63,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && isAuthPage) {
+    // Phase 11: /dashboard is now the authenticated "front door" — /profile
+    // is a fan-identity page, not a landing page, and signing in should no
+    // longer drop a user straight onto it.
     const url = request.nextUrl.clone();
-    url.pathname = "/profile";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

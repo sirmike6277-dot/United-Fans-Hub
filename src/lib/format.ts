@@ -25,3 +25,21 @@ export function formatRelativeTime(iso: string): string {
     year: sameYear ? undefined : "numeric",
   });
 }
+
+/**
+ * Absolute date/time for fixtures — kickoff times need a fixed point in
+ * time, not a relative "in 3 days" that keeps changing as the page sits
+ * open. e.g. "Sat 15 Aug, 15:00".
+ */
+export function formatMatchDateTime(iso: string): string {
+  const date = new Date(iso);
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  const datePart = date.toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: sameYear ? undefined : "numeric",
+  });
+  const timePart = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return `${datePart}, ${timePart}`;
+}

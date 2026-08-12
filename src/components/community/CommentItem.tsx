@@ -3,17 +3,21 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
-import { HeartIcon } from "./CommunityIcons";
+import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
+import { HeartIcon, ReplyIcon } from "./CommunityIcons";
+import { MentionText } from "./MentionText";
 import { formatRelativeTime } from "@/lib/format";
 import type { FeedComment } from "@/lib/community/comments";
 
 export interface CommentItemProps {
   comment: FeedComment;
   currentUserId: string;
+  onReply: (commentId: string, authorName: string, authorUsername: string) => void;
+  /** True for a reply rendered inside its parent's thread — trims indent/size so nesting doesn't compound and disables further replies (this app renders one level deep). */
+  isReply?: boolean;
 }
 
-export function CommentItem({ comment, currentUserId }: CommentItemProps) {
+export function CommentItem({ comment, currentUserId, onReply, isReply = false }: CommentItemProps) {
   const [reacted, setReacted] = useState(comment.hasReacted);
   const [count, setCount] = useState(comment.reactionCount);
   const [pending, setPending] = useState(false);
@@ -45,17 +49,19 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
 
   return (
     <div className="flex gap-3">
-      <Avatar url={comment.author.avatar_url} name={name} size={32} />
+      <Avatar url={comment.author.avatar_url} name={name} size={isReply ? 28 : 32} />
       <div className="flex-1">
         <div className="rounded-card bg-bg-elevated px-3 py-2">
           <div className="flex flex-wrap items-baseline gap-1.5">
             <span className="text-sm font-semibold text-white">{name}</span>
             <span className="text-xs text-text-muted">@{comment.author.username}</span>
-            <Badge tone="outline" className="!px-1.5 !py-0 text-[10px]">
-              Lvl {comment.author.fan_level}
-            </Badge>
+            <FanLevelBadge level={comment.author.fan_level} />
           </div>
-          <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-text-body">{comment.body}</p>
+          <MentionText
+            text={comment.body}
+            mentions={comment.mentions}
+            className="mt-0.5 whitespace-pre-wrap break-words text-sm text-text-body"
+          />
         </div>
         <div className="mt-1 flex items-center gap-3 pl-1 text-xs text-text-muted">
           <time dateTime={comment.createdAt} suppressHydrationWarning>
@@ -74,7 +80,26 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
             <HeartIcon filled={reacted} />
             {count > 0 ? <span>{count}</span> : null}
           </button>
+          {!isReply ? (
+            <button
+              type="button"
+              onClick={() => onReply(comment.id, name, comment.author.username)}
+              aria-label={`Reply to ${name}`}
+              className="inline-flex h-8 min-w-[32px] items-center gap-1 rounded-control px-1.5 font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+            >
+              <ReplyIcon />
+              <span>Reply</span>
+            </button>
+          ) : null}
         </div>
+
+        {comment.replies.length > 0 ? (
+          <div className="mt-3 flex flex-col gap-3 border-l border-white/10 pl-4">
+            {comment.replies.map((reply) => (
+              <CommentItem key={reply.id} comment={reply} currentUserId={currentUserId} onReply={onReply} isReply />
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );

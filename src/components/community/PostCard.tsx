@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
+import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { Card } from "@/components/ui/Card";
 import { formatRelativeTime } from "@/lib/format";
 import { PostMedia } from "./PostMedia";
 import { ReactionButton } from "./ReactionButton";
 import { CommentSection } from "./CommentSection";
-import { CommentIcon } from "./CommunityIcons";
+import { CommentIcon, ShareIcon } from "./CommunityIcons";
+import { MentionText } from "./MentionText";
 import type { FeedPost } from "@/lib/community/posts";
 
 export interface CurrentUser {
@@ -22,10 +24,14 @@ export interface CurrentUser {
 export interface PostCardProps {
   post: FeedPost;
   currentUser: CurrentUser;
+  /** Forces the comment thread open and hides the toggle — used on the post's own permalink page (/community/[postId]), where showing the thread is the whole point of the page rather than a click away. */
+  forceCommentsOpen?: boolean;
+  /** Hides the "Share" link — used on the permalink page itself, which has nowhere further to link to. */
+  hideShare?: boolean;
 }
 
-export function PostCard({ post, currentUser }: PostCardProps) {
-  const [commentsOpen, setCommentsOpen] = useState(false);
+export function PostCard({ post, currentUser, forceCommentsOpen = false, hideShare = false }: PostCardProps) {
+  const [commentsOpen, setCommentsOpen] = useState(forceCommentsOpen);
   const authorName = post.author.display_name || post.author.username;
 
   return (
@@ -38,9 +44,7 @@ export function PostCard({ post, currentUser }: PostCardProps) {
             <span className="text-sm text-text-muted">@{post.author.username}</span>
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-text-muted">
-            <Badge tone="outline" className="!px-1.5 !py-0 text-[10px]">
-              Level {post.author.fan_level}
-            </Badge>
+            <FanLevelBadge level={post.author.fan_level} />
             {/* suppressHydrationWarning: relative time legitimately differs between
                 server render and client hydration as real time elapses between
                 them — this is Next.js's documented pattern for that case, not a
@@ -53,9 +57,11 @@ export function PostCard({ post, currentUser }: PostCardProps) {
       </div>
 
       {post.body ? (
-        <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed text-text-body sm:text-base">
-          {post.body}
-        </p>
+        <MentionText
+          text={post.body}
+          mentions={post.mentions}
+          className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed text-text-body sm:text-base"
+        />
       ) : null}
 
       <PostMedia media={post.media} />
@@ -67,16 +73,32 @@ export function PostCard({ post, currentUser }: PostCardProps) {
           initialReacted={post.hasReacted}
           initialCount={post.reactionCount}
         />
-        <button
-          type="button"
-          onClick={() => setCommentsOpen((v) => !v)}
-          aria-expanded={commentsOpen}
-          aria-label={commentsOpen ? "Hide comments" : "Show comments"}
-          className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
-        >
-          <CommentIcon />
-          <span>{post.commentCount > 0 ? post.commentCount.toLocaleString() : "Comment"}</span>
-        </button>
+        {forceCommentsOpen ? (
+          <span className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted">
+            <CommentIcon />
+            <span>{post.commentCount > 0 ? post.commentCount.toLocaleString() : "Comment"}</span>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setCommentsOpen((v) => !v)}
+            aria-expanded={commentsOpen}
+            aria-label={commentsOpen ? "Hide comments" : "Show comments"}
+            className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+          >
+            <CommentIcon />
+            <span>{post.commentCount > 0 ? post.commentCount.toLocaleString() : "Comment"}</span>
+          </button>
+        )}
+        {hideShare ? null : (
+          <Link
+            href={`/community/${post.id}`}
+            className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+          >
+            <ShareIcon />
+            <span>Share</span>
+          </Link>
+        )}
       </div>
 
       {commentsOpen ? (

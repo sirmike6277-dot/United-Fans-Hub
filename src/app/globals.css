@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  /* Brand palette — see src/lib/design-tokens.ts for the TS mirror of these values */
+  --color-bg-void: #050505;
+  --color-bg-surface: #0a0a0a;
+  --color-bg-elevated: #111111;
+  --color-red-primary: #da291c;
+  --color-red-hover: #e50914;
+  --color-red-deep: #8b0000;
+  --color-white: #ffffff;
+  --color-text-body: #f4f4f4;
+  --color-text-muted: #a1a1a1;
+
+  --radius-control: 0.5rem;
+  --radius-card: 0.875rem;
+}
+
+@theme inline {
+  --color-bg-void: var(--color-bg-void);
+  --color-bg-surface: var(--color-bg-surface);
+  --color-bg-elevated: var(--color-bg-elevated);
+  --color-red-primary: var(--color-red-primary);
+  --color-red-hover: var(--color-red-hover);
+  --color-red-deep: var(--color-red-deep);
+  --color-white: var(--color-white);
+  --color-text-body: var(--color-text-body);
+  --color-text-muted: var(--color-text-muted);
+
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-quote: var(--font-quote);
+  --font-theatre: var(--font-theatre);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  background: var(--color-bg-void);
+  color: var(--color-text-body);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}

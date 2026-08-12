@@ -37,6 +37,17 @@ export function CommentIcon() {
   );
 }
 
+export function ShareIcon() {
+  return (
+    <svg {...iconProps()}>
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="m8.2 10.8 7.6-4.6M8.2 13.2l7.6 4.6" />
+    </svg>
+  );
+}
+
 export function ImageIcon() {
   return (
     <svg {...iconProps()}>
@@ -68,6 +79,14 @@ export function RefreshIcon() {
     <svg {...iconProps(2)}>
       <path d="M20 11A8 8 0 1 0 18.5 16" />
       <path d="M20 6v5h-5" />
+    </svg>
+  );
+}
+
+export function ReplyIcon() {
+  return (
+    <svg {...iconProps(2)}>
+      <path d="M9 6 3 12l6 6M3 12h11a6 6 0 0 1 6 6v1" />
     </svg>
   );
 }

@@ -260,6 +260,7 @@ export type Database = {
         Row: {
           created_at: string
           emblem_asset_ref: string | null
+          external_ref: string | null
           id: string
           is_active: boolean
           name: string
@@ -269,6 +270,7 @@ export type Database = {
         Insert: {
           created_at?: string
           emblem_asset_ref?: string | null
+          external_ref?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -278,6 +280,7 @@ export type Database = {
         Update: {
           created_at?: string
           emblem_asset_ref?: string | null
+          external_ref?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -627,6 +630,67 @@ export type Database = {
           },
         ]
       }
+      match_lineups: {
+        Row: {
+          club_id: string
+          created_at: string
+          formation: string | null
+          grid: string | null
+          id: string
+          is_starting: boolean
+          match_id: string
+          player_id: string | null
+          player_name: string
+          shirt_number: number | null
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          formation?: string | null
+          grid?: string | null
+          id?: string
+          is_starting: boolean
+          match_id: string
+          player_id?: string | null
+          player_name: string
+          shirt_number?: number | null
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          formation?: string | null
+          grid?: string | null
+          id?: string
+          is_starting?: boolean
+          match_id?: string
+          player_id?: string | null
+          player_name?: string
+          shirt_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_lineups_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_lineups_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_lineups_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           away_score: number | null
@@ -636,6 +700,7 @@ export type Database = {
           external_ref: string | null
           home_score: number | null
           id: string
+          is_home: boolean
           kickoff_at: string
           opponent_name: string
           status: string
@@ -649,6 +714,7 @@ export type Database = {
           external_ref?: string | null
           home_score?: number | null
           id?: string
+          is_home: boolean
           kickoff_at: string
           opponent_name: string
           status?: string
@@ -662,6 +728,7 @@ export type Database = {
           external_ref?: string | null
           home_score?: number | null
           id?: string
+          is_home?: boolean
           kickoff_at?: string
           opponent_name?: string
           status?: string
@@ -683,6 +750,7 @@ export type Database = {
           created_at: string
           id: string
           mentioned_profile_id: string
+          message_id: string | null
           post_id: string | null
         }
         Insert: {
@@ -690,6 +758,7 @@ export type Database = {
           created_at?: string
           id?: string
           mentioned_profile_id: string
+          message_id?: string | null
           post_id?: string | null
         }
         Update: {
@@ -697,6 +766,7 @@ export type Database = {
           created_at?: string
           id?: string
           mentioned_profile_id?: string
+          message_id?: string | null
           post_id?: string | null
         }
         Relationships: [
@@ -712,6 +782,13 @@ export type Database = {
             columns: ["mentioned_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
           {
@@ -758,6 +835,42 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          message_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          message_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          message_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string | null
@@ -766,6 +879,7 @@ export type Database = {
           deleted_at: string | null
           edited_at: string | null
           id: string
+          parent_message_id: string | null
           sender_id: string
         }
         Insert: {
@@ -775,6 +889,7 @@ export type Database = {
           deleted_at?: string | null
           edited_at?: string | null
           id?: string
+          parent_message_id?: string | null
           sender_id: string
         }
         Update: {
@@ -784,6 +899,7 @@ export type Database = {
           deleted_at?: string | null
           edited_at?: string | null
           id?: string
+          parent_message_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -792,6 +908,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
           {
@@ -912,6 +1035,7 @@ export type Database = {
           photo_asset_ref: string | null
           position: string | null
           shirt_number: number | null
+          squad_synced_at: string | null
         }
         Insert: {
           club_id: string
@@ -922,6 +1046,7 @@ export type Database = {
           photo_asset_ref?: string | null
           position?: string | null
           shirt_number?: number | null
+          squad_synced_at?: string | null
         }
         Update: {
           club_id?: string
@@ -932,6 +1057,7 @@ export type Database = {
           photo_asset_ref?: string | null
           position?: string | null
           shirt_number?: number | null
+          squad_synced_at?: string | null
         }
         Relationships: [
           {
@@ -997,27 +1123,33 @@ export type Database = {
       post_media: {
         Row: {
           created_at: string
+          height: number | null
           id: string
           media_type: string
           order_index: number
           post_id: string
           storage_path: string
+          width: number | null
         }
         Insert: {
           created_at?: string
+          height?: number | null
           id?: string
           media_type: string
           order_index?: number
           post_id: string
           storage_path: string
+          width?: number | null
         }
         Update: {
           created_at?: string
+          height?: number | null
           id?: string
           media_type?: string
           order_index?: number
           post_id?: string
           storage_path?: string
+          width?: number | null
         }
         Relationships: [
           {
@@ -1072,6 +1204,7 @@ export type Database = {
         Row: {
           author_id: string
           body: string | null
+          category: string
           club_id: string
           created_at: string
           deleted_at: string | null
@@ -1083,6 +1216,7 @@ export type Database = {
         Insert: {
           author_id: string
           body?: string | null
+          category?: string
           club_id: string
           created_at?: string
           deleted_at?: string | null
@@ -1094,6 +1228,7 @@ export type Database = {
         Update: {
           author_id?: string
           body?: string | null
+          category?: string
           club_id?: string
           created_at?: string
           deleted_at?: string | null
@@ -1230,6 +1365,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           country: string | null
+          cover_focus_y: number
           cover_url: string | null
           created_at: string
           display_name: string | null
@@ -1253,6 +1389,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           country?: string | null
+          cover_focus_y?: number
           cover_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -1276,6 +1413,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           country?: string | null
+          cover_focus_y?: number
           cover_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -1389,6 +1527,172 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      room_bans: {
+        Row: {
+          banned_by: string
+          banned_until: string | null
+          conversation_id: string
+          created_at: string
+          profile_id: string
+          reason: string | null
+        }
+        Insert: {
+          banned_by: string
+          banned_until?: string | null
+          conversation_id: string
+          created_at?: string
+          profile_id: string
+          reason?: string | null
+        }
+        Update: {
+          banned_by?: string
+          banned_until?: string | null
+          conversation_id?: string
+          created_at?: string
+          profile_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_bans_banned_by_fkey"
+            columns: ["banned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_bans_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_bans_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_poll_options: {
+        Row: {
+          id: string
+          label: string
+          order_index: number
+          poll_id: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          order_index?: number
+          poll_id: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          order_index?: number
+          poll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "room_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_poll_votes: {
+        Row: {
+          option_id: string
+          poll_id: string
+          profile_id: string
+          voted_at: string
+        }
+        Insert: {
+          option_id: string
+          poll_id: string
+          profile_id: string
+          voted_at?: string
+        }
+        Update: {
+          option_id?: string
+          poll_id?: string
+          profile_id?: string
+          voted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "room_poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "room_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_poll_votes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_polls: {
+        Row: {
+          closed_at: string | null
+          closes_at: string | null
+          conversation_id: string
+          created_at: string
+          created_by: string
+          id: string
+          question: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closes_at?: string | null
+          conversation_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          question: string
+        }
+        Update: {
+          closed_at?: string | null
+          closes_at?: string | null
+          conversation_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_polls_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_polls_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scoring_rules: {
         Row: {
@@ -1647,6 +1951,34 @@ export type Database = {
           p_target_type: string
         }
         Returns: string
+      }
+      room_member_count: {
+        Args: { p_conversation_id: string }
+        Returns: number
+      }
+      room_poll_results: {
+        Args: { p_poll_id: string }
+        Returns: {
+          option_id: string
+          votes: number
+        }[]
+      }
+      settle_prediction: {
+        Args: { p_prediction_id: string }
+        Returns: {
+          breakdown: Json | null
+          id: string
+          points_awarded: number
+          prediction_id: string
+          scored_at: string
+          scored_by: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "prediction_scores"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

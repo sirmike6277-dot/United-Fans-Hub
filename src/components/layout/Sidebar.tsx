@@ -2,44 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { fetchUnreadCount } from "@/lib/notifications/notifications";
 import { fetchUnreadConversationCount } from "@/lib/messaging/conversations";
-import { HomeIcon, CommunityIcon, MatchCentreIcon, ProfileIcon, GearIcon } from "./ShellIcons";
-import { UsersIcon } from "@/components/members/MembersIcons";
-import { TrophyIcon } from "@/components/predictions/PredictionIcons";
-import { MessageBubbleIcon } from "@/components/messaging/MessagingIcons";
-import { BellIcon } from "@/components/notifications/NotificationIcons";
-import { StarShieldIcon, CrownIcon } from "@/components/achievements/AchievementIcons";
-import { ShieldIcon } from "@/components/community/RoomIcons";
-import { InboxIcon } from "@/components/moderation/ModerationIcons";
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: ComponentType<{ size?: number }>;
-  /** Key into the unread-counts map fetched below — omitted for items with no badge. */
-  countKey?: "messages" | "notifications";
-}
-
-const items: NavItem[] = [
-  { href: "/dashboard", label: "Home", icon: HomeIcon },
-  { href: "/community", label: "Community", icon: CommunityIcon },
-  { href: "/community/rooms", label: "Fan Rooms", icon: MessageBubbleIcon },
-  { href: "/matches", label: "Match Centre", icon: MatchCentreIcon },
-  { href: "/predictions", label: "Predictions", icon: TrophyIcon },
-  { href: "/members", label: "Members", icon: UsersIcon },
-  { href: "/achievements", label: "Achievements", icon: StarShieldIcon },
-  { href: "/awards", label: "Awards", icon: CrownIcon },
-  { href: "/messages", label: "Messages", icon: MessageBubbleIcon, countKey: "messages" },
-  { href: "/notifications", label: "Notifications", icon: BellIcon, countKey: "notifications" },
-  { href: "/profile", label: "Profile", icon: ProfileIcon },
-  { href: "/settings", label: "Settings", icon: GearIcon },
-];
-
-const ADMIN_ITEM: NavItem = { href: "/admin", label: "Admin", icon: ShieldIcon };
-const MODERATION_ITEM: NavItem = { href: "/moderation", label: "Moderation", icon: InboxIcon };
+import { NAV_ITEMS, MODERATION_NAV_ITEM, ADMIN_NAV_ITEM } from "./navItems";
 
 function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -77,9 +44,9 @@ export function Sidebar() {
   }, []);
 
   const visibleItems = [
-    ...items,
-    ...(isModerator || isSuperAdmin ? [MODERATION_ITEM] : []),
-    ...(isSuperAdmin ? [ADMIN_ITEM] : []),
+    ...NAV_ITEMS,
+    ...(isModerator || isSuperAdmin ? [MODERATION_NAV_ITEM] : []),
+    ...(isSuperAdmin ? [ADMIN_NAV_ITEM] : []),
   ];
 
   return (

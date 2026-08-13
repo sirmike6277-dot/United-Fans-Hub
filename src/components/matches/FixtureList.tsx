@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { MatchCard } from "./MatchCard";
-import { deriveSeasonLabel, type MatchSummary } from "@/lib/matches/matches";
+import { formatSeasonLabel } from "@/lib/matches/season";
+import type { MatchSummary } from "@/lib/matches/matches";
 
 export interface FixtureListProps {
   title: string;
@@ -14,15 +15,19 @@ export interface FixtureListProps {
 const ALL_SEASONS = "all";
 
 /**
- * Real football seasons present in `matches`, most recent first — derived
- * purely from each match's own real kickoff date (see deriveSeasonLabel),
- * never a separate "season" field or fabricated list. Returns an empty
- * array (no filter row rendered at all) when everything falls in a single
- * season, since a one-option filter has nothing to actually filter.
+ * Real football seasons present in `matches`, most recent first — Phase
+ * 2A: reads each match's own real, stored `season` column directly
+ * (the provider's own assignment, backfilled for older rows — see the
+ * add_multi_season_architecture migration) rather than re-deriving a
+ * label from kickoff_at on every render (the pre-Phase-2A approach, now
+ * removed — see season.ts, the single shared source for season/label
+ * conversion everywhere in this app). Returns an empty array (no filter
+ * row rendered at all) when everything falls in a single season, since a
+ * one-option filter has nothing to actually filter.
  */
-function seasonsIn(matches: MatchSummary[]): string[] {
-  const seasons = new Set(matches.map((m) => deriveSeasonLabel(m.kickoffAt)));
-  return [...seasons].sort().reverse();
+function seasonsIn(matches: MatchSummary[]): number[] {
+  const seasons = new Set(matches.map((m) => m.season));
+  return [...seasons].sort((a, b) => b - a);
 }
 
 /**
@@ -37,12 +42,9 @@ function seasonsIn(matches: MatchSummary[]): string[] {
  */
 export function FixtureList({ title, matches, error, emptyMessage }: FixtureListProps) {
   const seasons = useMemo(() => seasonsIn(matches), [matches]);
-  const [selectedSeason, setSelectedSeason] = useState(ALL_SEASONS);
+  const [selectedSeason, setSelectedSeason] = useState<number | typeof ALL_SEASONS>(ALL_SEASONS);
 
-  const visible =
-    selectedSeason === ALL_SEASONS
-      ? matches
-      : matches.filter((m) => deriveSeasonLabel(m.kickoffAt) === selectedSeason);
+  const visible = selectedSeason === ALL_SEASONS ? matches : matches.filter((m) => m.season === selectedSeason);
 
   return (
     <section>
@@ -77,7 +79,7 @@ export function FixtureList({ title, matches, error, emptyMessage }: FixtureList
                     : "border border-white/20 text-text-muted hover:text-white"
                 }`}
               >
-                {season}
+                {formatSeasonLabel(season)}
               </button>
             ))}
           </div>
@@ -93,7 +95,7 @@ export function FixtureList({ title, matches, error, emptyMessage }: FixtureList
           <p className="text-sm text-text-muted">
             {matches.length === 0
               ? emptyMessage
-              : `No matches in the ${selectedSeason} season.`}
+              : `No matches in the ${selectedSeason === ALL_SEASONS ? "" : formatSeasonLabel(selectedSeason)} season.`}
           </p>
         </div>
       ) : (

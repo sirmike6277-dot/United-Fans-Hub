@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getSiteUrl } from "@/lib/site-url";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "./PasswordInput";
@@ -25,6 +26,8 @@ export function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkEmail, setCheckEmail] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sent" | "error">("idle");
 
   const confirmError = useMemo(
     () => (confirmPassword && confirmPassword !== password ? "Passwords do not match." : undefined),
@@ -47,7 +50,16 @@ export function SignupForm() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { username, full_name: fullName } },
+      options: {
+        data: { username, full_name: fullName },
+        // Where Supabase sends the browser after the confirmation link is
+        // clicked and verified server-side (see /auth/callback). Must be
+        // in the project's Redirect URLs allowlist (Supabase dashboard →
+        // Authentication → URL Configuration) or Supabase silently falls
+        // back to the project's default Site URL instead — see the report
+        // for the exact values to add there.
+        emailRedirectTo: `${getSiteUrl()}/auth/callback`,
+      },
     });
 
     setLoading(false);
@@ -85,6 +97,25 @@ export function SignupForm() {
     setCheckEmail(true);
   }
 
+  async function handleResend() {
+    if (resending) return;
+    setResending(true);
+    setResendState("idle");
+
+    const supabase = createClient();
+    // Same shape as the initial signUp — Supabase's own resend() call for
+    // an unconfirmed account, not a second signup attempt (which would
+    // just return the "already registered" error instead of a new email).
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${getSiteUrl()}/auth/callback` },
+    });
+
+    setResending(false);
+    setResendState(resendError ? "error" : "sent");
+  }
+
   if (checkEmail) {
     return (
       <div className="flex flex-col items-center gap-3 text-center">
@@ -93,6 +124,17 @@ export function SignupForm() {
           We&apos;ve sent a confirmation link to <span className="text-white">{email}</span>.
           Click it to activate your account, then log in.
         </p>
+
+        <div className="mt-2 flex flex-col items-center gap-2">
+          <Button type="button" variant="secondary" size="sm" onClick={handleResend} loading={resending} disabled={resending}>
+            {resending ? "Sending..." : "Resend verification email"}
+          </Button>
+          {resendState === "sent" ? (
+            <p className="text-xs text-text-muted">Sent — check your inbox (and spam folder) again.</p>
+          ) : resendState === "error" ? (
+            <p className="text-xs text-red-hover">Couldn&apos;t resend right now. Please try again shortly.</p>
+          ) : null}
+        </div>
       </div>
     );
   }

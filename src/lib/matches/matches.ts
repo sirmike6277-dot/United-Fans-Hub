@@ -11,6 +11,8 @@ export const MATCH_SUMMARY_SELECT = `
   id,
   opponent_name,
   competition,
+  competition_external_ref,
+  season,
   kickoff_at,
   venue,
   status,
@@ -38,6 +40,10 @@ export interface MatchSummary {
   id: string;
   opponentName: string;
   competition: string | null;
+  /** API-Football's own numeric league id (Phase 2A) — the real, stable "which competition" identifier; `competition` above stays the free-text display label. Null for any row synced before this field existed (never backfilled by guessing from the name). */
+  competitionExternalRef: string | null;
+  /** This fixture's season as its start year (e.g. 2026 for "2026/27") — see season.ts for the shared label/formatting helper. The provider's own assignment where known, real-derived-from-kickoff-date for older rows synced before this column existed (see the add_multi_season_architecture migration) — never a placeholder. */
+  season: number;
   kickoffAt: string;
   venue: string | null;
   status: string;
@@ -74,6 +80,8 @@ interface MatchSummaryRow {
   id: string;
   opponent_name: string;
   competition: string | null;
+  competition_external_ref: string | null;
+  season: number;
   kickoff_at: string;
   venue: string | null;
   status: string;
@@ -115,29 +123,13 @@ function normalizePlayer(player: MatchEventPlayerRow | null): MatchEventPlayer |
   };
 }
 
-/**
- * Real football-season label for a real kickoff date — e.g. "2024/25" for
- * anything from 1 Jul 2024 through 30 Jun 2025. July (not August) is the
- * cutoff specifically so pre-season friendlies group with the season
- * they're actually building up to, not the one that just finished — a
- * real case this matters for: the Rosenborg/Rangers/Arsenal friendlies
- * synced in mid/late July 2024 are pre-season for 2024/25, not a
- * leftover tail of 2023/24. Derived purely from the date already on the
- * row — never a separate "season" field this app doesn't otherwise track.
- */
-export function deriveSeasonLabel(kickoffAtIso: string): string {
-  const date = new Date(kickoffAtIso);
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth() + 1; // 1-12
-  const startYear = month >= 7 ? year : year - 1;
-  return `${startYear}/${String((startYear + 1) % 100).padStart(2, "0")}`;
-}
-
 function normalizeSummary(row: MatchSummaryRow): MatchSummary {
   return {
     id: row.id,
     opponentName: row.opponent_name,
     competition: row.competition,
+    competitionExternalRef: row.competition_external_ref,
+    season: row.season,
     kickoffAt: row.kickoff_at,
     venue: row.venue,
     status: row.status,
@@ -170,15 +162,19 @@ function normalizeDetail(row: MatchDetailRow): MatchDetail {
  */
 export async function fetchUpcomingMatches(
   supabase: AnySupabase,
-  { clubId, limit = UPCOMING_MATCHES_LIMIT }: { clubId: string; limit?: number },
+  { clubId, season, limit = UPCOMING_MATCHES_LIMIT }: { clubId: string; season?: number; limit?: number },
 ): Promise<{ matches: MatchSummary[]; error: string | null }> {
-  const { data, error } = await supabase
+  let query = supabase
     .from("matches")
     .select(MATCH_SUMMARY_SELECT)
     .eq("club_id", clubId)
-    .in("status", ["scheduled", "live"])
-    .order("kickoff_at", { ascending: true })
-    .limit(limit);
+    .in("status", ["scheduled", "live"]);
+  // Phase 2A: filtered at the DB query level against the real, stored
+  // `season` column — not a post-fetch JS filter re-deriving season from
+  // kickoff_at (the pre-Phase-2A approach, which risked disagreeing with
+  // whatever the provider itself assigned a fixture to).
+  if (season !== undefined) query = query.eq("season", season);
+  const { data, error } = await query.order("kickoff_at", { ascending: true }).limit(limit);
 
   if (error) {
     return { matches: [], error: "Couldn't load upcoming fixtures. Please try again." };
@@ -190,18 +186,46 @@ export async function fetchUpcomingMatches(
 /** Completed (or otherwise settled) matches, most recent first. */
 export async function fetchRecentResults(
   supabase: AnySupabase,
-  { clubId, limit = RECENT_RESULTS_LIMIT }: { clubId: string; limit?: number },
+  { clubId, season, limit = RECENT_RESULTS_LIMIT }: { clubId: string; season?: number; limit?: number },
+): Promise<{ matches: MatchSummary[]; error: string | null }> {
+  let query = supabase
+    .from("matches")
+    .select(MATCH_SUMMARY_SELECT)
+    .eq("club_id", clubId)
+    .in("status", ["finished", "postponed", "cancelled"]);
+  if (season !== undefined) query = query.eq("season", season);
+  const { data, error } = await query.order("kickoff_at", { ascending: false }).limit(limit);
+
+  if (error) {
+    return { matches: [], error: "Couldn't load recent results. Please try again." };
+  }
+
+  return { matches: (data ?? []).map(normalizeSummary), error: null };
+}
+
+/**
+ * Matches currently in progress — added for GET /api/manchester-united/
+ * live (Production Football Data Architecture, Phase 1). Same shape and
+ * conventions as fetchUpcomingMatches/fetchRecentResults right above;
+ * `status = "live"` is its own narrower slice of what fetchUpcomingMatches
+ * already includes (`in(["scheduled", "live"])`) rather than a
+ * differently-derived concept. No existing caller needed this distinction
+ * on its own before now — the /matches Server Component page shows
+ * upcoming and recent, never a dedicated "live only" view.
+ */
+export async function fetchLiveMatches(
+  supabase: AnySupabase,
+  { clubId }: { clubId: string },
 ): Promise<{ matches: MatchSummary[]; error: string | null }> {
   const { data, error } = await supabase
     .from("matches")
     .select(MATCH_SUMMARY_SELECT)
     .eq("club_id", clubId)
-    .in("status", ["finished", "postponed", "cancelled"])
-    .order("kickoff_at", { ascending: false })
-    .limit(limit);
+    .eq("status", "live")
+    .order("kickoff_at", { ascending: true });
 
   if (error) {
-    return { matches: [], error: "Couldn't load recent results. Please try again." };
+    return { matches: [], error: "Couldn't load live matches. Please try again." };
   }
 
   return { matches: (data ?? []).map(normalizeSummary), error: null };

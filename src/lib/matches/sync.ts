@@ -10,6 +10,7 @@ import {
   type ProviderFixture,
   type ProviderEvent,
 } from "./provider";
+import { seasonForDate } from "./season";
 
 /**
  * Server-only synchronization: API-Football → Supabase. Never imported by
@@ -66,29 +67,50 @@ export interface SyncResult {
   matchesUpserted: number;
 }
 
-function resolveCurrentSeason(now: Date): number {
-  // Optional override for API-Football plans that don't cover the real
-  // current season — the free tier's own error for this project is
-  // explicit: "Free plans do not have access to this season, try from 2022
-  // to 2024." Without this, every sync attempt fails silently (see
-  // maybeSyncFixtures's never-throws contract) and /matches stays
-  // permanently empty, which is indistinguishable from "sync is broken"
-  // to anyone looking at the page. Set API_FOOTBALL_SEASON in the
-  // deployment environment once the plan covers the true current season
-  // again (or remove it entirely) — this is a deployment-environment
-  // concern, not a code change.
+/**
+ * Real sync provenance for one `maybeSync*` call — internal to this
+ * module and its direct callers (the new /api/manchester-united/* routes),
+ * never serialized straight into a public API response. `synced` is true
+ * only when *this specific call* won the claim and actually attempted a
+ * sync; `providerSucceeded` is only meaningful when `synced` is true
+ * (`null` otherwise — no attempt means no verdict on it). Exists so a
+ * caller can report an honest `source: "cache" | "api" | "cached-stale"`
+ * instead of guessing from whether Supabase happens to have data (data
+ * can be present and stale at the same time — that distinction is exactly
+ * what this type preserves).
+ */
+export interface SyncAttemptResult {
+  synced: boolean;
+  providerSucceeded: boolean | null;
+}
+
+/**
+ * The season to sync when a caller doesn't name one explicitly. Dynamic by
+ * default (see season.ts's seasonForDate — real production behavior:
+ * August 2026 correctly resolves to 2026, not a value anyone had to
+ * update by hand). `API_FOOTBALL_SEASON` remains purely an OPTIONAL dev/
+ * testing override — Phase 2A: this project's own `.env.local` currently
+ * sets it to 2024 specifically because that's the only season this
+ * account's plan can reach (see the api-football-free-tier-season-cap
+ * memory and football_capabilities' seeded rows), not because production
+ * is meant to be locked to it. A real Vercel production deployment simply
+ * shouldn't set this var at all, and the app will correctly track
+ * whatever season is actually current from then on with no code change
+ * required when a season rolls over.
+ *
+ * Exported so a caller that needs to know the resolved season *before*
+ * deciding whether to sync at all (e.g. the fixtures REST route's
+ * coverage-aware pre-check against football_capabilities) can compute the
+ * exact same value maybeSyncFixtures itself will use, rather than
+ * re-implementing this resolution logic a second time.
+ */
+export function resolveCurrentSeason(now: Date): number {
   const override = process.env.API_FOOTBALL_SEASON;
   if (override) {
     const parsed = Number(override);
     if (Number.isInteger(parsed)) return parsed;
   }
-
-  // API-Football identifies a season by the year it started in (e.g. the
-  // 2026-27 season is `season=2026`). European domestic seasons start
-  // around July/August, so before July we're still in the season that
-  // started the previous calendar year.
-  const month = now.getUTCMonth(); // 0-indexed
-  return month >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+  return seasonForDate(now).startYear;
 }
 
 function mapStatus(providerStatus: string): "scheduled" | "live" | "finished" | "postponed" | "cancelled" {
@@ -106,7 +128,7 @@ function mapStatus(providerStatus: string): "scheduled" | "live" | "finished" | 
   return "scheduled";
 }
 
-function fixtureToMatchRow(fixture: ProviderFixture, clubId: string) {
+function fixtureToMatchRow(fixture: ProviderFixture, clubId: string, requestedSeason: number) {
   const isHome = fixture.homeTeamId === MANCHESTER_UNITED_API_FOOTBALL_TEAM_ID;
   const opponentName = isHome ? fixture.awayTeamName : fixture.homeTeamName;
   const opponentTeamId = isHome ? fixture.awayTeamId : fixture.homeTeamId;
@@ -120,6 +142,18 @@ function fixtureToMatchRow(fixture: ProviderFixture, clubId: string) {
     // the fixture itself syncs, not only once a lineup is published.
     opponent_external_ref: String(opponentTeamId),
     competition: fixture.competitionName,
+    // Phase 2A: the provider's own league id — the real, stable
+    // "which competition" identifier (see the migration's own comment on
+    // this column for why the free-text `competition` name isn't enough).
+    competition_external_ref: fixture.competitionExternalRef,
+    // Prefer the provider's own league.season for this specific fixture —
+    // it's the authoritative source, and in principle could occasionally
+    // differ from the season this sync call was made *for* (e.g. a
+    // fixture the provider itself files under a different season than
+    // requested — rare, but real data should win over what we asked for).
+    // Falls back to the requested season only when the provider didn't
+    // report one at all, never to a re-derived guess from kickoff_at.
+    season: fixture.season ?? requestedSeason,
     kickoff_at: fixture.kickoffAtIso,
     venue: fixture.venueName,
     status: mapStatus(fixture.status),
@@ -133,22 +167,28 @@ function fixtureToMatchRow(fixture: ProviderFixture, clubId: string) {
 /**
  * Syncs Manchester United's fixture list (all statuses — the caller's
  * matches.ts read layer separates upcoming vs. recent by status/date, not
- * this function) for the current season only, to respect API-Football's
- * free-tier daily request cap — one call per invocation, not one per
- * fixture.
+ * this function) for one season — the current one by default (see
+ * resolveCurrentSeason), or an explicit `season` when the caller wants a
+ * specific one (Phase 2A — e.g. the fixtures REST route's `?season=`
+ * param, or a future historical-season backfill). Still one provider call
+ * per invocation, not one per fixture, to respect API-Football's daily
+ * request cap.
  */
 export async function syncFixtures({
   clubId,
+  season,
   now = new Date(),
 }: {
   clubId: string;
+  season?: number;
   now?: Date;
 }): Promise<SyncResult> {
+  const resolvedSeason = season ?? resolveCurrentSeason(now);
   let fixtures: ProviderFixture[];
   try {
     fixtures = await fetchTeamFixtures({
       teamId: MANCHESTER_UNITED_API_FOOTBALL_TEAM_ID,
-      season: resolveCurrentSeason(now),
+      season: resolvedSeason,
     });
   } catch (err) {
     // Provider failure never touches existing rows — caller keeps serving
@@ -160,7 +200,7 @@ export async function syncFixtures({
     return { ok: true, error: null, matchesUpserted: 0 };
   }
 
-  const rows = fixtures.map((f) => fixtureToMatchRow(f, clubId));
+  const rows = fixtures.map((f) => fixtureToMatchRow(f, clubId, resolvedSeason));
 
   let supabase: ReturnType<typeof createServiceClient>;
   try {
@@ -662,43 +702,217 @@ export async function syncMatchLineups({
 
 /**
  * Lazy-revalidation staleness gate (approved v1 architecture — no cron, no
- * Realtime, no background poller). A process-local in-memory cache of "when
- * did we last attempt a sync for this key" — deliberately simple, with a
- * known, disclosed limitation: it does not persist across server restarts
- * and would not be shared across multiple server instances if this app is
- * ever horizontally scaled. That's an accepted v1 tradeoff (see final
- * report) rather than adding a `synced_at` column, since no such column
- * was in this phase's approved migration scope and the current deployment
- * is a single dev process. The timestamp is recorded on *attempt*, not
- * only on success, specifically so a failing/rate-limited provider gets
- * retried at most once per TTL window rather than on every page load.
+ * Realtime, no background poller) — "when did we last attempt a sync for
+ * this key", persisted in Supabase (migration add_sync_status) rather than
+ * a process-local in-memory Map (the original v1 implementation, and the
+ * exact bug this replaces): an in-memory Map provides no real protection
+ * once this app runs as concurrent Vercel serverless instances, each with
+ * its own empty Map on a cold start — every instance would independently
+ * decide "not stale, go fetch," multiplying real API-Football calls well
+ * past the intended one-attempt-per-TTL-window throttle. `claim_sync_slot`
+ * is a single atomic Postgres statement (INSERT ... ON CONFLICT DO UPDATE
+ * ... WHERE ...), so of any number of concurrent callers for the same key,
+ * exactly one gets `true` back — see the migration's own comments for the
+ * full reasoning. Recorded on *attempt* (the claim itself), not only on
+ * success, for the same reason the original in-memory version was: a
+ * failing/rate-limited provider gets retried at most once per TTL window,
+ * not on every page load.
  */
-const lastSyncAttemptAt = new Map<string, number>();
+async function claimSyncSlot(key: string, ttlSeconds: number): Promise<boolean> {
+  let supabase: ReturnType<typeof createServiceClient>;
+  try {
+    supabase = createServiceClient();
+  } catch (err) {
+    // Fail CLOSED: if we can't even reach the lock table, the safe default
+    // is "don't sync" (fall back to whatever's already cached), never
+    // "sync anyway" — an unprotected burst of provider calls is a worse
+    // outcome than a slightly-stale page.
+    console.warn(`[matches/sync] claimSyncSlot(${key}): service client unavailable — ${err instanceof Error ? err.message : err}`);
+    return false;
+  }
 
-function isStale(key: string, ttlMs: number): boolean {
-  const last = lastSyncAttemptAt.get(key);
-  return last === undefined || Date.now() - last > ttlMs;
-}
-
-function markAttempted(key: string): void {
-  lastSyncAttemptAt.set(key, Date.now());
+  const { data, error } = await supabase.rpc("claim_sync_slot", { p_key: key, p_ttl_seconds: ttlSeconds });
+  if (error) {
+    console.warn(`[matches/sync] claimSyncSlot(${key}) failed — treating as not claimed: ${error.message}`);
+    return false;
+  }
+  return data === true;
 }
 
 /**
- * Companion to lastSyncAttemptAt — remembers whether that most recent
- * attempt actually succeeded. Exists specifically so a page whose lineup
- * is empty can tell "the provider genuinely hasn't published one yet" (no
- * failed attempt on record) apart from "we just tried and the provider
- * errored" (rate-limited/quota-exhausted, most likely — see
- * maybeSyncMatchLineups). Same process-local, doesn't-survive-a-restart
- * tradeoff as lastSyncAttemptAt above; a restart just means the next visit
- * re-attempts and re-learns the real state rather than showing a stale
- * failure forever.
+ * Records the outcome of a sync attempt this caller already won the claim
+ * for. Best-effort: a failure to *record* the outcome should never fail
+ * the request that already has its data, so this only ever logs, never
+ * throws.
  */
-const lastSyncFailed = new Map<string, boolean>();
+async function recordSyncResult(key: string, ok: boolean, error: string | null): Promise<void> {
+  let supabase: ReturnType<typeof createServiceClient>;
+  try {
+    supabase = createServiceClient();
+  } catch (err) {
+    console.warn(`[matches/sync] recordSyncResult(${key}): service client unavailable — ${err instanceof Error ? err.message : err}`);
+    return;
+  }
 
-function markResult(key: string, ok: boolean): void {
-  lastSyncFailed.set(key, !ok);
+  // The generated RPC arg type is `p_error?: string` (optional, not
+  // nullable — Supabase's codegen infers "optional" from the SQL
+  // function's `default null`, but still types the JS side as
+  // `string | undefined`, not `string | null`) — `?? undefined` bridges
+  // that; the SQL function treats a genuinely-absent arg and an absent-
+  // via-undefined arg identically.
+  const { error: rpcError } = await supabase.rpc("record_sync_result", { p_key: key, p_ok: ok, p_error: error ?? undefined });
+  if (rpcError) {
+    console.warn(`[matches/sync] recordSyncResult(${key}) failed: ${rpcError.message}`);
+  }
+}
+
+/** Shared row read behind readRecentFailure and getLastSyncedAt below — one query shape, two different narrow views onto it. Returns null on any failure (missing service client, RPC error) rather than throwing; both callers already treat "unknown" as their own safe default. */
+async function readSyncStatusRow(key: string): Promise<{ lastAttemptedAt: string | null; lastSucceededAt: string | null; lastError: string | null } | null> {
+  let supabase: ReturnType<typeof createServiceClient>;
+  try {
+    supabase = createServiceClient();
+  } catch {
+    return null;
+  }
+  const { data } = await supabase
+    .from("sync_status")
+    .select("last_attempted_at, last_succeeded_at, last_error")
+    .eq("key", key)
+    .maybeSingle();
+  if (!data) return null;
+  return { lastAttemptedAt: data.last_attempted_at, lastSucceededAt: data.last_succeeded_at, lastError: data.last_error };
+}
+
+/**
+ * Reads whether the most recent recorded attempt for `key` failed —
+ * unconditionally (regardless of whether *this* request was the one that
+ * attempted a sync), so a request that lost the claim race to another
+ * instance still reports the real, current, cross-instance-correct
+ * failure state rather than always reporting "no failure on record."
+ * Used by maybeSyncMatchLineups's `recentlyFailed` (see its own doc
+ * comment for why this distinction matters to PitchLineup's empty state).
+ */
+async function readRecentFailure(key: string): Promise<boolean> {
+  const row = await readSyncStatusRow(key);
+  return row?.lastError != null;
+}
+
+/**
+ * Real, persisted "when did this key's data last actually get synced" —
+ * for the /api/manchester-united/* routes' `lastUpdated` field (see
+ * src/lib/api/response.ts). Deliberately NOT `new Date().toISOString()`,
+ * which would only mean "when was this request handled," not "how fresh
+ * is the underlying data" — the whole point of `lastUpdated` per the
+ * approved spec is to let a frontend show a real "last updated X minutes
+ * ago." Prefers `last_succeeded_at`; falls back to `last_attempted_at` if
+ * this key has attempted but never yet succeeded (still more honest than
+ * hiding that there's been trouble); returns null only if this key has
+ * genuinely never been touched, in which case the caller decides its own
+ * fallback (e.g. "now," clearly reasoned at the call site).
+ */
+export async function getLastSyncedAt(key: string): Promise<string | null> {
+  const row = await readSyncStatusRow(key);
+  return row?.lastSucceededAt ?? row?.lastAttemptedAt ?? null;
+}
+
+/**
+ * Coverage-aware synchronization (Phase 2A, sections 8-10 of the spec) —
+ * `football_capabilities` (migration add_multi_season_architecture) records
+ * what this app has *actually verified* API-Football provides, per
+ * team+season+competition+feature, so a real feature-specific sync
+ * function can check "is this even worth attempting" before spending a
+ * provider call, and never re-attempts something already known to be
+ * blocked. A row here is written ONLY after a real attempt against the
+ * live provider — nothing in this module ever writes a status it hasn't
+ * actually observed.
+ *
+ * Only `readCapability`/`recordCapability` are built this phase — no
+ * feature-specific checker (e.g. a hypothetical `checkStandingsAvailable`)
+ * exists yet, because there is no standings sync to gate in the first
+ * place (out of scope for Phase 2A; see the phase report). These two
+ * functions are the general-purpose primitives any future feature's sync
+ * path would call before/after its own first real attempt.
+ */
+export type CapabilityStatus =
+  | "available"
+  | "unavailable"
+  | "subscription_limited"
+  | "not_supported"
+  | "not_yet_available"
+  | "temporarily_unavailable"
+  | "unknown";
+
+export interface CapabilityKey {
+  teamId: number;
+  season: number;
+  /** Null for a feature that isn't competition-scoped (e.g. "fixtures" — one call covers every competition a team plays that season). */
+  competitionExternalRef: string | null;
+  feature: string;
+}
+
+/**
+ * The persisted verdict for this exact team+season+competition+feature
+ * combination, if one has ever been recorded — never calls the provider
+ * itself. Returns `status: "unknown"` (never checked, not "checked and
+ * failed") when no row exists, so a caller always has a real status to
+ * branch on without needing a separate null-check.
+ */
+export async function readCapability(key: CapabilityKey): Promise<{ status: CapabilityStatus; reason: string | null; checkedAt: string | null }> {
+  let supabase: ReturnType<typeof createServiceClient>;
+  try {
+    supabase = createServiceClient();
+  } catch {
+    return { status: "unknown", reason: null, checkedAt: null };
+  }
+
+  let query = supabase
+    .from("football_capabilities")
+    .select("status, reason, checked_at")
+    .eq("team_id", key.teamId)
+    .eq("season", key.season)
+    .eq("feature", key.feature);
+  query = key.competitionExternalRef === null ? query.is("competition_external_ref", null) : query.eq("competition_external_ref", key.competitionExternalRef);
+
+  const { data } = await query.maybeSingle();
+  if (!data) return { status: "unknown", reason: null, checkedAt: null };
+  return { status: data.status as CapabilityStatus, reason: data.reason, checkedAt: data.checked_at };
+}
+
+/**
+ * Records a real, verified capability verdict — the only sanctioned way a
+ * row in `football_capabilities` should ever be written outside of the
+ * migration's own initial seed (see add_multi_season_architecture, which
+ * seeded exactly the facts already confirmed this session: fixtures/
+ * events/lineups available for 2024, fixtures subscription_limited for
+ * 2025 and 2026). `reason` should always be the real, specific evidence
+ * (e.g. the provider's own literal error text), never a generic label —
+ * matches this codebase's established convention of logging *why*, not
+ * just *what*, for every honest-fallback state.
+ */
+export async function recordCapability(key: CapabilityKey, status: CapabilityStatus, reason: string | null): Promise<void> {
+  let supabase: ReturnType<typeof createServiceClient>;
+  try {
+    supabase = createServiceClient();
+  } catch (err) {
+    console.warn(`[matches/sync] recordCapability(${key.feature}, season ${key.season}): service client unavailable — ${err instanceof Error ? err.message : err}`);
+    return;
+  }
+
+  const { error } = await supabase.from("football_capabilities").upsert(
+    {
+      team_id: key.teamId,
+      season: key.season,
+      competition_external_ref: key.competitionExternalRef,
+      feature: key.feature,
+      status,
+      reason,
+      checked_at: new Date().toISOString(),
+    },
+    { onConflict: "team_id,season,competition_external_ref,feature" },
+  );
+  if (error) {
+    console.warn(`[matches/sync] recordCapability(${key.feature}, season ${key.season}) failed: ${error.message}`);
+  }
 }
 
 const FIXTURES_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours — fixtures/scores/status change slowly outside of live play.
@@ -708,23 +922,47 @@ const SQUAD_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours — a squad changes on the
 
 /**
  * Called from the public /matches server component before reading from
- * Supabase. A no-op (just an in-memory timestamp check) when data was
- * synced recently; otherwise performs one provider call and upsert via
- * the service-role client. Never throws — a provider failure, or a
- * missing SUPABASE_SERVICE_ROLE_KEY, simply means the page falls back to
- * whatever is already cached in Supabase.
+ * Supabase, and from GET /api/manchester-united/fixtures. A no-op (just a
+ * DB-backed claim check) when data was synced recently, or when another
+ * concurrent request already claimed this key; otherwise performs one
+ * provider call and upsert via the service-role client. Never throws — a
+ * provider failure, a missing SUPABASE_SERVICE_ROLE_KEY, or a failure to
+ * even reach the claim table, simply means the page falls back to
+ * whatever is already cached in Supabase (fail-closed — see
+ * claimSyncSlot).
+ *
+ * Phase 2A: the claim key is now `fixtures:<season>` (was a single bare
+ * "fixtures" key covering every season combined — see the
+ * add_multi_season_architecture migration, which also deletes that old
+ * key). Season-scoped so syncing 2026 can never block syncing 2024, or
+ * vice versa — a real problem the old global key would have caused the
+ * moment more than one season's data needed to coexist. `season` is
+ * optional — omit it for "whatever's currently current" (existing callers
+ * do exactly this, so their behavior is unchanged); pass it explicitly to
+ * target a specific season (e.g. the fixtures REST route's `?season=`).
  */
-export async function maybeSyncFixtures({ clubId }: { clubId: string }): Promise<void> {
-  if (!isStale("fixtures", FIXTURES_TTL_MS)) return;
-  markAttempted("fixtures");
-  await syncFixtures({ clubId });
+export async function maybeSyncFixtures({
+  clubId,
+  season,
+}: {
+  clubId: string;
+  season?: number;
+}): Promise<SyncAttemptResult> {
+  const resolvedSeason = season ?? resolveCurrentSeason(new Date());
+  const key = `fixtures:${resolvedSeason}`;
+  const claimed = await claimSyncSlot(key, FIXTURES_TTL_MS / 1000);
+  if (!claimed) return { synced: false, providerSucceeded: null };
+  const result = await syncFixtures({ clubId, season: resolvedSeason });
+  await recordSyncResult(key, result.ok, result.error);
+  return { synced: true, providerSucceeded: result.ok };
 }
 
 /**
- * Called from the match detail page. Uses a much shorter staleness window
- * while the cached row says the match is live, and a long one otherwise —
- * the cheapest way to get near-live event updates without polling,
- * Realtime, or a background job.
+ * Called from the match detail page, and from GET
+ * /api/manchester-united/fixtures/[fixtureId] and /live. Uses a much
+ * shorter staleness window while the cached row says the match is live,
+ * and a long one otherwise — the cheapest way to get near-live event
+ * updates without polling, Realtime, or a background job.
  */
 export async function maybeSyncMatchEvents({
   matchId,
@@ -734,17 +972,20 @@ export async function maybeSyncMatchEvents({
   matchId: string;
   externalRef: string | null;
   isLive: boolean;
-}): Promise<void> {
-  if (!externalRef) return;
+}): Promise<SyncAttemptResult> {
+  if (!externalRef) return { synced: false, providerSucceeded: null };
   const key = `events:${matchId}`;
-  const ttl = isLive ? LIVE_EVENTS_TTL_MS : SETTLED_EVENTS_TTL_MS;
-  if (!isStale(key, ttl)) return;
-  markAttempted(key);
-  await syncMatchEvents({ matchId, externalRef });
+  const ttlSeconds = (isLive ? LIVE_EVENTS_TTL_MS : SETTLED_EVENTS_TTL_MS) / 1000;
+  const claimed = await claimSyncSlot(key, ttlSeconds);
+  if (!claimed) return { synced: false, providerSucceeded: null };
+  const result = await syncMatchEvents({ matchId, externalRef });
+  await recordSyncResult(key, result.ok, result.error);
+  return { synced: true, providerSucceeded: result.ok };
 }
 
 /**
- * Called from the match detail page alongside maybeSyncMatchEvents. Same
+ * Called from the match detail page alongside maybeSyncMatchEvents, and
+ * from GET /api/manchester-united/fixtures/[fixtureId] and /live. Same
  * staleness reasoning as events — a lineup only firms up close to kickoff
  * and never changes once the match is settled, so a long TTL is safe.
  *
@@ -754,11 +995,10 @@ export async function maybeSyncMatchEvents({
  * this app just tried to fetch it and the provider errored — in this
  * account's case, overwhelmingly the confirmed 10/minute or 100/day
  * request caps (see resolvePlayerId's doc comment), not a real "no lineup
- * exists" state. A real, previously-hidden bug this fixes: PitchLineup's
- * empty state read "it usually lands shortly before kickoff" even for an
- * already-finished match whose fetch simply failed — misleading, since
- * that phrasing implies an upcoming match, not a currently-unreachable
- * historical one.
+ * exists" state. Read unconditionally from persisted state (see
+ * readRecentFailure), not just when *this* request attempted a sync, so
+ * a request that lost the claim race still reports the real, current,
+ * cross-instance-correct failure state.
  */
 export async function maybeSyncMatchLineups({
   matchId,
@@ -768,29 +1008,41 @@ export async function maybeSyncMatchLineups({
   matchId: string;
   externalRef: string | null;
   isLive: boolean;
-}): Promise<{ recentlyFailed: boolean }> {
-  if (!externalRef) return { recentlyFailed: false };
+}): Promise<SyncAttemptResult & { recentlyFailed: boolean }> {
+  if (!externalRef) return { synced: false, providerSucceeded: null, recentlyFailed: false };
   const key = `lineups:${matchId}`;
-  const ttl = isLive ? LIVE_EVENTS_TTL_MS : SETTLED_EVENTS_TTL_MS;
-  if (isStale(key, ttl)) {
-    markAttempted(key);
+  const ttlSeconds = (isLive ? LIVE_EVENTS_TTL_MS : SETTLED_EVENTS_TTL_MS) / 1000;
+
+  const claimed = await claimSyncSlot(key, ttlSeconds);
+  let synced = false;
+  let providerSucceeded: boolean | null = null;
+  if (claimed) {
     const result = await syncMatchLineups({ matchId, externalRef });
-    markResult(key, result.ok);
+    await recordSyncResult(key, result.ok, result.error);
+    synced = true;
+    providerSucceeded = result.ok;
   }
-  return { recentlyFailed: lastSyncFailed.get(key) === true };
+
+  const recentlyFailed = await readRecentFailure(key);
+  return { synced, providerSucceeded, recentlyFailed };
 }
 
 /**
  * Called wherever the Manchester United squad is needed for prediction
  * selection (first scorer / Man of the Match). A no-op when synced within
- * the last 24 hours; otherwise one provider call, bulk-upserted. Never
- * throws — a provider failure simply means the page falls back to
- * whatever squad is already cached in Supabase (possibly empty on a
- * genuinely first-ever run, in which case the prediction form has no
- * players to offer yet until this succeeds).
+ * the last 24 hours, or when another concurrent request already claimed
+ * this key; otherwise one provider call, bulk-upserted. Never throws — a
+ * provider failure simply means the page falls back to whatever squad is
+ * already cached in Supabase (possibly empty on a genuinely first-ever
+ * run, in which case the prediction form has no players to offer yet
+ * until this succeeds). Return type deliberately stays `void` — no
+ * current caller needs sync provenance for squad data, so this doesn't
+ * take on SyncAttemptResult the way the other three maybeSync* functions
+ * now do (smallest safe change; see the phase report).
  */
 export async function maybeSyncSquad({ clubId }: { clubId: string }): Promise<void> {
-  if (!isStale("squad", SQUAD_TTL_MS)) return;
-  markAttempted("squad");
-  await syncSquad({ clubId });
+  const claimed = await claimSyncSlot("squad", SQUAD_TTL_MS / 1000);
+  if (!claimed) return;
+  const result = await syncSquad({ clubId });
+  await recordSyncResult("squad", result.ok, result.error);
 }

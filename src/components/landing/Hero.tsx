@@ -1,13 +1,27 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-import { PlayerImage } from "@/components/media/PlayerImage";
 import { ClubEmblem } from "@/components/media/ClubEmblem";
 import { TheatreOfDreamsMark } from "@/components/ui/TheatreOfDreamsMark";
 
-const players = [
-  { src: "/images/players/tielemans.webp", alt: "Youri Tielemans", position: "left" as const },
-  { src: "/images/players/bruno-fernandes.webp", alt: "Bruno Fernandes", position: "center" as const },
-  { src: "/images/players/sesko.webp", alt: "Benjamin Šeško", position: "right" as const },
+// This app has no real, licensed individual player photography yet (see
+// public/images/players/README.md) — Bruno Fernandes, Šeško, and Tielemans
+// each rendered as a dashed "Photo pending" box here, which isn't a fair
+// first impression of the hero. Real, licensed Old Trafford photography
+// (sourced from `reference designs/`; see public/images/stadium/README.md)
+// fills that moment honestly instead, as a framed triptych.
+const heroPhotos = [
+  {
+    src: "/images/stadium/old-trafford-trinity-statue.jpg",
+    alt: "The United Trinity statue outside Old Trafford",
+  },
+  {
+    src: "/images/stadium/old-trafford-reds-mural.jpg",
+    alt: "'THE REDS GO MARCHING ON' mural on Old Trafford's forecourt",
+  },
+  {
+    src: "/images/stadium/old-trafford-exterior-sunset.jpg",
+    alt: "Old Trafford exterior at sunset",
+  },
 ];
 
 export function Hero() {
@@ -89,24 +103,34 @@ export function Hero() {
           </Button>
         </div>
 
-        {/* Cinematic player composition — layered, overlapping, not a row of plain cards */}
-        <div className="relative mt-16 flex h-[280px] w-full max-w-3xl items-end justify-center sm:h-[380px] lg:h-[460px]">
-          {players.map((player, i) => (
+        {/* Cinematic photo triptych — real Old Trafford photography, layered and overlapping, not a row of plain cards */}
+        <div className="relative mt-16 flex h-[280px] w-full max-w-3xl items-center justify-center gap-3 sm:h-[360px] sm:gap-5 lg:h-[420px]">
+          {heroPhotos.map((photo, i) => (
             <div
-              key={player.alt}
-              className="absolute bottom-0 h-full w-[46%] sm:w-[38%]"
+              key={photo.alt}
+              className={`relative h-full overflow-hidden rounded-card border border-white/10 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.7)] ${
+                i === 1 ? "z-10 w-[42%] scale-110" : "w-[30%]"
+              }`}
               style={{
-                left: i === 0 ? "0%" : i === 2 ? undefined : "50%",
-                right: i === 2 ? "0%" : undefined,
-                transform: i === 1 ? "translateX(-50%) scale(1.08)" : undefined,
-                zIndex: i === 1 ? 10 : 5 - i,
+                transform:
+                  i === 0
+                    ? "rotate(-3deg) translateY(14px)"
+                    : i === 2
+                      ? "rotate(3deg) translateY(14px)"
+                      : undefined,
               }}
             >
-              <PlayerImage
-                src={player.src}
-                alt={player.alt}
-                position={player.position}
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                fill
                 priority={i === 1}
+                sizes="(min-width: 1024px) 30vw, 45vw"
+                className="object-cover"
+              />
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-bg-void/50 via-transparent to-transparent"
+                aria-hidden="true"
               />
             </div>
           ))}

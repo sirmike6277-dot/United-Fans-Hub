@@ -32,6 +32,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the template itself, which has no real values and exists
+# specifically to be committed and read by anyone setting up this project.
+# A real, previously-unnoticed bug this fixes: `.env*` was silently
+# swallowing .env.example too — `git ls-files .env.example` confirmed it
+# had never actually been tracked despite existing in the working tree and
+# every part of this codebase's own tooling/comments assuming it was a
+# committed reference (see the file's own header comment: "Copy this file
+# to .env.local").
+!.env.example
 
 # vercel
 .vercel

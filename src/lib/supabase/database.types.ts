@@ -588,6 +588,39 @@ export type Database = {
           },
         ]
       }
+      football_capabilities: {
+        Row: {
+          checked_at: string
+          competition_external_ref: string | null
+          feature: string
+          id: string
+          reason: string | null
+          season: number
+          status: string
+          team_id: number
+        }
+        Insert: {
+          checked_at?: string
+          competition_external_ref?: string | null
+          feature: string
+          id?: string
+          reason?: string | null
+          season: number
+          status: string
+          team_id: number
+        }
+        Update: {
+          checked_at?: string
+          competition_external_ref?: string | null
+          feature?: string
+          id?: string
+          reason?: string | null
+          season?: number
+          status?: string
+          team_id?: number
+        }
+        Relationships: []
+      }
       match_events: {
         Row: {
           created_at: string
@@ -699,6 +732,7 @@ export type Database = {
           away_score: number | null
           club_id: string
           competition: string | null
+          competition_external_ref: string | null
           created_at: string
           external_ref: string | null
           home_score: number | null
@@ -707,6 +741,7 @@ export type Database = {
           kickoff_at: string
           opponent_external_ref: string | null
           opponent_name: string
+          season: number
           status: string
           venue: string | null
         }
@@ -714,6 +749,7 @@ export type Database = {
           away_score?: number | null
           club_id: string
           competition?: string | null
+          competition_external_ref?: string | null
           created_at?: string
           external_ref?: string | null
           home_score?: number | null
@@ -722,6 +758,7 @@ export type Database = {
           kickoff_at: string
           opponent_external_ref?: string | null
           opponent_name: string
+          season: number
           status?: string
           venue?: string | null
         }
@@ -729,6 +766,7 @@ export type Database = {
           away_score?: number | null
           club_id?: string
           competition?: string | null
+          competition_external_ref?: string | null
           created_at?: string
           external_ref?: string | null
           home_score?: number | null
@@ -737,6 +775,7 @@ export type Database = {
           kickoff_at?: string
           opponent_external_ref?: string | null
           opponent_name?: string
+          season?: number
           status?: string
           venue?: string | null
         }
@@ -1767,6 +1806,27 @@ export type Database = {
           },
         ]
       }
+      sync_status: {
+        Row: {
+          key: string
+          last_attempted_at: string | null
+          last_error: string | null
+          last_succeeded_at: string | null
+        }
+        Insert: {
+          key: string
+          last_attempted_at?: string | null
+          last_error?: string | null
+          last_succeeded_at?: string | null
+        }
+        Update: {
+          key?: string
+          last_attempted_at?: string | null
+          last_error?: string | null
+          last_succeeded_at?: string | null
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           awarded_at: string
@@ -1940,6 +2000,10 @@ export type Database = {
           votes: number
         }[]
       }
+      claim_sync_slot: {
+        Args: { p_key: string; p_ttl_seconds: number }
+        Returns: boolean
+      }
       determine_award_winner: {
         Args: { p_period_id: string }
         Returns: {
@@ -1979,6 +2043,10 @@ export type Database = {
           p_target_type: string
         }
         Returns: string
+      }
+      record_sync_result: {
+        Args: { p_error?: string; p_key: string; p_ok: boolean }
+        Returns: undefined
       }
       room_member_count: {
         Args: { p_conversation_id: string }

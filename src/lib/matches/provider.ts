@@ -100,6 +100,10 @@ export interface ProviderFixture {
   kickoffAtIso: string;
   venueName: string | null;
   competitionName: string | null;
+  /** API-Football's own numeric league id (e.g. 39 for Premier League) — the real, stable identifier for "which competition," never derived by matching on `competitionName`. Phase 2A: previously unread, so every competition collapsed to a free-text name only. */
+  competitionExternalRef: string | null;
+  /** API-Football's own `league.season` for this fixture — the provider's own authoritative season assignment (a start year, e.g. 2026 for "2026/27"), not recomputed from `kickoffAtIso` by this app. Phase 2A: previously unread. */
+  season: number | null;
   homeTeamId: number;
   homeTeamName: string;
   awayTeamId: number;
@@ -143,6 +147,8 @@ function parseFixture(raw: unknown): ProviderFixture | null {
     kickoffAtIso: kickoff,
     venueName: typeof venue?.name === "string" ? venue.name : null,
     competitionName: typeof league?.name === "string" ? league.name : null,
+    competitionExternalRef: typeof league?.id === "number" ? String(league.id) : null,
+    season: typeof league?.season === "number" ? league.season : null,
     homeTeamId: homeId,
     homeTeamName: home.name,
     awayTeamId: awayId,
@@ -343,4 +349,55 @@ export async function searchTeams({ name }: { name: string }): Promise<ProviderT
       };
     })
     .filter((t): t is ProviderTeamSearchResult => t !== null);
+}
+
+export interface ProviderTeamSeasonCoverage {
+  leagueId: number;
+  leagueName: string;
+  /** Start years (API-Football's own `season` convention) this league has real data for, for this team — e.g. [2022, 2023, 2024] on a plan capped to that window. */
+  seasons: number[];
+}
+
+/**
+ * Discovers which competitions and seasons API-Football's own `/leagues`
+ * endpoint says it actually has coverage for, for a given team — the real
+ * way to answer "does this plan cover 2026/27 Premier League" instead of
+ * assuming from documentation or from the fixed 2022-2024 window this
+ * account happens to be capped to today (see the
+ * api-football-free-tier-season-cap memory — that cap is real and
+ * confirmed, but it's a fact about *this* subscription right now, not
+ * something this function should hard-code).
+ *
+ * Phase 2A (Multi-Season Architecture): built as the concrete
+ * `getAvailableTeamSeasons`-equivalent this phase's spec asked for, but
+ * deliberately NOT called anywhere in this codebase yet — quota is
+ * exhausted (see the phase report). This is exactly the first real call
+ * to make once quota resets or the subscription is upgraded:
+ * `fetchAvailableTeamSeasons({ teamId: MANCHESTER_UNITED_API_FOOTBALL_TEAM_ID })`,
+ * then record whatever it actually says via sync.ts's recordCapability
+ * for each league+season it reports — never assumed, always the real
+ * response.
+ */
+export async function fetchAvailableTeamSeasons({ teamId }: { teamId: number }): Promise<ProviderTeamSeasonCoverage[]> {
+  const raw = await apiFootballGet<unknown[]>("/leagues", { team: teamId });
+
+  return raw
+    .map((r) => {
+      if (typeof r !== "object" || r === null) return null;
+      const row = r as Record<string, unknown>;
+      const league = row.league as Record<string, unknown> | undefined;
+      const seasonsRaw = row.seasons as unknown[] | undefined;
+      if (typeof league?.id !== "number" || typeof league.name !== "string") return null;
+
+      const seasons = (seasonsRaw ?? [])
+        .map((s) => {
+          if (typeof s !== "object" || s === null) return null;
+          const year = (s as Record<string, unknown>).year;
+          return typeof year === "number" ? year : null;
+        })
+        .filter((y): y is number => y !== null);
+
+      return { leagueId: league.id, leagueName: league.name, seasons };
+    })
+    .filter((r): r is ProviderTeamSeasonCoverage => r !== null);
 }

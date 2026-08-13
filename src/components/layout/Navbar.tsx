@@ -9,10 +9,7 @@ import { BellIcon } from "@/components/notifications/NotificationIcons";
 import { fetchUnreadCount } from "@/lib/notifications/notifications";
 import { MessageBubbleIcon } from "@/components/messaging/MessagingIcons";
 import { fetchUnreadConversationCount } from "@/lib/messaging/conversations";
-import { UsersIcon } from "@/components/members/MembersIcons";
-import { TrophyIcon } from "@/components/predictions/PredictionIcons";
-import { CrownIcon } from "@/components/achievements/AchievementIcons";
-import { HomeIcon } from "./ShellIcons";
+import { NAV_ITEMS, MODERATION_NAV_ITEM, ADMIN_NAV_ITEM } from "./navItems";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -66,6 +63,14 @@ export function Navbar({ brand }: NavbarProps) {
   const [signedIn, setSignedIn] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  // Same real has_role() RPC checks Sidebar.tsx already makes — needed
+  // here too now that the mobile menu renders the same role-gated
+  // Moderation/Admin items Sidebar does (see navItems.ts). Fetched
+  // independently rather than shared via context, matching this
+  // component's existing pattern of self-fetching its own unread counts
+  // rather than receiving them as props.
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
 
   // Escape closes the mobile menu and returns focus to the toggle button —
@@ -96,13 +101,25 @@ export function Navbar({ brand }: NavbarProps) {
       fetchUnreadConversationCount(supabase, userId).then(setUnreadMessages);
     }
 
+    function refreshRoleFlags(userId: string | undefined) {
+      if (!userId) {
+        setIsSuperAdmin(false);
+        setIsModerator(false);
+        return;
+      }
+      supabase.rpc("has_role", { role_key: "super_admin" }).then(({ data }) => setIsSuperAdmin(Boolean(data)));
+      supabase.rpc("has_role", { role_key: "moderator" }).then(({ data }) => setIsModerator(Boolean(data)));
+    }
+
     supabase.auth.getUser().then(({ data }) => {
       setSignedIn(Boolean(data.user));
       refreshUnreadCount(data.user?.id);
+      refreshRoleFlags(data.user?.id);
     });
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       setSignedIn(Boolean(session?.user));
       refreshUnreadCount(session?.user?.id);
+      refreshRoleFlags(session?.user?.id);
     });
     return () => subscription.subscription.unsubscribe();
   }, []);
@@ -114,6 +131,16 @@ export function Navbar({ brand }: NavbarProps) {
     router.push("/");
     router.refresh();
   }
+
+  // The mobile menu's real nav list — same source, same role gating, as
+  // Sidebar's desktop-only rail. See navItems.ts for why these two used to
+  // be separate, silently-diverging lists.
+  const unreadCounts = { messages: unreadMessages, notifications: unreadCount };
+  const mobileNavItems = [
+    ...NAV_ITEMS,
+    ...(isModerator || isSuperAdmin ? [MODERATION_NAV_ITEM] : []),
+    ...(isSuperAdmin ? [ADMIN_NAV_ITEM] : []),
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-bg-elevated/90 backdrop-blur">
@@ -262,95 +289,28 @@ export function Navbar({ brand }: NavbarProps) {
           <div className={signedIn ? "flex flex-col gap-3" : "mt-6 flex flex-col gap-3"}>
             {signedIn ? (
               <>
-                <Button
-                  href="/dashboard"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/dashboard") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/dashboard") ? "!border-red-primary" : undefined}
-                >
-                  <HomeIcon size={16} />
-                  Home
-                </Button>
-                <Button
-                  href="/community/rooms"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/community/rooms") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/community/rooms") ? "!border-red-primary" : undefined}
-                >
-                  <MessageBubbleIcon size={16} />
-                  Fan Rooms
-                </Button>
-                <Button
-                  href="/members"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/members") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/members") ? "!border-red-primary" : undefined}
-                >
-                  <UsersIcon size={16} />
-                  Members
-                </Button>
-                <Button
-                  href="/predictions"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/predictions") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/predictions") ? "!border-red-primary" : undefined}
-                >
-                  <TrophyIcon size={16} />
-                  Predictions
-                </Button>
-                <Button
-                  href="/awards"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/awards") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/awards") ? "!border-red-primary" : undefined}
-                >
-                  <CrownIcon size={16} />
-                  Awards
-                </Button>
-                <Button
-                  href="/messages"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/messages") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/messages") ? "!border-red-primary" : undefined}
-                >
-                  <MessageBubbleIcon size={16} />
-                  Messages
-                  {unreadMessages > 0 ? (
-                    <span className="ml-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-primary px-1.5 text-[10px] font-semibold text-white">
-                      {unreadMessages > 9 ? "9+" : unreadMessages}
-                    </span>
-                  ) : null}
-                </Button>
-                <Button
-                  href="/notifications"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/notifications") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/notifications") ? "!border-red-primary" : undefined}
-                >
-                  <BellIcon size={16} />
-                  Notifications
-                  {unreadCount > 0 ? (
-                    <span className="ml-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-primary px-1.5 text-[10px] font-semibold text-white">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  ) : null}
-                </Button>
-                <Button
-                  href="/profile"
-                  variant="secondary"
-                  onClick={() => setOpen(false)}
-                  aria-current={isRouteActive(pathname, "/profile") ? "page" : undefined}
-                  className={isRouteActive(pathname, "/profile") ? "!border-red-primary" : undefined}
-                >
-                  Profile
-                </Button>
+                {mobileNavItems.map(({ href, label, icon: Icon, countKey }) => {
+                  const active = isRouteActive(pathname, href);
+                  const count = countKey ? unreadCounts[countKey] : 0;
+                  return (
+                    <Button
+                      key={href}
+                      href={href}
+                      variant="secondary"
+                      onClick={() => setOpen(false)}
+                      aria-current={active ? "page" : undefined}
+                      className={active ? "!border-red-primary" : undefined}
+                    >
+                      <Icon size={16} />
+                      {label}
+                      {count > 0 ? (
+                        <span className="ml-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-primary px-1.5 text-[10px] font-semibold text-white">
+                          {count > 9 ? "9+" : count}
+                        </span>
+                      ) : null}
+                    </Button>
+                  );
+                })}
                 <Button onClick={handleLogout}>Logout</Button>
               </>
             ) : (

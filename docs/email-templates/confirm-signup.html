@@ -1,0 +1,236 @@
+<!--
+  United Fans Hub - "Confirm signup" email template
+  =====================================================
+  Where this goes: Supabase Dashboard -> Authentication -> Email Templates ->
+  "Confirm signup". Paste this entire file into the template body field.
+
+  Variables used below are ALL real, documented Supabase template variables -
+  nothing invented:
+    {{ .ConfirmationURL }}  - the one-time verify link (points at Supabase's
+                              own /auth/v1/verify endpoint, which redirects
+                              to this app's /auth/callback, then on to
+                              production, once verified server-side). This
+                              is the ONLY thing the button/link may point to
+                              - never swap it for a static app URL.
+    {{ .Email }}            - the address being confirmed, shown so the
+                              recipient can confirm it's the account they
+                              expect.
+
+  The raw {{ .ConfirmationURL }} value is never printed as visible text (no
+  exposed supabase.co domain / token in plain view) - both the button and
+  the "trouble with the button" fallback are <a href> links using clean
+  anchor text instead. The href target is unchanged either way.
+
+  Crest image: a HOSTED URL, not a base64 data: URI. History, so this
+  doesn't get re-broken again:
+    1. First version hot-linked to the production PNG before it was ever
+       deployed -> 404, broken image in the real email.
+    2. Fixed (it seemed) by embedding the crest as a base64 data: URI
+       directly in the HTML - verified working in a headless-browser
+       render with all network requests blocked. That test proved the HTML
+       mechanism is valid, but did NOT prove real email clients honor it -
+       Gmail specifically strips/ignores base64 data: URIs in <img src> and
+       shows nothing, which is exactly the "broken logo" the recipient
+       reported. Also pushed the template over Supabase's 50,000-character
+       body limit.
+    3. Tried hosting the .webp instead (it was the one file already
+       deployed) - still broken. Checked properly this time instead of
+       assuming: WebP is only partially/unreliably supported across Gmail
+       and Outlook, full stop - not a safe bet for a hosted email image
+       either. The universal answer for hosted email images is PNG or JPEG.
+    4. Current fix: hosted URL pointing at the crest .png -
+       https://united-fans-hub.vercel.app/images/branding/manchester-united-emblem.png
+       - the most universally-supported format for a real, standalone
+       <img src> in email, across Gmail, Outlook, and Apple Mail alike.
+       This ONLY works once that exact file is actually deployed to
+       production (public/images/branding/manchester-united-emblem.png,
+       committed via the fix/email-crest-asset branch/PR) - do not paste
+       this template into Supabase until that's confirmed live (curl -I
+       the URL and check for 200, not 404), or this repeats attempt #1's
+       mistake a second time.
+    Lesson: a hosted URL pointing at a real PNG/JPEG - actually deployed -
+    is the only image mechanism that's reliable across real email clients
+    for this Supabase template field. Neither embedding (Gmail strips
+    data: URIs) nor WebP (inconsistent client support) are safe substitutes,
+    however appealing either looked in isolation.
+
+  Palette: white card on a white page. Card gets a 1px light border + soft
+  shadow for definition instead of a background-color difference.
+
+  Type system: two deliberate voices - Georgia (serif, italic) for display
+  moments (header wordmark, welcome headline) for an institutional/heritage
+  feel; Arial/Helvetica (sans) for all UI/utility text (body copy, button,
+  footer, tagline). Both are near-universally supported web-safe fonts
+  across email clients including Outlook desktop - no @font-face, no web
+  fonts, nothing that depends on font files loading.
+
+  Encoding: every character in this file is plain ASCII on purpose (no em
+  dashes, no smart quotes as literal unicode - HTML entities like &mdash;
+  and &rsquo; instead), so copy-pasting through a browser textarea can't
+  mangle it.
+
+  Design: table-based layout + inline styles throughout (no <style> block
+  relied on for anything structural) because major email clients - Outlook
+  desktop in particular - strip <head><style> and flatten layout CSS. The
+  <style> block below is progressive enhancement only (mobile sizing, MSO/
+  webkit resets) - the email is fully correct without it. Gradients and
+  shadows carry a solid bgcolor/background-color fallback on the same
+  element, so Outlook desktop (which ignores both) falls back to flat brand
+  red instead of breaking.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Confirm your United Fans Hub account</title>
+<style>
+  body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+  body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
+  a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+  @media only screen and (max-width: 600px) {
+    .uf-container { width: 100% !important; }
+    .uf-px { padding-left: 20px !important; padding-right: 20px !important; }
+    .uf-header-px { padding-left: 22px !important; padding-right: 22px !important; padding-top: 26px !important; padding-bottom: 26px !important; }
+    .uf-plate { width: 76px !important; height: 76px !important; }
+    .uf-crest { width: 58px !important; height: 58px !important; }
+    .uf-wordmark-cell { padding-left: 14px !important; }
+    .uf-wordmark { font-size: 21px !important; }
+    .uf-h1 { font-size: 22px !important; }
+    .uf-cta { padding: 15px 28px !important; font-size: 14px !important; letter-spacing: 0.6px !important; }
+  }
+</style>
+</head>
+<body style="margin:0; padding:0; background-color:#ffffff;">
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+  Confirm your email to activate your United Fans Hub account.
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+<tr>
+<td align="center" style="padding:32px 16px;">
+
+<table role="presentation" class="uf-container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#ffffff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(20,20,20,0.08);">
+
+  <!-- Header -->
+  <tr>
+    <td class="uf-header-px" align="center" bgcolor="#da291c" style="background-color:#da291c; background-image:linear-gradient(135deg, #e5342a 0%, #da291c 45%, #8b0000 100%); padding:36px 40px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+        <tr>
+          <td valign="middle" align="center" class="uf-plate" style="width:92px; height:92px; background-color:#ffffff; border-radius:50%; padding:10px;">
+            <img src="https://united-fans-hub.vercel.app/images/branding/manchester-united-emblem.png"
+                 alt="Manchester United crest"
+                 width="72" height="72"
+                 class="uf-crest"
+                 style="display:block; width:72px; height:72px;" />
+          </td>
+          <td valign="middle" align="left" class="uf-wordmark-cell" style="padding-left:18px;">
+            <p class="uf-wordmark" style="margin:0; font-family:Georgia,'Times New Roman',Times,serif; font-style:italic; font-size:26px; font-weight:700; letter-spacing:0.2px; line-height:1.2; color:#ffffff;">
+              United Fans Hub
+            </p>
+            <p style="margin:6px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:10.5px; font-weight:700; letter-spacing:1.6px; line-height:1.4; color:#ffd9d5; text-transform:uppercase;">
+              An independent supporters community
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Gold trim -->
+  <tr>
+    <td style="background-color:#c9a227; height:3px; line-height:3px; font-size:0;">&nbsp;</td>
+  </tr>
+
+  <!-- Headline -->
+  <tr>
+    <td class="uf-px" align="center" style="padding:40px 40px 0 40px;">
+      <p style="margin:0 0 12px 0; font-family:Arial,Helvetica,sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; color:#c81e13; text-transform:uppercase;">
+        Confirm your email address
+      </p>
+      <h1 class="uf-h1" style="margin:0 0 16px 0; font-family:Georgia,'Times New Roman',Times,serif; font-size:26px; line-height:1.3; font-weight:700; letter-spacing:0.1px; color:#16181c;">
+        Welcome to United Fans Hub!
+      </h1>
+      <p style="margin:0 0 8px 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.65; color:#3a3d42;">
+        Thanks for signing up with <strong style="color:#16181c;">{{ .Email }}</strong>. Confirm your email address to activate your account and unlock the full United Fans Hub experience &mdash; predictions, fan rankings, community chat, and matchday coverage.
+      </p>
+    </td>
+  </tr>
+
+  <!-- CTA button -->
+  <tr>
+    <td align="center" style="padding:32px 40px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="center" bgcolor="#da291c" style="border-radius:10px; background-color:#da291c; background-image:linear-gradient(180deg, #e50914 0%, #da291c 100%); box-shadow:0 8px 18px rgba(218,41,28,0.28);">
+            <a href="{{ .ConfirmationURL }}"
+               target="_blank"
+               class="uf-cta"
+               style="display:inline-block; padding:17px 44px; font-family:Arial,Helvetica,sans-serif; font-size:15px; font-weight:700; letter-spacing:1px; color:#ffffff; text-decoration:none; text-transform:uppercase; border-radius:10px; white-space:nowrap;">
+              Verify My Email
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Fallback link -->
+  <tr>
+    <td class="uf-px" align="center" style="padding:0 40px 36px 40px;">
+      <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#6b7280;">
+        Trouble with the button? <a href="{{ .ConfirmationURL }}" style="color:#c81e13; font-weight:700; text-decoration:underline;">Verify your email here</a>.
+      </p>
+    </td>
+  </tr>
+
+  <!-- Divider -->
+  <tr>
+    <td style="padding:0 40px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr><td height="1" style="background-color:#e5e7eb; background-image:linear-gradient(90deg, rgba(229,231,235,0) 0%, #d5d8dd 50%, rgba(229,231,235,0) 100%); font-size:0; line-height:0;">&nbsp;</td></tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Security note -->
+  <tr>
+    <td class="uf-px" style="padding:24px 40px 8px 40px;">
+      <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:1.6; color:#6b7280;">
+        This link expires shortly and can only be used once, for your security. If you didn&rsquo;t create a United Fans Hub account, you can safely ignore this email &mdash; no account will be activated.
+      </p>
+    </td>
+  </tr>
+
+  <!-- Footer -->
+  <tr>
+    <td style="padding-top:28px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f7f7f8" style="background-color:#f7f7f8;">
+        <tr>
+          <td class="uf-px" align="center" style="padding:24px 40px 28px 40px;">
+            <p style="margin:0 0 6px 0; font-family:Georgia,'Times New Roman',Times,serif; font-style:italic; font-size:14px; font-weight:700; line-height:1.5; color:#16181c;">
+              United Fans Hub
+            </p>
+            <p style="margin:0 0 12px 0; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#6b7280;">
+              A community for Manchester United fans.
+            </p>
+            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:11px; line-height:1.6; color:#9aa0a8;">
+              Independent and unofficial &mdash; not affiliated with, endorsed by, or operated on behalf of Manchester United Football Club.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -11,6 +11,7 @@ import { MessageBubbleIcon } from "@/components/messaging/MessagingIcons";
 import { fetchUnreadConversationCount } from "@/lib/messaging/conversations";
 import { UsersIcon } from "@/components/members/MembersIcons";
 import { TrophyIcon } from "@/components/predictions/PredictionIcons";
+import { CrownIcon } from "@/components/achievements/AchievementIcons";
 import { HomeIcon } from "./ShellIcons";
 
 const navLinks = [
@@ -300,6 +301,16 @@ export function Navbar({ brand }: NavbarProps) {
                 >
                   <TrophyIcon size={16} />
                   Predictions
+                </Button>
+                <Button
+                  href="/awards"
+                  variant="secondary"
+                  onClick={() => setOpen(false)}
+                  aria-current={isRouteActive(pathname, "/awards") ? "page" : undefined}
+                  className={isRouteActive(pathname, "/awards") ? "!border-red-primary" : undefined}
+                >
+                  <CrownIcon size={16} />
+                  Awards
                 </Button>
                 <Button
                   href="/messages"

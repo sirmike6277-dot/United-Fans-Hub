@@ -10,6 +10,14 @@ export interface MentionTextProps {
   text: string;
   mentions: MentionRef[];
   className?: string;
+  /**
+   * Override the mention link's own color — needed on Fan Rooms' "own
+   * message" bubble (bg-red-primary): the default red-on-transparent
+   * mention style becomes invisible red-on-red there (a real contrast bug
+   * found via the Master Product Completion Phase's preview screenshots).
+   * Posts/comments never sit on a red background, so their default is fine.
+   */
+  mentionClassName?: string;
 }
 
 /**
@@ -20,7 +28,7 @@ export interface MentionTextProps {
  * handle without actually mentioning them, or a username that no longer
  * resolves — renders as ordinary text rather than a broken/fabricated link.
  */
-export function MentionText({ text, mentions, className }: MentionTextProps) {
+export function MentionText({ text, mentions, className, mentionClassName }: MentionTextProps) {
   if (mentions.length === 0) {
     return <p className={className}>{text}</p>;
   }
@@ -49,7 +57,7 @@ export function MentionText({ text, mentions, className }: MentionTextProps) {
       <Link
         key={`m-${start}`}
         href={`/profile/${mention.id}`}
-        className="font-medium text-red-primary hover:text-red-hover hover:underline"
+        className={mentionClassName ?? "font-medium text-red-primary hover:text-red-hover hover:underline"}
       >
         {full}
       </Link>,

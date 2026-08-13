@@ -166,6 +166,8 @@ export async function fetchTeamFixtures({
 
 export interface ProviderEvent {
   minute: number | null;
+  /** API-Football's `time.extra` — stoppage-time minutes added onto `minute` (e.g. 6 for a goal at "90+6"). Real provider data, never computed/guessed; null whenever the provider didn't report stoppage time for this event. */
+  minuteExtra: number | null;
   providerEventId: string;
   type: string; // raw API-Football `type`, e.g. "Goal", "Card", "subst", "Var"
   detail: string; // raw API-Football `detail`, e.g. "Normal Goal", "Yellow Card"
@@ -194,10 +196,12 @@ function parseEvent(raw: unknown, index: number): ProviderEvent | null {
   // repeated syncs, which is what makes the idempotent replace-per-match
   // strategy in sync.ts actually safe.
   const minute = typeof time?.elapsed === "number" ? time.elapsed : null;
+  const minuteExtra = typeof time?.extra === "number" ? time.extra : null;
   const providerEventId = [minute, r.type, r.detail, player?.id, index].join(":");
 
   return {
     minute,
+    minuteExtra,
     providerEventId,
     type: r.type,
     detail: r.detail,
@@ -290,6 +294,27 @@ export async function fetchTeamSquad({ teamId }: { teamId: number }): Promise<Pr
       };
     })
     .filter((p): p is ProviderPlayer => p !== null);
+}
+
+/**
+ * A single player's real position, independent of current squad
+ * membership — unlike `/players/squads`, which only lists a team's
+ * *currently* rostered players. Needed because a real player who started
+ * a real, already-synced match may since have transferred out (or, for an
+ * opponent, was never on a squad list this app ever fetched in the first
+ * place — see resolvePlayerId in sync.ts, the only caller). Returns null
+ * on any failure (network, rate limit, no data) — this is always a best-
+ * effort backfill, never something a sync should abort over.
+ */
+export async function fetchPlayerPosition({ providerId, season }: { providerId: number; season: number }): Promise<string | null> {
+  try {
+    const raw = await apiFootballGet<unknown[]>("/players", { id: providerId, season });
+    const entry = raw[0] as { statistics?: { games?: { position?: unknown } }[] } | undefined;
+    const position = entry?.statistics?.[0]?.games?.position;
+    return typeof position === "string" && position.length > 0 ? position : null;
+  } catch {
+    return null;
+  }
 }
 
 export interface ProviderTeamSearchResult {

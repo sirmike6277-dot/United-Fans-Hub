@@ -10,6 +10,8 @@ import { PullQuote } from "@/components/ui/PullQuote";
 import { MatchDetailHeader } from "@/components/matches/MatchDetailHeader";
 import { EventTimeline } from "@/components/matches/EventTimeline";
 import { PitchLineup } from "@/components/matches/PitchLineup";
+import { SubstitutionsPanel } from "@/components/matches/SubstitutionsPanel";
+import { SubstitutePlayersPanel } from "@/components/matches/SubstitutePlayersPanel";
 import { PredictionSection } from "@/components/predictions/PredictionSection";
 import { fetchMatchById, fetchMatchLineups } from "@/lib/matches/matches";
 import { maybeSyncMatchEvents, maybeSyncMatchLineups, maybeSyncSquad } from "@/lib/matches/sync";
@@ -45,7 +47,7 @@ export default async function MatchDetailPage({
   // attribution for each event's player is now resolved per-event from
   // the provider's own team id (see sync.ts), not from Manchester
   // United's club id — this page no longer needs to look that up.
-  await Promise.all([
+  const [, lineupSync] = await Promise.all([
     maybeSyncMatchEvents({
       matchId: initialMatch.id,
       externalRef: initialMatch.externalRef,
@@ -101,9 +103,18 @@ export default async function MatchDetailPage({
 
   const { entries: lineupEntries } = await fetchMatchLineups(supabase, current.id);
 
+  // `current.opponentExternalRef` (captured at fixture-sync time — see
+  // matches.ts) is the primary source and is available immediately, even
+  // before a lineup is published. The lineup-derived id is kept as a
+  // fallback for the rare row synced before that column existed and never
+  // backfilled.
+  const opponentExternalRef =
+    current.opponentExternalRef ??
+    (club ? (lineupEntries.find((e) => e.clubId !== club.id && e.clubExternalRef)?.clubExternalRef ?? null) : null);
+
   const content = (
     <div className="flex flex-col gap-8 py-6 sm:py-8">
-      <MatchDetailHeader match={current} />
+      <MatchDetailHeader match={current} opponentExternalRef={opponentExternalRef} />
 
       <PredictionSection
         matchId={current.id}
@@ -119,9 +130,33 @@ export default async function MatchDetailPage({
         <section>
           <h2 className="font-display text-lg font-bold uppercase text-white sm:text-xl">Lineups</h2>
           <div className="mt-3">
-            <PitchLineup entries={lineupEntries} manUtdClubId={club.id} opponentName={current.opponentName} />
+            <PitchLineup
+              entries={lineupEntries}
+              events={current.events}
+              manUtdClubId={club.id}
+              opponentName={current.opponentName}
+              lineupFetchFailed={lineupSync.recentlyFailed}
+            />
           </div>
         </section>
+      ) : null}
+
+      {club ? (
+        <SubstitutionsPanel
+          events={current.events}
+          entries={lineupEntries}
+          manUtdClubId={club.id}
+          opponentName={current.opponentName}
+        />
+      ) : null}
+
+      {club ? (
+        <SubstitutePlayersPanel
+          entries={lineupEntries}
+          events={current.events}
+          manUtdClubId={club.id}
+          opponentName={current.opponentName}
+        />
       ) : null}
 
       <section>

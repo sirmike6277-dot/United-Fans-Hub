@@ -17,7 +17,8 @@ export const MATCH_SUMMARY_SELECT = `
   home_score,
   away_score,
   is_home,
-  external_ref
+  external_ref,
+  opponent_external_ref
 ` as const;
 
 /** Full projection for a single match page — includes the event timeline and each event's player identity via an explicit FK-hinted embed (never a generic/polymorphic join). */
@@ -44,6 +45,8 @@ export interface MatchSummary {
   awayScore: number | null;
   isHome: boolean;
   externalRef: string | null;
+  /** The opponent's own real API-Football team id (`matches.opponent_external_ref`) — captured at fixture-sync time, available immediately (never waits on a lineup). Used only to build TeamCrest's live CDN URL for the opponent; never a fabricated id. */
+  opponentExternalRef: string | null;
 }
 
 export interface MatchEventPlayer {
@@ -78,6 +81,7 @@ interface MatchSummaryRow {
   away_score: number | null;
   is_home: boolean;
   external_ref: string | null;
+  opponent_external_ref: string | null;
 }
 
 /** Raw shape of the embedded `player:players!...` object exactly as PostgREST returns it — snake_case, unconverted. Distinct from MatchEventPlayer (the normalized camelCase shape the UI consumes) on purpose: conflating the two previously meant `full_name`/`shirt_number`/`photo_asset_ref` were never actually renamed, so every event's primary player silently rendered as absent. */
@@ -111,6 +115,24 @@ function normalizePlayer(player: MatchEventPlayerRow | null): MatchEventPlayer |
   };
 }
 
+/**
+ * Real football-season label for a real kickoff date — e.g. "2024/25" for
+ * anything from 1 Jul 2024 through 30 Jun 2025. July (not August) is the
+ * cutoff specifically so pre-season friendlies group with the season
+ * they're actually building up to, not the one that just finished — a
+ * real case this matters for: the Rosenborg/Rangers/Arsenal friendlies
+ * synced in mid/late July 2024 are pre-season for 2024/25, not a
+ * leftover tail of 2023/24. Derived purely from the date already on the
+ * row — never a separate "season" field this app doesn't otherwise track.
+ */
+export function deriveSeasonLabel(kickoffAtIso: string): string {
+  const date = new Date(kickoffAtIso);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1; // 1-12
+  const startYear = month >= 7 ? year : year - 1;
+  return `${startYear}/${String((startYear + 1) % 100).padStart(2, "0")}`;
+}
+
 function normalizeSummary(row: MatchSummaryRow): MatchSummary {
   return {
     id: row.id,
@@ -123,6 +145,7 @@ function normalizeSummary(row: MatchSummaryRow): MatchSummary {
     awayScore: row.away_score,
     isHome: row.is_home,
     externalRef: row.external_ref,
+    opponentExternalRef: row.opponent_external_ref,
   };
 }
 
@@ -219,6 +242,25 @@ export interface LineupEntry {
   shirtNumber: number | null;
   /** From `players.position` (set by the squad sync) — the real recorded position, used to place this player in the right row of the pitch. Null for an opponent player never synced as part of Manchester United's own squad. */
   position: string | null;
+  /**
+   * API-Football's real per-player "row:col" tactical slot for this match
+   * (see provider.ts's ProviderLineupEntry.grid, synced verbatim into
+   * match_lineups.grid) — the provider's own authoritative shape for
+   * *both* teams, not derived from our squad data. Null whenever the
+   * provider itself didn't publish it (common for friendlies — never
+   * fabricated when absent; PitchLineup falls back to a position-grouped
+   * layout in that case).
+   */
+  grid: string | null;
+  /**
+   * `clubs.external_ref` — API-Football's own numeric team id (set for
+   * every club this app has ever seen via resolveClubId in sync.ts, not
+   * just Manchester United). Used only to build the provider's own crest
+   * CDN URL (see TeamCrest) — this app stores no opponent crest
+   * asset of its own. Null on the rare row where that resolution never
+   * happened.
+   */
+  clubExternalRef: string | null;
 }
 
 interface LineupRow {
@@ -229,7 +271,9 @@ interface LineupRow {
   player_id: string | null;
   player_name: string;
   shirt_number: number | null;
+  grid: string | null;
   player: { position: string | null } | null;
+  club: { external_ref: string | null } | null;
 }
 
 /** Both teams' real starting XI + substitutes bench for one match (see migration add_match_lineups) — empty when the provider hasn't published a lineup yet (common before kickoff), never fabricated. */
@@ -240,7 +284,7 @@ export async function fetchMatchLineups(
   const { data, error } = await supabase
     .from("match_lineups")
     .select(
-      "id, club_id, formation, is_starting, player_id, player_name, shirt_number, player:players!match_lineups_player_id_fkey ( position )",
+      "id, club_id, formation, is_starting, player_id, player_name, shirt_number, grid, player:players!match_lineups_player_id_fkey ( position ), club:clubs!match_lineups_club_id_fkey ( external_ref )",
     )
     .eq("match_id", matchId);
 
@@ -260,6 +304,8 @@ export async function fetchMatchLineups(
       playerName: row.player_name,
       shirtNumber: row.shirt_number,
       position: row.player?.position ?? null,
+      grid: row.grid,
+      clubExternalRef: row.club?.external_ref ?? null,
     })),
     error: null,
   };

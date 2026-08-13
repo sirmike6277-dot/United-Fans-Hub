@@ -20,6 +20,15 @@ export function ShieldIcon({ size = 16 }: { size?: number }) {
   );
 }
 
+/** Scroll-to-bottom / "jump to latest" affordance (RoomChat) — a plain downward chevron, not room-themed like the icons below. */
+export function ArrowDownIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} {...iconProps(2)}>
+      <path d="M12 5v14M6 13l6 6 6-6" />
+    </svg>
+  );
+}
+
 export function FileGenericIcon({ size = 20 }: { size?: number }) {
   return (
     <svg width={size} height={size} {...iconProps()}>

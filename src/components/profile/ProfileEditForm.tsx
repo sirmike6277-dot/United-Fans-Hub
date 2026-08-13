@@ -9,12 +9,15 @@ import { Input } from "@/components/ui/Input";
 import { FormError } from "@/components/auth/FormError";
 import { AvatarUpload } from "./AvatarUpload";
 import { CoverUpload } from "./CoverUpload";
+import { SocialLinksEditor } from "./SocialLinksEditor";
+import type { SocialLink } from "@/lib/profile/socialLinks";
 
 export interface ProfileEditFormProps {
   profile: Tables<"profiles">;
+  initialSocialLinks: SocialLink[];
 }
 
-export function ProfileEditForm({ profile }: ProfileEditFormProps) {
+export function ProfileEditForm({ profile, initialSocialLinks }: ProfileEditFormProps) {
   const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
   const [coverUrl, setCoverUrl] = useState(profile.cover_url);
@@ -28,6 +31,9 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const [fanSinceYear, setFanSinceYear] = useState(profile.fan_since_year?.toString() ?? "");
   const [favouriteShirt, setFavouriteShirt] = useState(profile.favourite_shirt ?? "");
   const [favouriteMemory, setFavouriteMemory] = useState(profile.favourite_memory ?? "");
+  const [matchdayRoutine, setMatchdayRoutine] = useState(profile.matchday_routine ?? "");
+  const [fanStyle, setFanStyle] = useState(profile.fan_style ?? "");
+  const [favouriteChant, setFavouriteChant] = useState(profile.favourite_chant ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +58,9 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         fan_since_year: fanSinceYear ? Number(fanSinceYear) : null,
         favourite_shirt: favouriteShirt || null,
         favourite_memory: favouriteMemory || null,
+        matchday_routine: matchdayRoutine || null,
+        fan_style: fanStyle || null,
+        favourite_chant: favouriteChant || null,
       })
       .eq("id", profile.id);
 
@@ -183,6 +192,36 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
           placeholder="Your most treasured United moment"
         />
       </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Input
+          label="Matchday Routine"
+          name="matchdayRoutine"
+          value={matchdayRoutine}
+          onChange={(e) => setMatchdayRoutine(e.target.value)}
+          disabled={loading}
+          placeholder="e.g. Pub with the lads, then the Stretford End"
+        />
+        <Input
+          label="Fan Style"
+          name="fanStyle"
+          value={fanStyle}
+          onChange={(e) => setFanStyle(e.target.value)}
+          disabled={loading}
+          placeholder="e.g. Season ticket holder, armchair general"
+        />
+      </div>
+
+      <Input
+        label="Favourite Chant"
+        name="favouriteChant"
+        value={favouriteChant}
+        onChange={(e) => setFavouriteChant(e.target.value)}
+        disabled={loading}
+        placeholder="e.g. Glory Glory Man United"
+      />
+
+      <SocialLinksEditor profileId={profile.id} initialLinks={initialSocialLinks} />
 
       <div className="flex gap-3">
         <Button type="submit" loading={loading} disabled={loading}>

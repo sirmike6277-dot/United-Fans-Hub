@@ -42,6 +42,7 @@ export type Database = {
           nominated_by: string | null
           nominee_profile_id: string
           period_id: string
+          reason: string | null
           status: string
         }
         Insert: {
@@ -50,6 +51,7 @@ export type Database = {
           nominated_by?: string | null
           nominee_profile_id: string
           period_id: string
+          reason?: string | null
           status?: string
         }
         Update: {
@@ -58,6 +60,7 @@ export type Database = {
           nominated_by?: string | null
           nominee_profile_id?: string
           period_id?: string
+          reason?: string | null
           status?: string
         }
         Relationships: [
@@ -702,6 +705,7 @@ export type Database = {
           id: string
           is_home: boolean
           kickoff_at: string
+          opponent_external_ref: string | null
           opponent_name: string
           status: string
           venue: string | null
@@ -716,6 +720,7 @@ export type Database = {
           id?: string
           is_home: boolean
           kickoff_at: string
+          opponent_external_ref?: string | null
           opponent_name: string
           status?: string
           venue?: string | null
@@ -730,6 +735,7 @@ export type Database = {
           id?: string
           is_home?: boolean
           kickoff_at?: string
+          opponent_external_ref?: string | null
           opponent_name?: string
           status?: string
           venue?: string | null
@@ -1927,7 +1933,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_vote_counts: {
+        Args: { p_period_id: string }
+        Returns: {
+          nomination_id: string
+          votes: number
+        }[]
+      }
+      determine_award_winner: {
+        Args: { p_period_id: string }
+        Returns: {
+          nomination_id: string
+          vote_count: number
+        }[]
+      }
       email_for_username: { Args: { lookup_username: string }; Returns: string }
+      has_blocked_participant_in_conversation: {
+        Args: { p_conversation_id: string; p_profile_id: string }
+        Returns: boolean
+      }
+      has_mutual_block: {
+        Args: { p_profile_a: string; p_profile_b: string }
+        Returns: boolean
+      }
       has_role: { Args: { role_key: string }; Returns: boolean }
       is_conversation_admin: {
         Args: { p_conversation_id: string }

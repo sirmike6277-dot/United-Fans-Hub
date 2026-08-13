@@ -56,6 +56,7 @@ export default async function ConversationPage({
     conversationId,
     from: 0,
     to: MESSAGES_PAGE_SIZE - 1,
+    currentUserId: userId,
   });
 
   return (

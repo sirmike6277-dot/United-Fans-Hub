@@ -2,6 +2,8 @@
 
 Companion to `product-feature-completion-matrix.md` (read that first — this document sequences the work it identified into complete, testable user loops, not isolated screens).
 
+**Status update — Phase 17 (2026-08-12):** Phase D (below) is now complete — Follow/Mentions/Threaded-replies all shipped in Phase 13, and Fan Rooms (a separate, later addition not foreseen when this roadmap was first written) now has its own complete interaction loop: join → read → send → react → reply → share media → poll → get notified → deep-link back. See the bottom of this document for what Phase 17 specifically closed and what remains genuinely open in that loop.
+
 **Principle carried through every phase below**: a phase is not "done" when a table has rows or a button exists — it's done when a real user (or, where noted, a real single test account exercising every side, since this project has no second production account) can walk the *entire* loop and land in a state that matches what the UI claims.
 
 ---
@@ -62,6 +64,7 @@ Admin creates an award period (currently: no admin surface exists at all)
 **What's genuinely new work**: essentially the entire user-facing and admin-facing surface — this is the largest single gap in the product relative to how much schema already exists for it. The RLS/eligibility logic is the one part that's already proven; everything else (nomination form, voting UI, period management, winner-determination logic, display) is new.
 **Depends on**: Phase B's fan-points decision is a reasonable prerequisite if "eligibility" should ever consider engagement — not a hard blocker, but worth deciding in the same conversation.
 **Blocks**: nothing else in the product depends on Awards.
+**Status: DONE (Phase 18).** Full loop built at `/awards`: period creation/status flow, nomination + moderator approval, one-vote-per-user voting (self-vote and self-nomination both blocked), `determine_award_winner()` (highest-votes-wins, ties broken by earliest nomination), winner reveal (both on `/awards` and the Dashboard teaser), winners history archive. Two real pre-existing RLS gaps were found and fixed during testing (not merely inspected): `award_manager`-gated policies never let a `super_admin` through (unlike every other role-gated feature in the app), and — found only by live RLS testing, not by reading the policy — `award_nominations`' SELECT policy missing `super_admin` silently blocked even a permitted UPDATE, since Postgres RLS requires a row to be visible under SELECT before an UPDATE policy is ever consulted. Notification types for awards (`award_nomination`/`voting_open`) remain declared-but-unproduced — no trigger fires them yet; genuinely deferred, not fabricated.
 
 ---
 
@@ -85,6 +88,7 @@ User replies to a specific comment
 **What's genuinely new work**: three independent, small, well-scoped UI features, each sitting on schema and trigger infrastructure that's already correct and already tested (the notify triggers were live-verified working in the very first security audit, before any UI existed). This is the best "quick win" cluster in the whole roadmap — real user value, zero backend risk, nothing new to design at the data layer.
 **Depends on**: nothing.
 **Blocks**: nothing else, but meaningfully improves how "alive" Community feels.
+**Status: DONE (Phase 13).** All three shipped — Follow/unfollow, `@mention` parsing+autocomplete+rendering in posts/comments, one-level comment replies.
 
 ---
 
@@ -105,6 +109,7 @@ User blocks/mutes another user
 **What's genuinely new work**: report action + form, a moderator-only queue page (the product's first admin-role UI — mirrors the existing `has_role('match_manager'/'super_admin')` pattern already proven in the manual match-sync route), and — the part with no existing precedent at all — actually filtering blocked/muted users out of feeds and message lists, which touches the read side of `posts`/`comments`/`conversations` queries, not just a new write path.
 **Depends on**: nothing technical.
 **Blocks**: nothing else, but this is the product's only real content-safety mechanism, and it's currently 100% inert. Priority should track real user volume, not code complexity.
+**Status: DONE (Safety Loop phase).** Report (`<ReportDialog>`, reused across messages/profiles/rooms), full mutual Block (DMs blocked both directions including into pre-existing DMs, Fan Room message visibility hidden both directions, mentions blocked both ways), silent one-directional Mute (Fan Room messages only — feed/notification filtering for posts and notifications was NOT extended this phase, a disclosed scope limit, not an oversight), and a real moderation queue at `/moderation` (dismiss/warn/remove-content/suspend, every action logged via `record_moderation_action()`). "Suspend" reuses the existing Fan Room ban mechanism (room-scoped, not a new global account-suspension concept — confirmed with the user before building). Two genuine, pre-existing bugs were found and fixed via live testing, not just this phase's own new code: (1) `award`-style role gates weren't the issue here, but (2) the `conversation_participants` "creator can add a second DM participant" policy branch used a raw inline subquery against `conversations` that's blocked by that table's own SELECT RLS immediately after a new conversation is created (before any participant exists to satisfy it) — fixed by switching to the existing `is_conversation_creator()` SECURITY DEFINER helper, and `createDirectMessage()` was changed from one multi-row participant insert to two sequential single-row inserts (a multi-row insert evaluates every row against one statement-start snapshot, so the second row's checks couldn't see effects the first row's insert would otherwise have made visible).
 
 ---
 
@@ -138,3 +143,27 @@ A user with super_admin (granted how? — user_roles currently has RLS enabled w
 | F — Admin surface | Only becomes urgent once B/C/E exist to administer | B, C, E |
 
 This ordering is about **loop completeness and dependency**, not implementation convenience — Phase D is sequenced ahead of the larger Phase C specifically because it delivers real, working user-facing functionality on infrastructure that's already fully built and tested, while Phase C requires building nearly everything from zero.
+
+---
+
+## PHASE G (Phase 17) — Fan Room engagement & real-time interaction — DONE, with disclosed limitations
+
+Fan Rooms (built in Phase 14, after this roadmap's original phases A–F were written) got its own complete interaction loop:
+
+```
+JOIN ROOM → READ CONVERSATION → SEND MESSAGE → REACT → REPLY → SHARE MEDIA
+  → PARTICIPATE IN POLLS → RECEIVE NOTIFICATIONS → RETURN TO THE RELEVANT CONVERSATION
+```
+
+**What was already done before Phase 17** (Master Product Completion Phase): the reactions/replies/polls/mentions-in-messages schema, RLS, and base UI all existed already — Phase 17's job was mostly to harden, extend, and connect what was there, not build it from zero.
+
+**What Phase 17 itself added**:
+- A real security fix: poll creation was previously open to any room member; migration 034 restricts it to moderators/admins, matching this phase's explicit brief (the UI's "New poll" button is now hidden from non-moderators too).
+- Realtime extended to `message_reactions` and `room_polls` (migration 033) — reactions and new polls now push to open rooms without a refresh.
+- Notification deep-linking: a reply/mention on a Fan Room message now navigates to `/community/rooms/[roomId]?message=[messageId]` and the room scrolls to/highlights that exact message (`fetchMessagesAround()`, `RoomChat`'s `jumpToMessage()`) instead of just opening the room at its live tail.
+- Room chat UX: a "Jump to latest"/new-message-count pill, scroll position preserved when loading older history (previously always snapped to bottom), click-to-locate on a reply's quoted preview.
+
+**Disclosed, deliberate limitation — poll vote totals aren't push-realtime.** `room_poll_votes`' own RLS only lets a viewer see their *own* vote row (aggregate counts are only ever exposed through `room_poll_results()`, a function, which Realtime cannot subscribe to). Weakening that RLS to make live vote totals possible was explicitly out of scope. `RoomPollsPanel` substitutes a quiet 15-second periodic re-fetch while open — not true push-realtime, but delivers the same "don't need a hard refresh" outcome for a poll that's actually being watched.
+
+**Depends on**: Phase D (mentions-in-messages needed the same `mentions` table widened in the Master Completion Phase) and Fan Rooms existing at all (Phase 14).
+**Blocks**: nothing else in this roadmap.

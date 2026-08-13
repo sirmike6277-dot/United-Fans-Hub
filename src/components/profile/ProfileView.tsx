@@ -12,6 +12,9 @@ import { evaluateBadge, type Badge as BadgeRow, type FanStats } from "@/lib/achi
 import type { PredictionHistoryEntry, PredictionStats } from "@/lib/predictions/predictions";
 import type { FeedPost } from "@/lib/community/posts";
 import type { Tables } from "@/lib/supabase/database.types";
+import { PLATFORM_LABELS, type SocialLink } from "@/lib/profile/socialLinks";
+import { FanLevelProgress } from "./FanLevelProgress";
+import type { LevelProgress } from "@/lib/achievements/fanLevels";
 
 export interface ProfileViewProps {
   profile: Tables<"profiles">;
@@ -36,12 +39,22 @@ export interface ProfileViewProps {
   /** Only ever passed on a fan's own profile (predictions are private) — omitted hides the Predictions tab entirely rather than showing it empty. */
   predictionHistory?: PredictionHistoryEntry[] | null;
   predictionStats?: PredictionStats | null;
+  /** Public data (social_links is publicly readable) — real handles the fan added themselves, never fabricated. */
+  socialLinks?: SocialLink[];
+  /** Derived from the real fan_levels ladder + this profile's real fan_points (see computeLevelProgress) — omitted degrades to no progress card, never a fabricated bar. */
+  levelProgress?: LevelProgress | null;
 }
 
-const fields: Array<{ label: string; key: "favourite_player" | "favourite_era" | "favourite_shirt" }> = [
+const fields: Array<{
+  label: string;
+  key: "favourite_player" | "favourite_era" | "favourite_shirt" | "matchday_routine" | "fan_style" | "favourite_chant";
+}> = [
   { label: "Favourite Player", key: "favourite_player" },
   { label: "Favourite Era", key: "favourite_era" },
   { label: "Favourite Shirt", key: "favourite_shirt" },
+  { label: "Matchday Routine", key: "matchday_routine" },
+  { label: "Fan Style", key: "fan_style" },
+  { label: "Favourite Chant", key: "favourite_chant" },
 ];
 
 /**
@@ -67,6 +80,8 @@ export function ProfileView({
   fanStats,
   predictionHistory,
   predictionStats,
+  socialLinks = [],
+  levelProgress,
 }: ProfileViewProps) {
   const earnedCount = badges.filter((b) => evaluateBadge(b.criteria, fanStats).state === "earned").length;
 
@@ -159,6 +174,12 @@ export function ProfileView({
           ) : null}
         </div>
 
+        {levelProgress ? (
+          <div className="mt-6 max-w-md">
+            <FanLevelProgress progress={levelProgress} fanPoints={profile.fan_points} />
+          </div>
+        ) : null}
+
         {profile.bio ? <p className="mt-6 max-w-2xl text-text-body">{profile.bio}</p> : null}
 
         {postsCount != null ? (
@@ -208,7 +229,19 @@ export function ProfileView({
                         <p className="mt-2 text-text-body">{profile.favourite_memory}</p>
                       </Card>
                     ) : null}
-                    {!fields.some((f) => profile[f.key]) && !profile.favourite_memory ? (
+                    {socialLinks.length > 0 ? (
+                      <Card>
+                        <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Social Links</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {socialLinks.map((link) => (
+                            <Badge key={link.id} tone="outline">
+                              {PLATFORM_LABELS[link.platform]}: {link.handleOrUrl}
+                            </Badge>
+                          ))}
+                        </div>
+                      </Card>
+                    ) : null}
+                    {!fields.some((f) => profile[f.key]) && !profile.favourite_memory && socialLinks.length === 0 ? (
                       <p className="py-6 text-center text-sm text-text-muted">
                         {profile.display_name || profile.username} hasn&apos;t filled in their fan story yet.
                       </p>

@@ -8,7 +8,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { RoomJoinPreview } from "@/components/community/RoomJoinPreview";
 import { RoomChat } from "@/components/community/RoomChat";
 import { fetchRoomBySlug, fetchMyActiveBan } from "@/lib/community/rooms";
-import { fetchMessagesPage, MESSAGES_PAGE_SIZE } from "@/lib/messaging/messages";
+import { fetchMessagesPage, fetchMessagesAround, MESSAGES_PAGE_SIZE } from "@/lib/messaging/messages";
 
 export async function generateMetadata({
   params,
@@ -27,8 +27,15 @@ export async function generateMetadata({
  * comment) — Navbar + Sidebar are hand-composed instead, matching the exact
  * structure messages/layout.tsx already established for this shape.
  */
-export default async function RoomPage({ params }: { params: Promise<{ roomId: string }> }) {
+export default async function RoomPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ roomId: string }>;
+  searchParams: Promise<{ message?: string }>;
+}) {
   const { roomId: slug } = await params;
+  const { message: highlightMessageId } = await searchParams;
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -72,11 +79,40 @@ export default async function RoomPage({ params }: { params: Promise<{ roomId: s
     const activeBan = await fetchMyActiveBan(supabase, { conversationId: room.conversationId, currentUserId: userId });
     body = <RoomJoinPreview room={room} currentUserId={userId} activeBan={activeBan} />;
   } else {
-    const [{ messages, error: messagesError }, { data: isModerator }, { data: isSuperAdmin }] = await Promise.all([
-      fetchMessagesPage(supabase, { conversationId: room.conversationId, from: 0, to: MESSAGES_PAGE_SIZE - 1 }),
+    const [pageResult, { data: isModerator }, { data: isSuperAdmin }] = await Promise.all([
+      fetchMessagesPage(supabase, { conversationId: room.conversationId, from: 0, to: MESSAGES_PAGE_SIZE - 1, currentUserId: userId }),
       supabase.rpc("has_role", { role_key: "moderator" }),
       supabase.rpc("has_role", { role_key: "super_admin" }),
     ]);
+
+    let messages = pageResult.messages;
+    const messagesError = pageResult.error;
+    let highlightFound = false;
+    let usedAnchoredFetch = false;
+
+    // A reply/mention notification's `?message=` deep link (see
+    // resolveMessageHref) — if the target isn't already in the live tail's
+    // first page, fetch a window anchored on it instead so RoomChat opens
+    // directly onto the right part of the conversation. If the message no
+    // longer exists or this viewer lost access, fetchMessagesAround returns
+    // found:false and the room falls back to its normal live-tail view —
+    // never a broken page for a stale/invalid link.
+    if (highlightMessageId && !messagesError) {
+      if (messages.some((m) => m.id === highlightMessageId)) {
+        highlightFound = true;
+      } else {
+        const anchored = await fetchMessagesAround(supabase, {
+          conversationId: room.conversationId,
+          messageId: highlightMessageId,
+          currentUserId: userId,
+        });
+        if (anchored.found) {
+          messages = anchored.messages;
+          highlightFound = true;
+          usedAnchoredFetch = true;
+        }
+      }
+    }
 
     const canModerate = myRole === "admin" || Boolean(isModerator) || Boolean(isSuperAdmin);
 
@@ -87,7 +123,9 @@ export default async function RoomPage({ params }: { params: Promise<{ roomId: s
         canModerate={canModerate}
         initialMessages={messages}
         initialError={messagesError}
-        initialHasMore={messages.length === MESSAGES_PAGE_SIZE}
+        initialHasMore={usedAnchoredFetch ? true : messages.length === MESSAGES_PAGE_SIZE}
+        initialHighlightMessageId={highlightFound ? highlightMessageId : null}
+        initialIsAnchored={usedAnchoredFetch}
       />
     ) : null;
   }

@@ -222,12 +222,30 @@ export async function createDirectMessage(
     return { conversationId: null, error: "Couldn't start the conversation. Please try again." };
   }
 
-  const { error: participantsError } = await supabase.from("conversation_participants").insert([
-    { conversation_id: conversationId, profile_id: currentUserId },
-    { conversation_id: conversationId, profile_id: otherProfileId },
-  ]);
+  // Two sequential single-row inserts, not one multi-row array insert —
+  // found live while verifying the Safety Loop phase's block-enforcement
+  // policy (migration 040/042): a multi-row INSERT evaluates every row's
+  // RLS check against the SAME statement-start snapshot, so the second
+  // row's "am I the conversation's creator?" check (is_conversation_creator,
+  // itself correct and RLS-bypassing) can't yet see whatever the first
+  // row's own insert would otherwise make visible — some policy branches
+  // silently evaluate as if the first row didn't exist. Splitting into two
+  // statements gives the second insert a fresh snapshot that correctly
+  // includes the first row and the conversation itself, matching the exact
+  // sequence live-verified to work.
+  const { error: creatorParticipantError } = await supabase
+    .from("conversation_participants")
+    .insert({ conversation_id: conversationId, profile_id: currentUserId });
 
-  if (participantsError) {
+  if (creatorParticipantError) {
+    return { conversationId: null, error: "Couldn't add participants to the conversation." };
+  }
+
+  const { error: otherParticipantError } = await supabase
+    .from("conversation_participants")
+    .insert({ conversation_id: conversationId, profile_id: otherProfileId });
+
+  if (otherParticipantError) {
     return { conversationId: null, error: "Couldn't add participants to the conversation." };
   }
 
@@ -291,4 +309,23 @@ export async function markConversationRead(
     .eq("profile_id", currentUserId);
 
   return { error: error ? "Couldn't update read status." : null };
+}
+
+/**
+ * Resolves a conversation id to a real, navigable route — a `message`
+ * notification's `subject_id` is a bare conversation_id with no way to
+ * tell a DM from a Fan Room apart without this lookup (see the Master
+ * Product Completion Phase's notification-navigation fix). `community_rooms`
+ * is publicly readable, so this works regardless of the caller's own
+ * membership — it only resolves a destination, it never reveals room
+ * content itself.
+ */
+export async function resolveConversationHref(supabase: AnySupabase, conversationId: string): Promise<string> {
+  const { data } = await supabase
+    .from("community_rooms")
+    .select("slug")
+    .eq("conversation_id", conversationId)
+    .maybeSingle();
+
+  return data ? `/community/rooms/${data.slug}` : `/messages/${conversationId}`;
 }

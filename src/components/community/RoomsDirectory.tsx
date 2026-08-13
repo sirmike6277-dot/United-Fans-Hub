@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SearchIcon, UsersIcon } from "@/components/members/MembersIcons";
@@ -22,6 +21,10 @@ export interface RoomsDirectoryProps {
  * — legitimate for this data shape: a handful of curated official rooms
  * (moderator-created only), not an open, growing, user-generated list that
  * would need real pagination.
+ *
+ * The page's own SectionBanner (see community/rooms/page.tsx) now carries
+ * the title/subtitle that used to live in a PageHeader here — this only
+ * renders the search + (moderator-only) create action beneath it.
  */
 export function RoomsDirectory({ currentUserId, rooms, error, canCreateRoom }: RoomsDirectoryProps) {
   const [query, setQuery] = useState("");
@@ -35,21 +38,18 @@ export function RoomsDirectory({ currentUserId, rooms, error, canCreateRoom }: R
   }, [rooms, query]);
 
   return (
-    <div className="flex flex-col gap-4 py-6 sm:py-8">
-      <PageHeader
-        title="Fan Rooms"
-        subtitle="Join a shared space for United fans — matchday chat, transfer talk, and more."
-        action={canCreateRoom ? <CreateRoomDialog currentUserId={currentUserId} /> : undefined}
-      />
-
-      <Input
-        icon={<SearchIcon size={18} />}
-        placeholder="Search rooms"
-        aria-label="Search Fan Rooms"
-        className="max-w-md"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+    <div className="flex flex-col gap-4 pb-6 sm:pb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Input
+          icon={<SearchIcon size={18} />}
+          placeholder="Search rooms"
+          aria-label="Search Fan Rooms"
+          className="max-w-md"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {canCreateRoom ? <CreateRoomDialog currentUserId={currentUserId} /> : null}
+      </div>
 
       {error ? (
         <EmptyState icon={<UsersIcon size={28} />} title="Couldn't load Fan Rooms" description={error} />

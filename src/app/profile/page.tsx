@@ -10,6 +10,8 @@ import { fetchPostsCount, fetchPredictionsCount } from "@/lib/profile/stats";
 import { fetchPostsByAuthor, POSTS_PAGE_SIZE } from "@/lib/community/posts";
 import { fetchBadgeCatalog, fetchFanStats } from "@/lib/achievements/achievements";
 import { fetchPredictionHistory, derivePredictionStats } from "@/lib/predictions/predictions";
+import { fetchSocialLinks } from "@/lib/profile/socialLinks";
+import { fetchFanLevels, computeLevelProgress } from "@/lib/achievements/fanLevels";
 
 export const metadata: Metadata = {
   title: "Your Profile — United Fans Hub",
@@ -37,6 +39,8 @@ export default async function ProfilePage() {
     { posts, error: postsError },
     { badges, error: badgesError },
     { predictions: predictionHistory },
+    socialLinks,
+    fanLevels,
   ] = await Promise.all([
     fetchMyRank(supabase, { profileId: userId, fanPoints: profile.fan_points }),
     fetchLeaderboardSize(supabase),
@@ -46,7 +50,11 @@ export default async function ProfilePage() {
     fetchPostsByAuthor(supabase, { authorId: userId, from: 0, to: POSTS_PAGE_SIZE - 1, currentUserId: userId }),
     fetchBadgeCatalog(supabase),
     fetchPredictionHistory(supabase, { profileId: userId }),
+    fetchSocialLinks(supabase, userId),
+    fetchFanLevels(supabase),
   ]);
+
+  const levelProgress = computeLevelProgress(profile.fan_points, fanLevels);
 
   const predictionStats = derivePredictionStats(predictionHistory);
   const fanStats = await fetchFanStats(supabase, {
@@ -77,6 +85,8 @@ export default async function ProfilePage() {
         fanStats={fanStats}
         predictionHistory={predictionHistory}
         predictionStats={predictionStats}
+        socialLinks={socialLinks}
+        levelProgress={levelProgress}
         action={
           <Button href="/profile/edit" variant="secondary" size="sm">
             Edit Profile

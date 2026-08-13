@@ -43,3 +43,15 @@ export function formatMatchDateTime(iso: string): string {
   const timePart = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   return `${datePart}, ${timePart}`;
 }
+
+/**
+ * "45'" or, when the provider reported real stoppage time for this event
+ * (see sync.ts's `detail.minute_extra`), "45+2'" — never computed/guessed,
+ * only ever the provider's own two numbers concatenated. Returns "—" for
+ * a genuinely unset minute (shouldn't happen once synced, but never
+ * renders blank).
+ */
+export function formatEventMinute(minute: number | null, minuteExtra?: number | null): string {
+  if (minute === null) return "—";
+  return minuteExtra ? `${minute}+${minuteExtra}'` : `${minute}'`;
+}

@@ -34,7 +34,7 @@ const SUSPEND_OPTIONS: { label: string; hours: number | null }[] = [
 interface PendingAction {
   profileId: string;
   name: string;
-  type: "kick" | "suspend";
+  type: "kick" | "suspend" | "unban";
   /** Only set for type "suspend" — null means permanent. */
   hours?: number | null;
 }
@@ -49,8 +49,11 @@ interface PendingAction {
  * Kick and suspend are both destructive and previously fired on a single
  * click — Phase 16 adds a required confirmation step for both (see
  * `pendingAction`), naming the target and the exact consequence before
- * anything is sent to the server. Nothing about the underlying
- * kickMember/banMember calls or their authorization changed.
+ * anything is sent to the server. Unban/lift-suspension is reversible (the
+ * moderator can always re-suspend) but still gets the same named-target
+ * confirmation, since it's still a one-click action a moderator could
+ * trigger by mistake while scanning the list. Nothing about the underlying
+ * kickMember/banMember/unbanMember calls or their authorization changed.
  */
 export function RoomMembersPanel({ conversationId, currentUserId, canModerate, onClose }: RoomMembersPanelProps) {
   const [members, setMembers] = useState<RoomMember[]>([]);
@@ -139,11 +142,12 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
     }
   }
 
-  async function handleUnban(targetProfileId: string) {
+  async function confirmUnban(targetProfileId: string) {
     setActioningId(targetProfileId);
     const supabase = createClient();
     const { error: unbanError } = await unbanMember(supabase, { conversationId, targetProfileId });
     setActioningId(null);
+    setPendingAction(null);
     if (unbanError) {
       setError(unbanError);
       return;
@@ -311,24 +315,56 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
               <div className="flex flex-col gap-2">
                 {bans.map((ban) => {
                   const name = ban.profile.display_name || ban.profile.username;
+                  const pendingUnban = pendingAction?.profileId === ban.profileId && pendingAction.type === "unban";
+                  const isActioning = actioningId === ban.profileId;
                   return (
-                    <div key={ban.profileId} className="flex items-center gap-2.5 rounded-control bg-bg-elevated p-2.5">
-                      <Avatar url={ban.profile.avatar_url} name={name} size={32} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-white">{name}</p>
-                        <p className="truncate text-xs text-text-muted">
-                          {ban.bannedUntil ? `Until ${new Date(ban.bannedUntil).toLocaleDateString()}` : "Permanent"}
-                        </p>
+                    <div key={ban.profileId} className="rounded-control bg-bg-elevated p-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar url={ban.profile.avatar_url} name={name} size={32} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-white">{name}</p>
+                          <p className="truncate text-xs text-text-muted">
+                            {ban.bannedUntil ? `Until ${new Date(ban.bannedUntil).toLocaleDateString()}` : "Permanent"}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setPendingAction({ profileId: ban.profileId, name, type: "unban" })}
+                          disabled={isActioning}
+                        >
+                          Lift
+                        </Button>
                       </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleUnban(ban.profileId)}
-                        disabled={actioningId === ban.profileId}
-                      >
-                        Lift
-                      </Button>
+
+                      {pendingUnban ? (
+                        <div
+                          role="alertdialog"
+                          aria-label={`Confirm lifting ${name}'s suspension`}
+                          className="mt-2 flex flex-col gap-2 rounded-control border border-white/20 bg-white/[0.04] p-2.5"
+                        >
+                          <p className="text-xs text-text-body">
+                            Lift the suspension for <span className="font-semibold text-white">{name}</span>? They
+                            will be able to rejoin this room immediately.
+                          </p>
+                          <div className="flex justify-end gap-2">
+                            <Button type="button" variant="ghost" size="sm" onClick={cancelPending} disabled={isActioning}>
+                              Cancel
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              loading={isActioning}
+                              disabled={isActioning}
+                              onClick={() => confirmUnban(ban.profileId)}
+                            >
+                              {isActioning ? "Working..." : "Lift suspension"}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}

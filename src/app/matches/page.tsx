@@ -64,9 +64,23 @@ export default async function MatchesPage() {
   // runs on behalf of the system, not this (possibly anonymous) visitor.
   await maybeSyncFixtures({ clubId: club.id });
 
+  // `recent` feeds two very different views from one fetch: the Overview
+  // tab's compact "Recent Form" strip (RecentFormStrip already does its
+  // own internal `.slice(0, 5)`, so a longer list here doesn't change that
+  // widget at all) and the Results tab's full FixtureList grid. A real,
+  // previously-hidden gap: both used to share fetchRecentResults' default
+  // RECENT_RESULTS_LIMIT of 5, so the dedicated Results tab — a user's
+  // only way to browse this club's match history — could only ever show
+  // the exact same 5 matches as the small form strip, even though this
+  // club has 68 finished matches on record. Raised well past the current
+  // real count for headroom; still a single, cheap query (this table has
+  // no pagination anywhere else in the app either — see FixtureList's own
+  // doc comment — so "fetch everything, render it all" matches the rest
+  // of v1's approach rather than introducing pagination UI on its own).
+  const RESULTS_TAB_LIMIT = 200;
   const [{ matches: upcoming, error: upcomingError }, { matches: recent, error: recentError }] = await Promise.all([
     fetchUpcomingMatches(supabase, { clubId: club.id }),
-    fetchRecentResults(supabase, { clubId: club.id }),
+    fetchRecentResults(supabase, { clubId: club.id, limit: RESULTS_TAB_LIMIT }),
   ]);
 
   const content = (

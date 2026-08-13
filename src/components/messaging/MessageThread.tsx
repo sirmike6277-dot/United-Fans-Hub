@@ -76,6 +76,7 @@ export function MessageThread({
       conversationId,
       from,
       to: from + MESSAGES_PAGE_SIZE - 1,
+      currentUserId: currentUser.id,
     });
 
     setLoadingMore(false);
@@ -112,7 +113,7 @@ export function MessageThread({
         <span className="font-display font-semibold text-white">{title}</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4">
         {initialError ? (
           <div className="flex h-full items-center justify-center text-center text-sm text-text-muted">
             {initialError}
@@ -146,6 +147,7 @@ export function MessageThread({
                 message={message}
                 isOwn={message.senderId === currentUser.id}
                 showSenderName={showSenderName}
+                currentUserId={currentUser.id}
               />
             ))}
           </div>

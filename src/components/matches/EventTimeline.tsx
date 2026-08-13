@@ -1,5 +1,6 @@
 import { Avatar } from "@/components/ui/Avatar";
-import { GoalIcon, YellowCardIcon, RedCardIcon, SubstitutionIcon, VarIcon } from "./MatchIcons";
+import { SoccerBallIcon, YellowCardIcon, RedCardIcon, SubstitutionIcon, VarIcon } from "./MatchIcons";
+import { formatEventMinute } from "@/lib/format";
 import type { MatchEvent } from "@/lib/matches/matches";
 
 export interface EventTimelineProps {
@@ -10,6 +11,7 @@ interface SyncedEventDetail {
   provider_detail?: string;
   comments?: string | null;
   assist_player_name?: string | null;
+  minute_extra?: number | null;
 }
 
 /** `detail` is jsonb (`unknown` in our types) — this never trusts its shape, since it's third-party data passed through from the sync process. */
@@ -20,13 +22,16 @@ function readDetail(detail: unknown): SyncedEventDetail {
     provider_detail: typeof d.provider_detail === "string" ? d.provider_detail : undefined,
     comments: typeof d.comments === "string" ? d.comments : null,
     assist_player_name: typeof d.assist_player_name === "string" ? d.assist_player_name : null,
+    minute_extra: typeof d.minute_extra === "number" ? d.minute_extra : null,
   };
 }
 
 function eventIcon(eventType: string) {
   switch (eventType) {
     case "goal":
-      return <GoalIcon />;
+      // A real ball graphic (pentagon seams), not a plain dot — a goal
+      // deserves to actually read as a goal at a glance in the timeline.
+      return <SoccerBallIcon size={16} />;
     case "yellow_card":
       return <YellowCardIcon />;
     case "red_card":
@@ -85,8 +90,8 @@ function EventRow({ event }: { event: MatchEvent }) {
 
   return (
     <li className="flex items-center gap-2.5 rounded-control border border-white/10 bg-bg-surface px-3 py-2">
-      <span className="flex h-6 w-9 shrink-0 items-center justify-center rounded bg-bg-elevated text-[11px] font-semibold tabular-nums text-text-muted">
-        {event.minute !== null ? `${event.minute}'` : "—"}
+      <span className="flex h-6 w-11 shrink-0 items-center justify-center rounded bg-bg-elevated text-[11px] font-semibold tabular-nums text-text-muted">
+        {formatEventMinute(event.minute, detail.minute_extra)}
       </span>
       <span className="shrink-0 text-text-muted" aria-hidden="true">
         {eventIcon(event.eventType)}

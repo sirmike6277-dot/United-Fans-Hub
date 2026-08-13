@@ -136,11 +136,10 @@ export function notificationCopy(n: FeedNotification): string {
     case "comment":
       return `${name} commented on your post`;
     case "reply":
-      return `${name} replied to your comment`;
+      return n.subjectType === "message" ? `${name} replied to your message` : `${name} replied to your comment`;
     case "mention":
-      return n.subjectType === "comment"
-        ? `${name} mentioned you in a comment`
-        : `${name} mentioned you in a post`;
+      if (n.subjectType === "message") return `${name} mentioned you in a Fan Room`;
+      return n.subjectType === "comment" ? `${name} mentioned you in a comment` : `${name} mentioned you in a post`;
     case "follow":
       return `${name} started following you`;
     case "message":

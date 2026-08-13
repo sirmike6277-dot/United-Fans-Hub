@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 export interface TabItem {
   key: string;
@@ -21,9 +22,45 @@ export interface TabsProps {
  * interactive primitive this phase, used to give Predictions ("Overview" /
  * "Leaderboard" / "History") and the reference design's tabbed sections a
  * real, reusable mechanism instead of a one-off per page.
+ *
+ * Also honours a `?tab=<key>` URL search param as a deep-link into a
+ * specific tab, checked both on first mount and on every subsequent
+ * navigation (see the effect below) — a real bug this fixes: Match
+ * Centre's "See all results" link (MatchOverviewCard) pointed at
+ * `/matches`, the exact URL already showing, so clicking it did visibly
+ * nothing (Tabs had no URL awareness at all, and Results lives behind a
+ * tab, not a page section). Clicking a tab button itself still only
+ * updates local state, not the URL — deliberately: that keeps ordinary
+ * tab-switching instant and free of any server round-trip, and this app's
+ * only current need for a stable, shareable tab link is the one
+ * deep-link case this fixes.
  */
 export function Tabs({ tabs, defaultTab }: TabsProps) {
-  const [active, setActive] = useState(defaultTab ?? tabs[0]?.key);
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const isValidTabParam = (key: string | null): key is string =>
+    key !== null && tabs.some((t) => t.key === key);
+
+  const [active, setActive] = useState(
+    isValidTabParam(tabParam) ? tabParam : (defaultTab ?? tabs[0]?.key),
+  );
+
+  // Handles arriving at an already-mounted Tabs instance via a new `?tab=`
+  // value (e.g. clicking "See all results" while already on /matches) —
+  // the lazy useState initializer above only ever runs once, on first
+  // mount, so without this a same-page navigation would silently no-op
+  // exactly like the original bug. React's own recommended "adjust state
+  // during render" pattern (not a useEffect — this project's linter
+  // flags setState-in-effect as an avoidable extra render): tracking the
+  // last-seen tabParam means this only fires on an actual URL change, not
+  // every render.
+  const [lastTabParam, setLastTabParam] = useState(tabParam);
+  if (tabParam !== lastTabParam) {
+    setLastTabParam(tabParam);
+    if (isValidTabParam(tabParam)) {
+      setActive(tabParam);
+    }
+  }
 
   return (
     <div>

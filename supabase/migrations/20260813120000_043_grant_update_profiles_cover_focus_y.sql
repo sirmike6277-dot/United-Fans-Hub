@@ -1,0 +1,26 @@
+-- ============================================================================
+-- 043_grant_update_profiles_cover_focus_y
+--
+-- ITEM 1 fix — root cause of "Edit Profile save doesn't persist changes".
+--
+-- Migration 012 (secure_profiles_gamification_columns_fix) locked
+-- profiles' INSERT/UPDATE down from a table-level grant to an explicit
+-- column list (everything except fan_points/fan_level). Migration
+-- add_profile_cover_focus (a day later) added the cover_focus_y column but
+-- never re-granted UPDATE on it — column-level grants don't auto-extend to
+-- new columns the way a table-level grant would have. Since
+-- ProfileEditForm.tsx's single UPDATE call always includes cover_focus_y
+-- in its SET list (every save, not just when the cover photo itself
+-- changes), Postgres rejected the ENTIRE statement with "permission denied
+-- for table profiles" on every single Edit Profile save — confirmed live
+-- before this fix, and confirmed fixed after it, via RLS claims simulation
+-- (see the Item 1 report).
+--
+-- Fix: grant UPDATE on exactly this one column, to the same two roles
+-- every other editable column already has. RLS ("Users can update their
+-- own profile", auth.uid() = id) is completely unchanged and remains the
+-- real row-level boundary — this only restores column-level permission,
+-- it does not widen who can update a row.
+-- ============================================================================
+
+grant update (cover_focus_y) on public.profiles to authenticated, anon;

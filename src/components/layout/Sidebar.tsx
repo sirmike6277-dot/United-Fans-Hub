@@ -11,8 +11,9 @@ import { UsersIcon } from "@/components/members/MembersIcons";
 import { TrophyIcon } from "@/components/predictions/PredictionIcons";
 import { MessageBubbleIcon } from "@/components/messaging/MessagingIcons";
 import { BellIcon } from "@/components/notifications/NotificationIcons";
-import { StarShieldIcon } from "@/components/achievements/AchievementIcons";
+import { StarShieldIcon, CrownIcon } from "@/components/achievements/AchievementIcons";
 import { ShieldIcon } from "@/components/community/RoomIcons";
+import { InboxIcon } from "@/components/moderation/ModerationIcons";
 
 interface NavItem {
   href: string;
@@ -30,6 +31,7 @@ const items: NavItem[] = [
   { href: "/predictions", label: "Predictions", icon: TrophyIcon },
   { href: "/members", label: "Members", icon: UsersIcon },
   { href: "/achievements", label: "Achievements", icon: StarShieldIcon },
+  { href: "/awards", label: "Awards", icon: CrownIcon },
   { href: "/messages", label: "Messages", icon: MessageBubbleIcon, countKey: "messages" },
   { href: "/notifications", label: "Notifications", icon: BellIcon, countKey: "notifications" },
   { href: "/profile", label: "Profile", icon: ProfileIcon },
@@ -37,6 +39,7 @@ const items: NavItem[] = [
 ];
 
 const ADMIN_ITEM: NavItem = { href: "/admin", label: "Admin", icon: ShieldIcon };
+const MODERATION_ITEM: NavItem = { href: "/moderation", label: "Moderation", icon: InboxIcon };
 
 function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -55,6 +58,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const [counts, setCounts] = useState({ messages: 0, notifications: 0 });
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -68,10 +72,15 @@ export function Sidebar() {
         setCounts((prev) => ({ ...prev, messages })),
       );
       supabase.rpc("has_role", { role_key: "super_admin" }).then(({ data: result }) => setIsSuperAdmin(Boolean(result)));
+      supabase.rpc("has_role", { role_key: "moderator" }).then(({ data: result }) => setIsModerator(Boolean(result)));
     });
   }, []);
 
-  const visibleItems = isSuperAdmin ? [...items, ADMIN_ITEM] : items;
+  const visibleItems = [
+    ...items,
+    ...(isModerator || isSuperAdmin ? [MODERATION_ITEM] : []),
+    ...(isSuperAdmin ? [ADMIN_ITEM] : []),
+  ];
 
   return (
     <aside className="hidden shrink-0 lg:block lg:w-60" aria-label="Main">

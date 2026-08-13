@@ -69,6 +69,36 @@ export async function searchMentionCandidates(
 }
 
 /**
+ * Room-scoped counterpart — a Fan Room mention must resolve to a real
+ * fellow member (see migration 030's RLS check), so the autocomplete only
+ * ever offers people who are actually reachable, rather than any app user.
+ * Reuses "Participants can see co-participants" (the caller composing a
+ * message is, by definition, already a participant).
+ */
+export async function searchRoomMentionCandidates(
+  supabase: AnySupabase,
+  { conversationId, query, excludeId }: { conversationId: string; query: string; excludeId: string },
+): Promise<FeedAuthor[]> {
+  if (query.length === 0) return [];
+
+  // Filtered client-side rather than via a PostgREST embedded-column filter
+  // (`.ilike("profile.username", ...)`) — room member counts are small
+  // enough that fetching the roster and matching in JS is simpler and
+  // avoids relying on embedded-filter query syntax for something this size.
+  const { data } = await supabase
+    .from("conversation_participants")
+    .select("profile:profiles!conversation_participants_profile_id_fkey ( id, username, display_name, avatar_url, fan_level )")
+    .eq("conversation_id", conversationId)
+    .neq("profile_id", excludeId);
+
+  const lowerQuery = query.toLowerCase();
+  return ((data ?? []) as unknown as { profile: FeedAuthor | null }[])
+    .map((r) => r.profile)
+    .filter((p): p is FeedAuthor => p !== null && p.username.toLowerCase().startsWith(lowerQuery))
+    .slice(0, 5);
+}
+
+/**
  * Resolves typed @username tokens to real profile ids. Uses one
  * case-insensitive-exact `ilike` filter per token (safe to inline into an
  * `.or()` string unescaped — extractMentionedUsernames only ever returns
@@ -97,16 +127,21 @@ export async function createMentions(
   {
     postId,
     commentId,
+    messageId,
     mentionedProfileIds,
-  }: { postId?: string; commentId?: string; mentionedProfileIds: string[] },
+  }: { postId?: string; commentId?: string; messageId?: string; mentionedProfileIds: string[] },
 ): Promise<void> {
   if (mentionedProfileIds.length === 0) return;
 
   const rows = mentionedProfileIds.map((mentioned_profile_id) => ({
     post_id: postId ?? null,
     comment_id: commentId ?? null,
+    message_id: messageId ?? null,
     mentioned_profile_id,
   }));
 
+  // Best-effort: a mention that RLS rejects (e.g. the target isn't
+  // actually a room member — see migration 030) never blocks or rolls
+  // back the message itself, which is already sent by the time this runs.
   await supabase.from("mentions").insert(rows);
 }

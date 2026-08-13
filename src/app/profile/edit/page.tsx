@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
+import { fetchSocialLinks } from "@/lib/profile/socialLinks";
 
 export const metadata: Metadata = {
   title: "Edit Profile — United Fans Hub",
@@ -19,6 +20,8 @@ export default async function EditProfilePage() {
 
   if (!profile) redirect("/login");
 
+  const initialSocialLinks = await fetchSocialLinks(supabase, userId);
+
   return (
     <AppShell>
       <main className="flex-1 bg-bg-void py-12">
@@ -31,7 +34,7 @@ export default async function EditProfilePage() {
           </p>
 
           <div className="mt-8">
-            <ProfileEditForm profile={profile} />
+            <ProfileEditForm profile={profile} initialSocialLinks={initialSocialLinks} />
           </div>
         </div>
       </main>

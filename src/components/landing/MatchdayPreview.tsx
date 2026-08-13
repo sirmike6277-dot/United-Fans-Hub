@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { TeamCrest } from "@/components/media/TeamCrest";
 import { createClient } from "@/lib/supabase/server";
 import { fetchUpcomingMatches } from "@/lib/matches/matches";
 import { formatMatchDateTime } from "@/lib/format";
@@ -72,12 +73,22 @@ export async function MatchdayPreview() {
 
               <div className="mt-6 flex items-center justify-between">
                 <div className="flex flex-1 flex-col items-center gap-2">
-                  <div className="h-12 w-12 rounded-full border border-white/15 bg-white/5" aria-hidden="true" />
+                  <TeamCrest
+                    variant={nextMatch.isHome ? "manUtd" : "opponent"}
+                    externalRef={nextMatch.opponentExternalRef}
+                    name={homeLabel ?? "Manchester United"}
+                    size={48}
+                  />
                   <span className="text-sm font-semibold text-white">{homeLabel}</span>
                 </div>
                 <span className="font-display text-lg font-bold text-text-muted">VS</span>
                 <div className="flex flex-1 flex-col items-center gap-2">
-                  <div className="h-12 w-12 rounded-full border border-white/15 bg-white/5" aria-hidden="true" />
+                  <TeamCrest
+                    variant={nextMatch.isHome ? "opponent" : "manUtd"}
+                    externalRef={nextMatch.opponentExternalRef}
+                    name={awayLabel ?? "Manchester United"}
+                    size={48}
+                  />
                   <span className="text-sm font-semibold text-white">{awayLabel}</span>
                 </div>
               </div>

@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatRelativeTime } from "@/lib/format";
 import { CheckIcon } from "./NotificationIcons";
+import { resolveConversationHref } from "@/lib/messaging/conversations";
+import { resolveMessageHref } from "@/lib/messaging/messages";
 import { notificationCopy, notificationHref, type FeedNotification } from "@/lib/notifications/notifications";
 
 export interface NotificationItemProps {
@@ -12,20 +16,57 @@ export interface NotificationItemProps {
   onMarkRead: (id: string) => void;
 }
 
+/**
+ * Three notification shapes need one small async lookup before they can
+ * navigate anywhere real (see notificationHref()'s own doc comment for why
+ * it can't be a pure/sync function for these):
+ * - `message`: subject_id is a bare conversation_id (DM vs Fan Room isn't
+ *   knowable without checking).
+ * - `reply`/`mention` with subjectType "message": subject_id is a message
+ *   id (a Fan Room reply/mention) — one more hop to its conversation.
+ */
+function needsAsyncHref(n: FeedNotification): boolean {
+  if (!n.subjectId) return false;
+  if (n.type === "message") return true;
+  return (n.type === "reply" || n.type === "mention") && n.subjectType === "message";
+}
+
+function resolveAsyncHref(supabase: ReturnType<typeof createClient>, n: FeedNotification): Promise<string | null> | null {
+  if (!n.subjectId) return null;
+  if (n.type === "message") return resolveConversationHref(supabase, n.subjectId);
+  if ((n.type === "reply" || n.type === "mention") && n.subjectType === "message") {
+    return resolveMessageHref(supabase, n.subjectId);
+  }
+  return null;
+}
+
 export function NotificationItem({ notification, onMarkRead }: NotificationItemProps) {
   const router = useRouter();
+  const [navigating, setNavigating] = useState(false);
   const isUnread = notification.readAt === null;
   const href = notificationHref(notification);
   const actorName = notification.actor
     ? notification.actor.display_name || notification.actor.username
     : "United Fans Hub";
 
-  function handleActivate() {
+  const canResolveAsync = needsAsyncHref(notification);
+
+  async function handleActivate() {
     if (isUnread) onMarkRead(notification.id);
+
+    if (canResolveAsync) {
+      const supabase = createClient();
+      setNavigating(true);
+      const dest = await resolveAsyncHref(supabase, notification);
+      setNavigating(false);
+      if (dest) router.push(dest);
+      return;
+    }
+
     if (href) router.push(href);
   }
 
-  const isInteractive = Boolean(href) || isUnread;
+  const isInteractive = Boolean(href) || isUnread || canResolveAsync;
 
   return (
     <div
@@ -36,7 +77,7 @@ export function NotificationItem({ notification, onMarkRead }: NotificationItemP
       <button
         type="button"
         onClick={handleActivate}
-        disabled={!isInteractive}
+        disabled={!isInteractive || navigating}
         className="flex flex-1 items-start gap-3 rounded-control text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary disabled:cursor-default"
         aria-label={notificationCopy(notification)}
       >

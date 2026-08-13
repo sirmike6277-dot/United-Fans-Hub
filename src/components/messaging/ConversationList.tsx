@@ -36,7 +36,7 @@ export function ConversationList({ initialConversations, initialError, currentUs
   }
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto overflow-x-hidden">
       {initialConversations.map((conversation) => (
         <ConversationListItem key={conversation.id} conversation={conversation} currentUserId={currentUserId} />
       ))}

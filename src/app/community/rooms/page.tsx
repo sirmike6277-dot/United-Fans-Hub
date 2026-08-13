@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
+import { SectionBanner } from "@/components/layout/SectionBanner";
 import { RoomsDirectory } from "@/components/community/RoomsDirectory";
 import { fetchRooms } from "@/lib/community/rooms";
 
@@ -25,6 +26,15 @@ export default async function FanRoomsPage() {
   return (
     <AppShell>
       <main className="flex-1 bg-bg-void">
+        <div className="mb-6 pt-6 sm:pt-8">
+          <SectionBanner
+            imageSrc="/images/stadium/old-trafford-exterior-sunset.jpg"
+            imageAlt="Old Trafford's exterior at sunset"
+            kicker="Fan Rooms"
+            title="Join a shared space for United fans."
+            subtitle="Matchday chat, transfer talk, and more — pick a room and jump in."
+          />
+        </div>
         <RoomsDirectory
           currentUserId={userId}
           rooms={rooms}

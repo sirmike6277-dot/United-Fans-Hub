@@ -14,6 +14,7 @@ import { TopFansWidget } from "@/components/dashboard/TopFansWidget";
 import { fetchUpcomingMatches } from "@/lib/matches/matches";
 import { fetchFeedPage } from "@/lib/community/posts";
 import { fetchFanLeaderboard, fetchLeaderboardSize, fetchMyRank } from "@/lib/leaderboard/leaderboard";
+import { fetchWinners } from "@/lib/awards/awards";
 
 export const metadata: Metadata = {
   title: "Dashboard — United Fans Hub",
@@ -44,13 +45,19 @@ export default async function DashboardPage() {
 
   const { data: club } = await supabase.from("clubs").select("id").eq("slug", "manchester-united").single();
 
-  const [{ matches: upcoming }, { posts: recentPosts }, { entries: topFans }, { total: totalParticipants }] =
+  const [{ matches: upcoming }, { posts: recentPosts }, { entries: topFans }, { total: totalParticipants }, { winners: awardWinners }] =
     await Promise.all([
       club ? fetchUpcomingMatches(supabase, { clubId: club.id, limit: 1 }) : Promise.resolve({ matches: [], error: null }),
       fetchFeedPage(supabase, { from: 0, to: 2, currentUserId: profileId }),
       fetchFanLeaderboard(supabase, { from: 0, to: 2 }),
       fetchLeaderboardSize(supabase),
+      fetchWinners(supabase),
     ]);
+
+  // Most recent "Fan of the Month" winner (if any) — fetchWinners() already
+  // orders newest-first across every category, so the first match here is
+  // the latest one for this specific category.
+  const latestFanOfMonthWinner = awardWinners.find((w) => w.categoryKey === "fan_of_month") ?? null;
 
   const { rank, error: rankError } = await fetchMyRank(supabase, {
     profileId,
@@ -131,7 +138,7 @@ export default async function DashboardPage() {
             {/* Side column */}
             <div className="flex flex-col gap-6">
               <TopFansWidget entries={topFans} currentUserId={profileId} />
-              <FanOfMonthTeaser />
+              <FanOfMonthTeaser winner={latestFanOfMonthWinner} />
             </div>
           </div>
         </div>

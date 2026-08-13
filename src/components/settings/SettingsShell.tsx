@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { FormError } from "@/components/auth/FormError";
 import { GearIcon } from "@/components/layout/ShellIcons";
 import { BellIcon } from "@/components/notifications/NotificationIcons";
+import { BlockedMutedPanel } from "./BlockedMutedPanel";
 
 export interface SettingsShellProps {
   profileId: string;
@@ -162,6 +163,8 @@ export function SettingsShell(props: SettingsShellProps) {
   let panel: ReactNode;
   if (active === "account") {
     panel = <AccountPanel {...props} />;
+  } else if (active === "privacy") {
+    panel = <BlockedMutedPanel currentUserId={props.profileId} />;
   } else {
     const tab = STATIC_TABS.find((t) => t.key === active);
     panel = <ComingSoonPanel title={tab?.label ?? "Settings"} />;

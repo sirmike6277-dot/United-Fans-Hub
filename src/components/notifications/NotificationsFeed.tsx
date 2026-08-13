@@ -14,14 +14,16 @@ import {
   type FeedNotification,
 } from "@/lib/notifications/notifications";
 
-type FilterKey = "all" | "mentions" | "likes" | "comments" | "follows";
+type FilterKey = "all" | "mentions" | "likes" | "comments" | "follows" | "messages";
 
 /**
  * Filters over this app's real notification `type` values (see migration
- * 006's check constraint: like/comment/mention/reply/message/follow) —
- * the reference design's "Predictions"/"System" tabs have no matching
- * type anywhere in the schema, so they're not included rather than
- * shown as tabs that would always be empty.
+ * 006's check constraint: like/comment/mention/reply/message/follow, plus
+ * moderation_action from migration 026) — the reference design's
+ * "Predictions"/"System" tabs have no matching type anywhere in the
+ * schema, so they're not included rather than shown as tabs that would
+ * always be empty. `moderation_action` likewise has no dedicated tab (rare
+ * and sensitive) — it's only reachable via "All", by design.
  */
 const FILTERS: { key: FilterKey; label: string; match: (type: string) => boolean }[] = [
   { key: "all", label: "All", match: () => true },
@@ -29,6 +31,7 @@ const FILTERS: { key: FilterKey; label: string; match: (type: string) => boolean
   { key: "likes", label: "Likes", match: (t) => t === "like" },
   { key: "comments", label: "Comments", match: (t) => t === "comment" || t === "reply" },
   { key: "follows", label: "Follows", match: (t) => t === "follow" },
+  { key: "messages", label: "Messages", match: (t) => t === "message" },
 ];
 
 export interface NotificationsFeedProps {

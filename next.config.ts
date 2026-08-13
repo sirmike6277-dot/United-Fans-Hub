@@ -23,6 +23,15 @@ const nextConfig: NextConfig = {
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/sign/**",
       },
+      {
+        // API-Football's own crest CDN — this app has no local opponent
+        // emblem asset (see ClubEmblem/OpponentEmblem's no-fake-emblem
+        // rule), so an opponent's real crest is hotlinked live from the
+        // same paid provider already used for match data, never stored.
+        protocol: "https",
+        hostname: "media.api-sports.io",
+        pathname: "/football/teams/**",
+      },
     ],
   },
 };

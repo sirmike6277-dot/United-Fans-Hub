@@ -5,6 +5,7 @@ import {
   fetchFixtureEvents,
   fetchFixtureLineups,
   fetchTeamSquad,
+  fetchPlayerPosition,
   MANCHESTER_UNITED_API_FOOTBALL_TEAM_ID,
   type ProviderFixture,
   type ProviderEvent,
@@ -108,10 +109,16 @@ function mapStatus(providerStatus: string): "scheduled" | "live" | "finished" | 
 function fixtureToMatchRow(fixture: ProviderFixture, clubId: string) {
   const isHome = fixture.homeTeamId === MANCHESTER_UNITED_API_FOOTBALL_TEAM_ID;
   const opponentName = isHome ? fixture.awayTeamName : fixture.homeTeamName;
+  const opponentTeamId = isHome ? fixture.awayTeamId : fixture.homeTeamId;
 
   return {
     club_id: clubId,
     opponent_name: opponentName,
+    // The opponent's real API-Football team id — already present on every
+    // fixture response, just not previously persisted. Lets an opponent
+    // crest render (see TeamCrest) on every match surface as soon as
+    // the fixture itself syncs, not only once a lineup is published.
+    opponent_external_ref: String(opponentTeamId),
     competition: fixture.competitionName,
     kickoff_at: fixture.kickoffAtIso,
     venue: fixture.venueName,
@@ -323,7 +330,37 @@ async function resolveClubId(
  */
 async function resolvePlayerId(
   supabase: ReturnType<typeof createServiceClient>,
-  { clubId, providerId, fullName }: { clubId: string; providerId: number; fullName: string | null },
+  {
+    clubId,
+    providerId,
+    fullName,
+    backfillPosition = true,
+  }: {
+    clubId: string;
+    providerId: number;
+    fullName: string | null;
+    /**
+     * Whether it's worth spending one of the day's limited provider calls
+     * (see below) backfilling this specific player's position right now.
+     * Defaults to true for syncMatchEvents' call site (a real, notable
+     * actor — scored/booked/subbed — worth having position data for
+     * regardless). syncMatchLineups passes `entry.isStarting` explicitly:
+     * a substitute who never comes on only ever appears as plain text in
+     * SubstitutePlayersPanel (see PitchLineup.tsx — only the *starting* XI
+     * ever reaches buildTeamFormation/the pitch), so paying an API call to
+     * place them on a pitch they never render on is pure waste. A real,
+     * measured problem this fixes: this app's plan caps at 10 requests/
+     * minute AND 100/day (confirmed via the provider's own /status
+     * endpoint headers) — a single brand-new opponent's full lineup entry
+     * list (11 starters + a typical 7-12 named substitutes) could
+     * previously burn up to ~20+ of that day's 100 calls on ONE match
+     * visit, most of them on players nothing in this app ever needs a
+     * position for. Restricting to starters only roughly halves that
+     * worst case, spending the scarce daily budget on what a visitor is
+     * actually looking at (the pitch) rather than the bench list.
+     */
+    backfillPosition?: boolean;
+  },
 ): Promise<string | null> {
   const externalRef = String(providerId);
 
@@ -360,7 +397,7 @@ async function resolvePlayerId(
   const { data: upserted, error: upsertError } = await supabase
     .from("players")
     .upsert({ club_id: clubId, full_name: fullName, external_ref: externalRef }, { onConflict: "external_ref" })
-    .select("id")
+    .select("id, position")
     .single();
 
   // Never silently treat a real database error as "player not found" —
@@ -371,6 +408,32 @@ async function resolvePlayerId(
     throw new Error(`Couldn't resolve player ${externalRef}: ${upsertError.message}`);
   }
   if (!upserted) return null;
+
+  // A real, previously-missing fix: this is the ONE place every player
+  // row — opponent or Man Utd, lineup or event actor — gets created, so
+  // it's the right place to backfill real position too, rather than only
+  // ever doing it for Man Utd's own squad via a separate manual pass. Only
+  // attempted when still unknown (never re-fetched for a player who
+  // already has one) and when the caller says it's actually worth spending
+  // a call on right now (see `backfillPosition` above), and always
+  // best-effort: fetchPlayerPosition catches its own failures and returns
+  // null rather than throwing, so a rate-limited or network-failed lookup
+  // just leaves this row exactly as honest as it was before — position
+  // stays null, picked up automatically on this player's next sync
+  // (another lineup/event referencing them) rather than requiring another
+  // manual backfill pass. The real, confirmed constraints this works
+  // within (read from this account's own /status response headers, not
+  // guessed): 10 requests/minute AND a separate 100 requests/DAY cap —
+  // this app's plan is entry-tier, so a side with many brand-new players
+  // in one sync will only get some of them filled in immediately —
+  // self-healing over subsequent syncs, not a one-shot guarantee.
+  if (upserted.position === null && backfillPosition) {
+    const position = await fetchPlayerPosition({ providerId, season: resolveCurrentSeason(new Date()) });
+    if (position) {
+      await supabase.from("players").update({ position }).eq("id", upserted.id);
+    }
+  }
+
   return upserted.id;
 }
 
@@ -378,7 +441,16 @@ function mapEventType(providerType: string, providerDetail: string): "goal" | "y
   const type = providerType.toLowerCase();
   const detail = providerDetail.toLowerCase();
 
-  if (type === "goal") return "goal";
+  // A real, previously-uncaught bug: API-Football files a missed penalty
+  // under `type: "Goal"` too (`detail: "Missed Penalty"`) — the same
+  // bucket as an actual goal. Mapping it straight through meant a player
+  // who *missed* a penalty was rendered with a "scored" badge. There's no
+  // "missed_penalty" event_type in this app's schema to route it to
+  // instead (see the CHECK constraint), so — consistent with this
+  // function's own existing rule for any other unrecognized shape — it's
+  // dropped (logged, never silently miscategorized) rather than shown as
+  // a goal it wasn't.
+  if (type === "goal") return detail.includes("missed") ? null : "goal";
   if (type === "subst") return "substitution";
   if (type === "var") return "var";
   if (type === "card") {
@@ -461,6 +533,11 @@ export async function syncMatchEvents({
           assist_player_id: event.assistPlayerId,
           assist_player_name: event.assistPlayerName,
           provider_event_id: event.providerEventId,
+          // Stoppage-time minutes (e.g. 6 for "90+6") — real provider
+          // data, no column of its own, so it rides in `detail` like the
+          // other provider-only fields above. Read back by
+          // formatEventMinute() (format.ts).
+          minute_extra: event.minuteExtra,
         },
       });
     }
@@ -539,6 +616,11 @@ export async function syncMatchLineups({
         clubId,
         providerId: entry.playerId,
         fullName: entry.playerName,
+        // Only the starting XI ever needs a real position — see
+        // resolvePlayerId's own doc comment for why this is the actual
+        // fix to the daily-quota exhaustion problem, not just a note
+        // about it.
+        backfillPosition: entry.isStarting,
       });
 
       rows.push({
@@ -602,6 +684,23 @@ function markAttempted(key: string): void {
   lastSyncAttemptAt.set(key, Date.now());
 }
 
+/**
+ * Companion to lastSyncAttemptAt — remembers whether that most recent
+ * attempt actually succeeded. Exists specifically so a page whose lineup
+ * is empty can tell "the provider genuinely hasn't published one yet" (no
+ * failed attempt on record) apart from "we just tried and the provider
+ * errored" (rate-limited/quota-exhausted, most likely — see
+ * maybeSyncMatchLineups). Same process-local, doesn't-survive-a-restart
+ * tradeoff as lastSyncAttemptAt above; a restart just means the next visit
+ * re-attempts and re-learns the real state rather than showing a stale
+ * failure forever.
+ */
+const lastSyncFailed = new Map<string, boolean>();
+
+function markResult(key: string, ok: boolean): void {
+  lastSyncFailed.set(key, !ok);
+}
+
 const FIXTURES_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours — fixtures/scores/status change slowly outside of live play.
 const LIVE_EVENTS_TTL_MS = 90 * 1000; // 90 seconds — only while a specific match is marked "live".
 const SETTLED_EVENTS_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours — scheduled/finished matches' events rarely change.
@@ -648,6 +747,18 @@ export async function maybeSyncMatchEvents({
  * Called from the match detail page alongside maybeSyncMatchEvents. Same
  * staleness reasoning as events — a lineup only firms up close to kickoff
  * and never changes once the match is settled, so a long TTL is safe.
+ *
+ * Returns `recentlyFailed` so the page can tell apart two very different
+ * reasons a match might have zero lineup rows: the provider genuinely
+ * hasn't published one yet (normal, temporary, no attempt has failed), vs
+ * this app just tried to fetch it and the provider errored — in this
+ * account's case, overwhelmingly the confirmed 10/minute or 100/day
+ * request caps (see resolvePlayerId's doc comment), not a real "no lineup
+ * exists" state. A real, previously-hidden bug this fixes: PitchLineup's
+ * empty state read "it usually lands shortly before kickoff" even for an
+ * already-finished match whose fetch simply failed — misleading, since
+ * that phrasing implies an upcoming match, not a currently-unreachable
+ * historical one.
  */
 export async function maybeSyncMatchLineups({
   matchId,
@@ -657,13 +768,16 @@ export async function maybeSyncMatchLineups({
   matchId: string;
   externalRef: string | null;
   isLive: boolean;
-}): Promise<void> {
-  if (!externalRef) return;
+}): Promise<{ recentlyFailed: boolean }> {
+  if (!externalRef) return { recentlyFailed: false };
   const key = `lineups:${matchId}`;
   const ttl = isLive ? LIVE_EVENTS_TTL_MS : SETTLED_EVENTS_TTL_MS;
-  if (!isStale(key, ttl)) return;
-  markAttempted(key);
-  await syncMatchLineups({ matchId, externalRef });
+  if (isStale(key, ttl)) {
+    markAttempted(key);
+    const result = await syncMatchLineups({ matchId, externalRef });
+    markResult(key, result.ok);
+  }
+  return { recentlyFailed: lastSyncFailed.get(key) === true };
 }
 
 /**

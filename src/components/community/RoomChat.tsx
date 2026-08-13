@@ -406,7 +406,7 @@ export function RoomChat({
   const showJumpPill = !atBottom || isAnchored;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className="flex h-[calc(100dvh-4rem)] flex-col">
       <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
         <Link
           href="/community/rooms"

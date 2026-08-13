@@ -157,7 +157,11 @@ export function ProfileView({
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Badge tone="red">Level {profile.fan_level}</Badge>
           <Badge tone="neutral">{profile.fan_points.toLocaleString()} pts</Badge>
-          {rank ? (
+          {/* A rank computed purely from a fan_points-desc/id-asc tie-break
+              is meaningless at 0 points (right now, that's most fans — see
+              LeaderboardRow's note) — showing "Rank #1" off a tie nobody
+              actually won would be a fabricated signal. */}
+          {rank && profile.fan_points > 0 ? (
             <Badge tone="outline">
               Rank #{rank}
               {totalParticipants ? ` of ${totalParticipants.toLocaleString()}` : ""}
@@ -199,7 +203,7 @@ export function ProfileView({
                 caption={predictionStats.completedPredictions > 0 ? `${predictionStats.correctPredictions}/${predictionStats.completedPredictions} correct` : "No settled predictions yet"}
               />
             ) : null}
-            {rank ? <StatTile label="Global Rank" value={`#${rank}`} /> : null}
+            {rank && profile.fan_points > 0 ? <StatTile label="Global Rank" value={`#${rank}`} /> : null}
           </div>
         ) : null}
 

@@ -96,7 +96,11 @@ export default async function DashboardPage() {
               <StatTile label="Fan Level" value={`Level ${profile.fan_level}`} />
               <StatTile
                 label="Rank"
-                value={rankError ? "—" : rank ? `#${rank}` : "—"}
+                // 0 fan_points means nothing's actually been earned yet — the
+                // fan_points-desc/id-asc tie-break still returns *a* number,
+                // but showing it as "your rank" would fabricate a signal
+                // nobody earned (see LeaderboardRow's matching note).
+                value={rankError ? "—" : rank && profile.fan_points > 0 ? `#${rank}` : "—"}
                 caption={rankError ?? `of ${totalParticipants.toLocaleString()} fans`}
               />
             </div>

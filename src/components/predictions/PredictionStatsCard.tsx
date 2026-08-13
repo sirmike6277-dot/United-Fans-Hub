@@ -71,7 +71,11 @@ export function PredictionStatsCard({
         />
         <StatTile
           label="Rank"
-          value={rank ? `#${rank}` : "—"}
+          // 0 fan_points means nothing's actually been earned yet — the
+          // fan_points-desc/id-asc tie-break still returns *a* number, but
+          // showing it as "your rank" would fabricate a signal nobody
+          // earned (see LeaderboardRow's matching note).
+          value={rank && fanPoints && fanPoints > 0 ? `#${rank}` : "—"}
           caption={rankError ?? profileError ?? `of ${totalParticipants.toLocaleString()} fans`}
         />
         <StatTile

@@ -35,7 +35,12 @@ export function RankingsPreview({ entries }: RankingsPreviewProps) {
                   className="flex items-center justify-between rounded-control bg-bg-elevated px-4 py-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-display text-sm font-bold text-red-primary">#{index + 1}</span>
+                    {/* A 0-point entry hasn't actually out-ranked anyone —
+                        see LeaderboardRow's matching note — so it gets "—",
+                        never a fabricated "#1" from the tie-break alone. */}
+                    <span className="font-display text-sm font-bold text-red-primary">
+                      {entry.fan_points > 0 ? `#${index + 1}` : "—"}
+                    </span>
                     <span className="text-sm font-medium text-white">
                       {entry.display_name || entry.username}
                     </span>

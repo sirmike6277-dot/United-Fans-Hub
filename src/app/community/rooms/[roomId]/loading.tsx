@@ -9,7 +9,7 @@ export default function RoomLoading() {
       <main className="flex-1 bg-bg-void">
         <div className="mx-auto flex w-full max-w-[1440px] items-start px-4 sm:px-6 lg:px-8">
           <Sidebar />
-          <div className="flex h-[calc(100vh-4rem)] min-w-0 flex-1 flex-col">
+          <div className="flex h-[calc(100dvh-4rem)] min-w-0 flex-1 flex-col">
             <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
               <div className="h-9 w-9 animate-pulse rounded-full bg-white/10" aria-hidden="true" />
               <div className="h-4 w-32 animate-pulse rounded bg-white/10" aria-hidden="true" />

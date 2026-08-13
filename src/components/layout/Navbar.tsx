@@ -265,7 +265,17 @@ export function Navbar({ brand }: NavbarProps) {
       </nav>
 
       {open ? (
-        <div id={MOBILE_MENU_ID} className="border-t border-white/10 bg-bg-elevated px-4 py-4 lg:hidden">
+        // max-h + overflow-y-auto keeps this a bounded, scrollable dropdown
+        // instead of a plain block that just keeps growing — the signed-in
+        // list alone is 12 nav items + Logout, which on a phone screen
+        // otherwise runs well past one full viewport with no way to tell
+        // it's a dropdown rather than the page taking over. 100dvh (not
+        // 100vh) so mobile Safari's collapsing address bar doesn't leave a
+        // panel that's taller than what's actually visible.
+        <div
+          id={MOBILE_MENU_ID}
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-white/10 bg-bg-elevated px-4 py-4 lg:hidden"
+        >
           {!signedIn ? (
             <ul className="flex flex-col gap-4">
               {navLinks.map((link) => {

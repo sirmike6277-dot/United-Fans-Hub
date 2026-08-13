@@ -26,7 +26,15 @@ const PODIUM: Record<number, { ring: string; chip: string }> = {
  */
 export function LeaderboardRow({ entry, rank, isCurrentUser }: LeaderboardRowProps) {
   const name = entry.display_name || entry.username;
-  const podium = PODIUM[rank];
+  // fetchFanLeaderboard's ordering (fan_points desc, id asc) gives every row
+  // a real, distinct position even when every fan is tied at 0 points —
+  // right now that's every fan, since fan_points is currently only earned
+  // via settled match predictions (see leaderboard.ts). A 0-point "#1" with
+  // a gold ring is a fabricated signal, not an earned one: nobody's actually
+  // ahead of anyone yet, the tie-break just picked someone. So a 0-point
+  // entry always renders "Unranked" here, regardless of its numeric position.
+  const hasEarnedRank = entry.fan_points > 0;
+  const podium = hasEarnedRank ? PODIUM[rank] : undefined;
 
   return (
     <Link href={`/profile/${entry.id}`} className="block">
@@ -42,8 +50,10 @@ export function LeaderboardRow({ entry, rank, isCurrentUser }: LeaderboardRowPro
           >
             {rank}
           </span>
-        ) : (
+        ) : hasEarnedRank ? (
           <span className="w-7 shrink-0 text-center font-display text-sm font-bold text-text-muted">#{rank}</span>
+        ) : (
+          <span className="w-7 shrink-0 text-center font-display text-[10px] font-bold uppercase text-text-muted/60">—</span>
         )}
         <Avatar
           url={entry.avatar_url}

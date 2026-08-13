@@ -19,7 +19,7 @@ export default function MessagesLoading() {
         <div className="mx-auto flex w-full max-w-[1440px] items-start px-4 sm:px-6 lg:px-8">
           <Sidebar />
           <div className="min-w-0 flex-1">
-            <div className="flex h-[calc(100vh-4rem)] max-w-6xl">
+            <div className="flex h-[calc(100dvh-4rem)] max-w-6xl">
               <div className="flex w-full shrink-0 flex-col gap-1 border-r border-white/10 p-2 lg:w-80">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-control p-2" aria-hidden="true">

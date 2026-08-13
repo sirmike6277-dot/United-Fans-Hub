@@ -10,10 +10,10 @@
 # depend on any dashboard UI behavior.
 #
 # Usage:
-#   export SUPABASE_ACCESS_TOKEN=sbp_...   # personal access token, from
-#                                            # https://supabase.com/dashboard/account/tokens
-#                                            # NEVER commit this, never paste it into chat -
-#                                            # this script only reads it from your own shell env.
+#   Fill in the token yourself (in your own editor/terminal, never in chat)
+#   at ../../.env.supabase-admin.local - this script auto-loads it below.
+#   Get a token from: https://supabase.com/dashboard/account/tokens
+#
 #   ./docs/email-templates/apply-via-api.sh check   # GET current saved template, show first/last 200 chars
 #   ./docs/email-templates/apply-via-api.sh apply   # PATCH with the current confirm-signup.html
 #   ./docs/email-templates/apply-via-api.sh check   # GET again to confirm it actually changed
@@ -23,9 +23,20 @@ set -euo pipefail
 PROJECT_REF="bprrrycjqpqiegkakjsm"
 TEMPLATE_FILE="$(dirname "$0")/confirm-signup.html"
 SUBJECT="Confirm your email - United Fans Hub"
+ADMIN_ENV_FILE="$(dirname "$0")/../../.env.supabase-admin.local"
+
+# Auto-load SUPABASE_ACCESS_TOKEN from the dedicated admin-only env file if
+# present and not already set in the current shell (an explicit `export` in
+# your own session still takes precedence).
+if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] && [ -f "$ADMIN_ENV_FILE" ]; then
+  # shellcheck disable=SC1090
+  set -a; source "$ADMIN_ENV_FILE"; set +a
+fi
 
 if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
-  echo "Set SUPABASE_ACCESS_TOKEN first (from https://supabase.com/dashboard/account/tokens)." >&2
+  echo "SUPABASE_ACCESS_TOKEN is not set." >&2
+  echo "Fill it in at $ADMIN_ENV_FILE (get a token from https://supabase.com/dashboard/account/tokens)," >&2
+  echo "or export SUPABASE_ACCESS_TOKEN=... directly in this shell session." >&2
   exit 1
 fi
 
@@ -34,6 +45,7 @@ case "${1:-}" in
     echo "Fetching current saved auth config for project $PROJECT_REF ..."
     curl -sS "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
       -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+      -H "User-Agent: united-fans-hub-admin-script/1.0" \
       | python3 -c '
 import json, sys
 cfg = json.load(sys.stdin)
@@ -80,6 +92,11 @@ req = urllib.request.Request(
     headers={
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
+        # Cloudflare (fronting api.supabase.com) blocks the default Python
+        # urllib User-Agent as a bot signature (Cloudflare error 1010) -
+        # a real UA string is required for the request to reach Supabase at
+        # all, independent of the token or permissions being correct.
+        "User-Agent": "united-fans-hub-admin-script/1.0",
     },
 )
 with urllib.request.urlopen(req) as resp:

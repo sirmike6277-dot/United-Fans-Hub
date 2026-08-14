@@ -656,66 +656,6 @@ export function PitchLineup({
           </div>
         ))}
       </div>
-      {process.env.NODE_ENV === "development" ? (
-        <DevLineupDebug
-          manUtdRows={manUtdRows}
-          opponentRows={opponentRows}
-          manUtdSource={manUtdSource}
-          opponentSource={opponentSource}
-          opponentName={opponentName}
-        />
-      ) : null}
     </div>
-  );
-}
-
-/**
- * Development-only diagnostic — never rendered in production (gated on
- * NODE_ENV, not a build flag that could be flipped by accident). Shows the
- * exact real row/source data driving the pitch above, so "is this fixture
- * using real grid data, a position fallback, or the shapeless even-split"
- * can be checked directly against the render without re-querying the DB by
- * hand. Kept as a permanent dev diagnostic per the phase spec — genuinely
- * useful for verifying any future fixture, not a one-off debugging aid.
- */
-function DevLineupDebug({
-  manUtdRows,
-  opponentRows,
-  manUtdSource,
-  opponentSource,
-  opponentName,
-}: {
-  manUtdRows: Row[];
-  opponentRows: Row[];
-  manUtdSource: string;
-  opponentSource: string;
-  opponentName: string;
-}) {
-  const rowSummary = (rows: Row[]) =>
-    rows
-      .map(
-        (r) =>
-          `${r.label}[${r.players.map((p) => `${p.shirtNumber ?? "?"}:${p.playerName}(grid=${p.grid ?? "∅"},pos=${p.position ?? "∅"})`).join(", ")}]`,
-      )
-      .join("  ");
-
-  return (
-    <details className="rounded-control border border-dashed border-yellow-500/40 bg-black/40 p-2 text-[10px] text-yellow-200/90">
-      <summary className="cursor-pointer select-none font-semibold uppercase tracking-wide">
-        Dev: lineup source data (not shown in production)
-      </summary>
-      <div className="mt-2 flex flex-col gap-2 overflow-x-auto whitespace-pre">
-        <div>
-          Manchester United — source: {manUtdSource}
-          {"\n"}
-          {rowSummary(manUtdRows)}
-        </div>
-        <div>
-          {opponentName} — source: {opponentSource}
-          {"\n"}
-          {rowSummary(opponentRows)}
-        </div>
-      </div>
-    </details>
   );
 }

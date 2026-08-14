@@ -1,11 +1,14 @@
-# Email templates — manual Supabase Dashboard setup
+# Email templates
 
-Nothing in this folder is deployed automatically. Supabase's Auth email
-templates live in the Supabase project itself (Dashboard or Management API),
-not in this repo's build — the five `.html` files here are the source of
-truth to paste in, kept under version control so they're reviewable/diffable
-like any other code. All five share one design system (see "Shared design
-system" below); each has its own subject/variables/application-logic notes.
+Nothing in this folder deploys automatically on `git push` — Supabase's Auth
+email templates live in the Supabase project itself (Dashboard or Management
+API), not in this repo's build. The five `.html` files here are the source
+of truth, kept under version control so they're reviewable/diffable like any
+other code, and **all five are currently live** — applied via
+`apply-via-api.sh` and independently re-verified with a fresh `GET` straight
+after (correct crest domain, correct subject, correct byte length matching
+each file exactly, red masthead branding present). If any of these files
+are edited again, re-run `apply` for that type — nothing pushes itself.
 
 ## The five templates
 
@@ -80,7 +83,11 @@ default for this type is Token-only (a 6-digit code, no link variant
 exists). `reauthentication.html` swaps the CTA button for a large,
 letter-spaced code chip instead, keeping the same masthead/footer/palette.
 
-## Apply the templates
+## Re-applying after an edit
+
+All five are live as of this writing (see the note at the top). If any
+template file here is edited again, it needs to be re-applied — nothing in
+this repo pushes it automatically.
 
 **Dashboard** (one at a time): Authentication → Email Templates → pick the
 type from the table above → paste the Subject and the file's full contents.

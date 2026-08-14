@@ -21,12 +21,23 @@ export interface AuthBackdropProps {
  * side's fade, so the crest itself is part of what the two photos blend
  * into at the middle.
  *
+ * Unlike the landing hero/SectionBanner's stadium-photo treatment (which
+ * pins itself to the permanently-dark --color-cinema-* tokens on purpose —
+ * see globals.css), this backdrop uses the ordinary theme-reactive
+ * bg-bg-elevated/bg-bg-void tokens directly: the auth panel's own text
+ * (AuthHeader, the form, AuthVisual's PullQuote at its default tone="ink")
+ * is theme-reactive too, not hardcoded white, so the two need to move
+ * together — pinning only the backdrop dark would make that text invisible
+ * in light mode instead of the reverse. The two photos and the emblem keep
+ * their real, fixed opacity in both themes (real photography, not tinted);
+ * only the surrounding gradients — the "atmosphere" — relight.
+ *
  * Server-rendered only: `ClubEmblem` checks the filesystem for the licensed
  * asset, which requires staying out of any "use client" tree.
  */
 export function AuthBackdrop({ leftSrc, rightSrc }: AuthBackdropProps) {
   return (
-    <div className="absolute inset-0 overflow-hidden bg-cinema-elevated" aria-hidden="true">
+    <div className="absolute inset-0 overflow-hidden bg-bg-elevated" aria-hidden="true">
       {/* Left photo — fades out toward the centre */}
       <div className="absolute inset-y-0 left-0 w-[62%] [mask-image:linear-gradient(to_right,black_45%,transparent_100%)]">
         <Image src={leftSrc} alt="" fill priority sizes="62vw" className="object-cover opacity-40" />
@@ -37,7 +48,7 @@ export function AuthBackdrop({ leftSrc, rightSrc }: AuthBackdropProps) {
         <Image src={rightSrc} alt="" fill priority sizes="62vw" className="object-cover opacity-25" />
       </div>
 
-      {/* Manchester United emblem — oversized and faded, the dominant right-side background element the two photos blend into */}
+      {/* Manchester United emblem — oversized and faded, the dominant right-side background element the two photos blend into. Kept subtle enough not to compete with the form panel sitting on top of it in either theme. */}
       <div
         className="pointer-events-none absolute right-[-8%] top-1/2 -translate-y-1/2 opacity-[0.14]"
         aria-hidden="true"
@@ -45,9 +56,9 @@ export function AuthBackdrop({ leftSrc, rightSrc }: AuthBackdropProps) {
         <ClubEmblem size={720} />
       </div>
 
-      {/* Cross-fade + legibility gradients, echoing the landing hero's treatment */}
+      {/* Cross-fade + legibility gradients — theme-reactive, see doc comment above */}
       <div
-        className="absolute inset-0 bg-gradient-to-b from-cinema-elevated/40 via-cinema-void/70 to-cinema-void"
+        className="absolute inset-0 bg-gradient-to-b from-bg-elevated/40 via-bg-void/70 to-bg-void"
         aria-hidden="true"
       />
       <div
@@ -55,7 +66,10 @@ export function AuthBackdrop({ leftSrc, rightSrc }: AuthBackdropProps) {
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.55)_100%)]"
+        className="absolute inset-0"
+        style={{
+          background: "radial-gradient(ellipse at center, transparent 40%, var(--color-photo-vignette) 100%)",
+        }}
         aria-hidden="true"
       />
     </div>

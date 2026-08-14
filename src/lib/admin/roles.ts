@@ -54,7 +54,7 @@ export async function searchProfiles(supabase: AnySupabase, query: string): Prom
   if (trimmed.length === 0) {
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, fan_level")
+      .select("id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season")
       .order("username")
       .limit(20);
     return data ?? [];
@@ -63,7 +63,7 @@ export async function searchProfiles(supabase: AnySupabase, query: string): Prom
   const term = trimmed.replace(/[\\%_]/g, (c) => `\\${c}`).replace(/[,()]/g, "");
   const { data } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, fan_level")
+    .select("id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season")
     .or(`username.ilike.%${term}%,display_name.ilike.%${term}%`)
     .limit(20);
   return data ?? [];

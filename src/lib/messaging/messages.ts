@@ -31,7 +31,7 @@ export const MESSAGE_SELECT = `
   edited_at,
   deleted_at,
   parent_message_id,
-  sender:profiles!messages_sender_id_fkey ( id, username, display_name, avatar_url, fan_level ),
+  sender:profiles!messages_sender_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season ),
   message_media ( id, storage_path, media_type, duration_seconds ),
   reactions:message_reactions ( profile_id, emoji ),
   mentions ( mentioned_profile_id, profile:profiles!mentions_mentioned_profile_id_fkey ( username ) ),
@@ -135,6 +135,8 @@ const FALLBACK_SENDER: FeedAuthor = {
   display_name: null,
   avatar_url: null,
   fan_level: 1,
+  is_current_fan_of_month: false,
+  is_current_fan_of_season: false,
 };
 
 function summarizeReactions(rows: MessageReactionRow[] | null, currentUserId: string): MessageReactionSummary[] {

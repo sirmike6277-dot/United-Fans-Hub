@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
-import { resolveTheme, applyThemeAttribute, type ThemeMode } from "@/lib/theme/resolveTheme";
+import { resolveTheme, applyThemeAttribute, writeStoredThemeMode, type ThemeMode } from "@/lib/theme/resolveTheme";
 
 export interface AppearancePanelProps {
   currentUserId: string;
@@ -88,6 +88,9 @@ export function AppearancePanel({ currentUserId }: AppearancePanelProps) {
     document.documentElement.setAttribute("data-reduce-motion", String(next.reduce_motion));
     document.documentElement.setAttribute("data-text-size", next.text_size);
     applyThemeAttribute(resolveTheme(next.theme));
+    // Mirror immediately — the next page load's no-flash script reads this
+    // synchronously, before Supabase has had a chance to answer.
+    writeStoredThemeMode(next.theme);
   }
 
   return (

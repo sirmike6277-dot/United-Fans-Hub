@@ -6,6 +6,7 @@ import { RoleBadge } from "@/components/ui/RoleBadge";
 import { StatTile } from "@/components/ui/StatTile";
 import { Tabs } from "@/components/ui/Tabs";
 import { ClubEmblem } from "@/components/media/ClubEmblem";
+import { crownFor } from "@/components/ui/Avatar";
 import { PostCard, type CurrentUser } from "@/components/community/PostCard";
 import { AchievementCard } from "@/components/achievements/AchievementCard";
 import { PredictionHistoryList } from "@/components/predictions/PredictionHistoryList";
@@ -85,6 +86,7 @@ export function ProfileView({
   levelProgress,
 }: ProfileViewProps) {
   const earnedCount = badges.filter((b) => evaluateBadge(b.criteria, fanStats).state === "earned").length;
+  const crown = crownFor(profile);
 
   return (
     <main className="flex-1 bg-bg-void pb-20">
@@ -116,20 +118,38 @@ export function ProfileView({
           half" bug. Giving this row its own stacking position fixes it.
         */}
         <div className="-mt-12 flex flex-col gap-4 sm:-mt-16 sm:flex-row sm:items-end">
-          <div className="h-28 w-28 shrink-0 overflow-hidden rounded-full border-4 border-bg-void bg-bg-elevated shadow-[0_8px_24px_rgba(0,0,0,0.5)] sm:h-36 sm:w-36">
-            {profile.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt={profile.display_name ?? profile.username}
-                width={144}
-                height={144}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">
-                No photo
-              </div>
-            )}
+          <div className="relative h-28 w-28 shrink-0 sm:h-36 sm:w-36">
+            <div
+              title={crown === "season" ? "Fan of the Season" : crown === "month" ? "Fan of the Month" : undefined}
+              className={`h-full w-full overflow-hidden rounded-full border-4 border-bg-void bg-bg-elevated shadow-[0_8px_24px_rgba(0,0,0,0.5)] ${
+                crown ? "ring-2 ring-[#f2c14e] ring-offset-2 ring-offset-bg-void" : ""
+              }`}
+            >
+              {profile.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt={profile.display_name ?? profile.username}
+                  width={144}
+                  height={144}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">
+                  No photo
+                </div>
+              )}
+            </div>
+            {crown ? (
+              <span
+                className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 drop-shadow-sm"
+                aria-hidden="true"
+              >
+                <svg width={30} height={30} viewBox="0 0 24 24" fill="#f2c14e" stroke="#8b5e00" strokeWidth={0.75} strokeLinejoin="round">
+                  <path d="M4 17h16l-1.4-7-4.1 3.2L12 8l-2.5 5.2L5.4 10 4 17Z" />
+                  <path d="M4 20h16" strokeWidth={1.5} />
+                </svg>
+              </span>
+            ) : null}
           </div>
           <div className="flex flex-1 flex-wrap items-center justify-between gap-3 pb-2">
             <div>
@@ -159,6 +179,15 @@ export function ProfileView({
         ) : null}
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
+          {profile.is_current_fan_of_season ? (
+            <Badge tone="red" style={{ backgroundColor: "#f2c14e", color: "#3a2600" }}>
+              👑 Fan of the Season
+            </Badge>
+          ) : profile.is_current_fan_of_month ? (
+            <Badge tone="red" style={{ backgroundColor: "#f2c14e", color: "#3a2600" }}>
+              👑 Fan of the Month
+            </Badge>
+          ) : null}
           <Badge tone="red">Level {profile.fan_level}</Badge>
           <Badge tone="neutral">{profile.fan_points.toLocaleString()} pts</Badge>
           {/* A rank computed purely from a fan_points-desc/id-asc tie-break

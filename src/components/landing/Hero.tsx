@@ -78,7 +78,14 @@ export function Hero() {
       />
 
       <div className="relative mx-auto flex max-w-7xl flex-col items-center px-4 pb-16 pt-16 text-center sm:px-6 sm:pt-24 lg:px-8">
-        <span className="rounded-full border border-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-text-muted">
+        {/* text-white/70, not text-text-muted: this whole section sits on
+            bg-cinema-void (see the section wrapper above), which is
+            permanently dark and never flips with the light-mode theme —
+            text-text-muted does flip, becoming a dark, low-contrast gray
+            against this backdrop in light mode (the reported "not bright
+            enough" bug). Same fixed-dark-surface reasoning as the photo
+            triptych's own cinema-void gradients just below. */}
+        <span className="rounded-full border border-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white/70">
           An independent Manchester United fan community
         </span>
 
@@ -90,7 +97,11 @@ export function Hero() {
           <span className="text-red-primary">We are a family.</span>
         </h1>
 
-        <p className="mt-6 max-w-xl text-lg text-text-body sm:text-xl">
+        {/* text-white/90, not text-text-body: same cinema-void reasoning as
+            the kicker above — text-text-body flips to near-black in light
+            mode, which against this permanently-dark hero was effectively
+            invisible, not just dim. */}
+        <p className="mt-6 max-w-xl text-lg text-white/90 sm:text-xl">
           Connect. Predict. Debate. Celebrate.
         </p>
 
@@ -98,7 +109,18 @@ export function Hero() {
           <Button href="/signup" size="lg" className="w-full sm:w-auto">
             Join the community
           </Button>
-          <Button href="#features" variant="secondary" size="lg" className="w-full sm:w-auto">
+          {/* variant="secondary" is text-ink/border-ink by default (correct
+              on a normal theme-reactive card) — overridden to literal white
+              here for the same cinema-void reason as the text above: on
+              this permanently-dark hero, light mode's near-black --color-ink
+              made this button nearly invisible (transparent background,
+              barely-there text/border) — the reported button-visual bug. */}
+          <Button
+            href="#features"
+            variant="secondary"
+            size="lg"
+            className="w-full !border-white/30 !text-white hover:!border-white/60 sm:w-auto"
+          >
             Explore features
           </Button>
         </div>
@@ -140,6 +162,16 @@ export function Hero() {
           />
         </div>
       </div>
+
+      {/* Bottom blend — fades this section's permanently-cinematic atmosphere
+          into FeatureSection's real background colour instead of hard-cutting
+          into it. bg-bg-void is theme-reactive, so this is a no-op in dark
+          mode (both are already near-black) and a genuine dark-to-light blend
+          in light mode, matching FeatureSection's own bg-bg-void exactly. */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-bg-void sm:h-40"
+        aria-hidden="true"
+      />
     </section>
   );
 }

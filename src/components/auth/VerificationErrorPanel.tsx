@@ -53,7 +53,7 @@ export function VerificationErrorPanel({ code }: VerificationErrorPanelProps) {
   return (
     <div className="flex flex-col items-center gap-5 text-center">
       <div>
-        <h1 className="font-display text-2xl font-bold uppercase text-white sm:text-3xl">
+        <h1 className="font-display text-2xl font-bold uppercase text-ink sm:text-3xl">
           Link Expired or Invalid
         </h1>
         <p className="mt-2 max-w-sm text-sm text-text-muted">
@@ -65,7 +65,7 @@ export function VerificationErrorPanel({ code }: VerificationErrorPanelProps) {
 
       {sent ? (
         <p className="max-w-sm text-sm text-text-muted">
-          If an account exists for <span className="text-white">{email}</span>, a new verification
+          If an account exists for <span className="text-ink">{email}</span>, a new verification
           link is on its way — check your inbox (and spam folder).
         </p>
       ) : (

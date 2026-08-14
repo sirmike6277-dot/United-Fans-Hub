@@ -41,7 +41,7 @@ export function RankingsPreview({ entries }: RankingsPreviewProps) {
                     <span className="font-display text-sm font-bold text-red-primary">
                       {entry.fan_points > 0 ? `#${index + 1}` : "—"}
                     </span>
-                    <span className="text-sm font-medium text-white">
+                    <span className="text-sm font-medium text-ink">
                       {entry.display_name || entry.username}
                     </span>
                   </div>
@@ -54,7 +54,7 @@ export function RankingsPreview({ entries }: RankingsPreviewProps) {
 
         <div className="order-1 lg:order-2">
           <Badge tone="red">Fan Rankings</Badge>
-          <h2 className="mt-4 font-display text-3xl font-bold uppercase text-white sm:text-4xl">
+          <h2 className="mt-4 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
             Prove you&apos;re the ultimate fan
           </h2>
           <p className="mt-4 max-w-md text-text-muted">

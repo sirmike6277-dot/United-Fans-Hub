@@ -5,13 +5,16 @@ import type { FeedAuthor } from "@/lib/community/posts";
 export const NOTIFICATIONS_PAGE_SIZE = 20;
 
 /**
- * The 13 values notifications.type currently allows (per its CHECK
+ * The 14 values notifications.type currently allows (per its CHECK
  * constraint) — kept here as the single source of truth for the UI's
- * per-type display templates. Only the first 6 are actually fed by a
- * trigger today (see notify_on_* in the implementation log); the rest are
- * schema-valid but not yet produced by anything. The UI must handle all of
- * them without crashing — see notificationCopy() below — but this list
- * itself is not invented, it's read directly from the deployed constraint.
+ * per-type display templates. The first 6 are fed by a DB trigger (see
+ * notify_on_* in the implementation log); `voting_open` and
+ * `voting_closing_soon` are fed by advance_award_periods() (migrations
+ * 052/053) broadcasting to every profile as a period's voting opens / its
+ * 3-day window enters its last 24h. The rest are schema-valid but not yet
+ * produced by anything. The UI must handle all of them without crashing —
+ * see notificationCopy() below — but this list itself is not invented,
+ * it's read directly from the deployed constraint.
  */
 export const KNOWN_NOTIFICATION_TYPES = [
   "like",
@@ -25,6 +28,7 @@ export const KNOWN_NOTIFICATION_TYPES = [
   "match_event",
   "award_nomination",
   "voting_open",
+  "voting_closing_soon",
   "achievement_unlocked",
   "moderation_action",
 ] as const;
@@ -40,7 +44,7 @@ const NOTIFICATION_CATEGORY_TYPES = {
   community: ["like", "comment", "reply", "follow", "mention"],
   messages: ["message"],
   matches: ["prediction_reminder", "match_reminder", "match_event"],
-  awards: ["award_nomination", "voting_open", "achievement_unlocked"],
+  awards: ["award_nomination", "voting_open", "voting_closing_soon", "achievement_unlocked"],
 } as const;
 
 type NotificationCategory = keyof typeof NOTIFICATION_CATEGORY_TYPES;
@@ -92,7 +96,7 @@ export const NOTIFICATION_SELECT = `
   subject_id,
   read_at,
   created_at,
-  actor:profiles!notifications_actor_id_fkey ( id, username, display_name, avatar_url, fan_level )
+  actor:profiles!notifications_actor_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season )
 ` as const;
 
 interface NotificationRow {
@@ -183,11 +187,29 @@ export async function fetchUnreadCount(
 }
 
 /**
+ * award_categories only ever has two real rows (fan_of_month/fan_of_season
+ * — see migration 009) — this mirrors their `name` column rather than
+ * fetching it, since notificationCopy() is a pure function with no DB
+ * access (see NOTIFICATION_SELECT's own comment on avoiding polymorphic
+ * joins). Falls back to a humanized version of the key for any future
+ * category this map hasn't been updated for yet.
+ */
+const AWARD_CATEGORY_NAMES: Record<string, string> = {
+  fan_of_month: "Fan of the Month",
+  fan_of_season: "Fan of the Season",
+};
+
+function awardCategoryName(key: string | null): string {
+  if (!key) return "the award";
+  return AWARD_CATEGORY_NAMES[key] ?? key.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+}
+
+/**
  * Human-readable copy per notification, derived only from the actual
  * type/subject_type values — no invented content, no fetching of the
  * target post/comment body (that would require the generic polymorphic
  * join this phase explicitly avoids). Falls back to a humanized version of
- * the raw type string for the 7 declared-but-not-yet-fed types, so the UI
+ * the raw type string for the declared-but-not-yet-fed types, so the UI
  * never breaks if one of those starts appearing later.
  */
 export function notificationCopy(n: FeedNotification): string {
@@ -207,6 +229,12 @@ export function notificationCopy(n: FeedNotification): string {
       return `${name} started following you`;
     case "message":
       return `${name} sent you a message`;
+    case "voting_open":
+      // Broadcast, not from a specific actor — subject_type carries the
+      // award_categories.key (see advance_award_periods(), migration 052).
+      return `Voting is now open for ${awardCategoryName(n.subjectType)} — cast your vote!`;
+    case "voting_closing_soon":
+      return `Voting closes soon for ${awardCategoryName(n.subjectType)} — cast your vote before it ends!`;
     case "moderation_action":
       // Deliberately generic — record_moderation_action() (and this
       // notification) is shared across post/comment/user moderation, and
@@ -228,6 +256,9 @@ export function notificationHref(n: FeedNotification): string | null {
   }
   if (n.type === "like" || n.type === "comment" || n.type === "reply" || n.type === "mention") {
     return "/community";
+  }
+  if (n.type === "voting_open" || n.type === "voting_closing_soon") {
+    return "/awards";
   }
   return null;
 }

@@ -11,15 +11,22 @@ import {
   transitionPeriodStatus,
   reviewNomination,
   determineWinner,
+  deleteAwardWinner,
+  reassignAwardWinner,
+  autoNominateForPeriod,
   type AwardCategory,
   type AwardPeriod,
   type AwardNomination,
+  type AwardWinner,
 } from "@/lib/awards/awards";
 
 export interface AwardPeriodAdminPanelProps {
   category: AwardCategory;
   period: AwardPeriod | null;
   pendingNominations: AwardNomination[];
+  /** Only used once `period.status === "announced"` — the "correct a mistake" controls (migration 050). */
+  winner: AwardWinner | null;
+  approvedNominations: AwardNomination[];
   onChanged: () => void;
 }
 
@@ -49,13 +56,18 @@ const NEXT_LABEL: Record<string, string> = {
  * actual winner (migration 036) — a plain status flip alone would leave
  * award_winners empty.
  */
-export function AwardPeriodAdminPanel({ category, period, pendingNominations, onChanged }: AwardPeriodAdminPanelProps) {
+export function AwardPeriodAdminPanel({ category, period, pendingNominations, winner, approvedNominations, onChanged }: AwardPeriodAdminPanelProps) {
   const [creating, setCreating] = useState(false);
   const [label, setLabel] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [correcting, setCorrecting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [reassignTo, setReassignTo] = useState("");
+  const [autoNominating, setAutoNominating] = useState(false);
+  const [autoNominateResult, setAutoNominateResult] = useState<string | null>(null);
 
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
@@ -105,6 +117,59 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, on
     else onChanged();
   }
 
+  async function handleAutoNominate() {
+    if (!period || autoNominating) return;
+    setAutoNominating(true);
+    setAutoNominateResult(null);
+    setError(null);
+    const supabase = createClient();
+    const { inserted, error: autoError } = await autoNominateForPeriod(supabase, period.id);
+    setAutoNominating(false);
+    if (autoError) {
+      setError(autoError);
+      return;
+    }
+    setAutoNominateResult(
+      inserted > 0
+        ? `Added ${inserted} nominee${inserted === 1 ? "" : "s"} from this period's most engaged fans.`
+        : "No newly-eligible fans to add — everyone with real engagement this period is already nominated.",
+    );
+    onChanged();
+  }
+
+  async function handleDeleteWinner() {
+    if (!winner || busy) return;
+    setBusy(true);
+    setError(null);
+    const supabase = createClient();
+    const { error: deleteError } = await deleteAwardWinner(supabase, winner.id);
+    setBusy(false);
+    if (deleteError) {
+      setError(deleteError);
+      return;
+    }
+    setConfirmingDelete(false);
+    setCorrecting(false);
+    onChanged();
+  }
+
+  async function handleReassignWinner(event: FormEvent) {
+    event.preventDefault();
+    if (!winner || !reassignTo || busy) return;
+    setBusy(true);
+    setError(null);
+    const supabase = createClient();
+    const { error: reassignError } = await reassignAwardWinner(supabase, { winnerId: winner.id, newNominationId: reassignTo });
+    setBusy(false);
+    if (reassignError) {
+      setError(reassignError);
+      return;
+    }
+    setReassignTo("");
+    setCorrecting(false);
+    onChanged();
+  }
+
   if (!period) {
     return (
       <div className="rounded-card border border-dashed border-ink/15 p-4">
@@ -140,6 +205,33 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, on
     <div className="flex flex-col gap-3 rounded-card border border-ink/10 bg-bg-elevated p-4">
       {error ? <FormError message={error} /> : null}
 
+      {period.status === "upcoming" || period.status === "nominations_open" ? (
+        <div className="flex flex-col gap-2 border-b border-ink/10 pb-3">
+          <Button type="button" variant="secondary" size="sm" onClick={handleAutoNominate} loading={autoNominating} disabled={autoNominating} className="self-start">
+            Auto-select nominees from engagement
+          </Button>
+          {autoNominateResult ? <p className="text-xs text-text-muted">{autoNominateResult}</p> : null}
+          {approvedNominations.length > 0 ? (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
+                Approved nominees so far ({approvedNominations.length}) — not visible to voters until voting opens
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {approvedNominations.map((nomination) => {
+                  const name = nomination.nominee.display_name || nomination.nominee.username;
+                  return (
+                    <span key={nomination.id} className="flex items-center gap-1.5 rounded-full border border-ink/10 bg-bg-surface py-1 pl-1 pr-2.5 text-xs text-ink">
+                      <Avatar url={nomination.nominee.avatar_url} name={name} size={18} />
+                      {name}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
       {pendingNominations.length > 0 ? (
         <div className="flex flex-col gap-2 border-b border-ink/10 pb-3">
           <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
@@ -167,9 +259,142 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, on
         <Button type="button" variant="secondary" size="sm" onClick={handleAdvance} loading={busy} disabled={busy} className="self-start">
           {NEXT_LABEL[nextStatus]}
         </Button>
+      ) : period.status === "announced" && winner ? (
+        <WinnerCorrectionControls
+          winner={winner}
+          approvedNominations={approvedNominations}
+          correcting={correcting}
+          confirmingDelete={confirmingDelete}
+          reassignTo={reassignTo}
+          busy={busy}
+          onStartCorrecting={() => setCorrecting(true)}
+          onCancelCorrecting={() => {
+            setCorrecting(false);
+            setConfirmingDelete(false);
+            setReassignTo("");
+          }}
+          onReassignToChange={setReassignTo}
+          onReassign={handleReassignWinner}
+          onRequestDelete={() => setConfirmingDelete(true)}
+          onCancelDelete={() => setConfirmingDelete(false)}
+          onConfirmDelete={handleDeleteWinner}
+        />
       ) : (
         <p className="text-xs text-text-muted">This period is complete.</p>
       )}
+    </div>
+  );
+}
+
+/**
+ * "They announced the wrong person" — a manager's mistake-correction path
+ * for an already-announced winner, distinct from the forward-only
+ * NEXT_STATUS flow above. Reassign moves the crown + record to a different
+ * already-approved nominee in the same period (real vote_count recomputed
+ * server-side); Delete removes the winner row entirely and reopens the
+ * period as 'closed' so "Determine winner" can be run again later. Both
+ * call the migration 050 SECURITY DEFINER functions — this panel only
+ * renders the buttons, the has_role() check inside each function is the
+ * real authorization boundary.
+ */
+function WinnerCorrectionControls({
+  winner,
+  approvedNominations,
+  correcting,
+  confirmingDelete,
+  reassignTo,
+  busy,
+  onStartCorrecting,
+  onCancelCorrecting,
+  onReassignToChange,
+  onReassign,
+  onRequestDelete,
+  onCancelDelete,
+  onConfirmDelete,
+}: {
+  winner: AwardWinner;
+  approvedNominations: AwardNomination[];
+  correcting: boolean;
+  confirmingDelete: boolean;
+  reassignTo: string;
+  busy: boolean;
+  onStartCorrecting: () => void;
+  onCancelCorrecting: () => void;
+  onReassignToChange: (nominationId: string) => void;
+  onReassign: (event: FormEvent) => void;
+  onRequestDelete: () => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: () => void;
+}) {
+  const otherNominees = approvedNominations.filter((n) => n.id !== winner.nomination.id);
+
+  if (!correcting) {
+    return (
+      <Button type="button" variant="ghost" size="sm" onClick={onStartCorrecting} className="self-start text-text-muted">
+        Announced the wrong fan?
+      </Button>
+    );
+  }
+
+  if (confirmingDelete) {
+    return (
+      <div className="flex flex-col gap-2 rounded-control border border-red-primary/30 bg-red-primary/5 p-3">
+        <p className="text-sm text-ink">
+          Remove <span className="font-semibold">{winner.nomination.nominee.display_name || winner.nomination.nominee.username}</span> as{" "}
+          {winner.categoryName} and clear their crown? The period reopens as closed so a winner can be determined again.
+        </p>
+        <div className="flex gap-2">
+          <Button type="button" variant="ghost" size="sm" onClick={onCancelDelete} disabled={busy}>
+            Cancel
+          </Button>
+          <Button type="button" size="sm" loading={busy} disabled={busy} onClick={onConfirmDelete} className="!bg-red-primary">
+            Yes, remove winner
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-control border border-ink/10 p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Correct the {winner.categoryName} winner</p>
+
+      {otherNominees.length > 0 ? (
+        <form onSubmit={onReassign} className="flex flex-col gap-2">
+          <label htmlFor="reassign-nominee" className="text-xs text-text-muted">
+            Reassign to a different approved nominee
+          </label>
+          <div className="flex gap-2">
+            <select
+              id="reassign-nominee"
+              value={reassignTo}
+              onChange={(e) => onReassignToChange(e.target.value)}
+              className="min-w-0 flex-1 rounded-control border border-ink/15 bg-bg-surface px-3 py-2 text-sm text-ink"
+            >
+              <option value="">Choose a nominee…</option>
+              {otherNominees.map((n) => (
+                <option key={n.id} value={n.id}>
+                  {n.nominee.display_name || n.nominee.username}
+                </option>
+              ))}
+            </select>
+            <Button type="submit" size="sm" loading={busy} disabled={busy || !reassignTo}>
+              Reassign
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <p className="text-xs text-text-muted">No other approved nominees to reassign to for this period.</p>
+      )}
+
+      <div className="flex items-center justify-between border-t border-ink/10 pt-2">
+        <Button type="button" variant="ghost" size="sm" onClick={onCancelCorrecting} disabled={busy}>
+          Never mind
+        </Button>
+        <Button type="button" variant="secondary" size="sm" onClick={onRequestDelete} disabled={busy}>
+          Delete winner
+        </Button>
+      </div>
     </div>
   );
 }

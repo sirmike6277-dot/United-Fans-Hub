@@ -279,7 +279,7 @@ function PlayerChip({
           } ${
             tone === "manUtd"
               ? "border-black/10 bg-white text-[#151821]"
-              : "border-ink/25 bg-black/55 text-ink backdrop-blur-[1px]"
+              : "border-white/25 bg-black/55 text-white backdrop-blur-[1px]"
           }`}
         >
           {entry.shirtNumber ?? "-"}
@@ -300,7 +300,7 @@ function PlayerChip({
           >
             <SoccerBallIcon size={11} />
             {normalGoals.length > 1 ? (
-              <span className="text-[7.5px] font-extrabold text-ink [text-shadow:0_1px_1.5px_rgba(0,0,0,0.9)]">
+              <span className="text-[7.5px] font-extrabold text-white [text-shadow:0_1px_1.5px_rgba(0,0,0,0.9)]">
                 ×{normalGoals.length}
               </span>
             ) : null}
@@ -315,7 +315,7 @@ function PlayerChip({
           >
             <OwnGoalIcon size={12} />
             {ownGoals.length > 1 ? (
-              <span className="text-[8px] font-extrabold text-ink [text-shadow:0_1px_1.5px_rgba(0,0,0,0.9)]">
+              <span className="text-[8px] font-extrabold text-white [text-shadow:0_1px_1.5px_rgba(0,0,0,0.9)]">
                 ×{ownGoals.length}
               </span>
             ) : null}
@@ -337,8 +337,15 @@ function PlayerChip({
           examples this was checked against: "A. Wan-Bissaka" (wraps
           cleanly at the hyphen) and "Bruno Fernandes"/"Matheus Cunha"
           (some providers give the full first name, not an initial — never
-          shortened further by this app). */}
-      <span className="line-clamp-2 max-w-[54px] text-center text-[7.5px] font-semibold leading-[1.15] text-ink [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
+          shortened further by this app).
+
+          text-white, not text-ink: the pitch itself is a fixed green
+          gradient (see the container's own `background` below), never
+          themed — light mode flips --color-ink toward near-black, which
+          against this permanently-dark grass read as barely-there text (the
+          reported bug). Same reasoning as every other label on this pitch
+          (shirt numbers, formation badges below). */}
+      <span className="line-clamp-2 max-w-[54px] text-center text-[7.5px] font-semibold leading-[1.15] text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.85)]">
         {entry.playerName}
       </span>
     </div>
@@ -539,8 +546,11 @@ export function PitchLineup({
           </p>
         </div>
       ) : null}
+      {/* border-white/10, not border-ink/10: this pitch's own background
+          (below) is a fixed green gradient, not a theme-reactive surface —
+          same reasoning as every label pinned to text-white inside it. */}
       <div
-        className="relative mx-auto aspect-[2/3] w-full max-w-[300px] overflow-hidden rounded-card border border-ink/10 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.7)] sm:max-w-[340px]"
+        className="relative mx-auto aspect-[2/3] w-full max-w-[300px] overflow-hidden rounded-card border border-white/10 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.7)] sm:max-w-[340px]"
         style={{
           background:
             "repeating-linear-gradient(180deg, #1c6b3a 0 40px, #1a6236 40px 80px), radial-gradient(120% 70% at 50% 8%, rgba(255,255,255,0.10), rgba(255,255,255,0) 60%)",
@@ -576,7 +586,7 @@ export function PitchLineup({
             className="pointer-events-none absolute inset-x-0 top-3/4 flex -translate-y-1/2 items-center justify-center overflow-hidden opacity-[0.09]"
             aria-hidden="true"
           >
-            <span className="font-display whitespace-nowrap text-3xl font-bold uppercase text-ink sm:text-4xl">
+            <span className="font-display whitespace-nowrap text-3xl font-bold uppercase text-white sm:text-4xl">
               {opponentName}
             </span>
           </div>
@@ -591,7 +601,12 @@ export function PitchLineup({
             size={24}
             className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
           />
-          <span className="rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold tabular-nums text-ink backdrop-blur-sm">
+          {/* text-white, not text-ink: this chip's own background is a fixed
+              bg-black/70, not a theme-reactive surface, so its label needs
+              to stay literal white too — light mode's near-black --color-ink
+              against this permanently-dark chip was the reported "formation
+              not clear" bug. */}
+          <span className="rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold tabular-nums text-white backdrop-blur-sm">
             {formation ?? "—"}
           </span>
         </div>
@@ -604,11 +619,11 @@ export function PitchLineup({
             className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]"
           />
           <span
-            className="rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold tabular-nums text-ink backdrop-blur-sm"
+            className="rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold tabular-nums text-white backdrop-blur-sm"
             title={opponentSource === "even-split-fallback" ? "Exact positions not confirmed by the provider for this side" : undefined}
           >
             {opponentFormation ?? "—"}
-            {opponentSource === "even-split-fallback" ? <span className="ml-0.5 font-normal text-ink/60">~</span> : null}
+            {opponentSource === "even-split-fallback" ? <span className="ml-0.5 font-normal text-white/60">~</span> : null}
           </span>
         </div>
 

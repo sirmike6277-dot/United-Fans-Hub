@@ -160,6 +160,12 @@ export function CommentSection({
         display_name: currentUserName,
         avatar_url: currentUserAvatarUrl,
         fan_level: currentUserFanLevel,
+        // Optimistic local echo of a comment this same viewer just posted —
+        // not a fabrication of award status (viewer's real crown state, if
+        // any, is refreshed from the server on next full load same as
+        // fan_level already was before this).
+        is_current_fan_of_month: false,
+        is_current_fan_of_season: false,
       },
       parentCommentId,
       reactionCount: 0,

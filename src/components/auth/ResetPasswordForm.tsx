@@ -76,7 +76,7 @@ export function ResetPasswordForm() {
   if (linkError) {
     return (
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="font-display text-xl font-bold uppercase text-white">Link expired</h2>
+        <h2 className="font-display text-xl font-bold uppercase text-ink">Link expired</h2>
         <p className="text-sm text-text-muted">
           This password reset link is invalid or has expired. Request a new one from the forgot
           password page.
@@ -88,7 +88,7 @@ export function ResetPasswordForm() {
   if (success) {
     return (
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="font-display text-xl font-bold uppercase text-white">Password updated</h2>
+        <h2 className="font-display text-xl font-bold uppercase text-ink">Password updated</h2>
         <p className="text-sm text-text-muted">Taking you to your dashboard...</p>
       </div>
     );

@@ -66,7 +66,7 @@ const PERIOD_SELECT = `
 
 const NOMINATION_SELECT = `
   id, period_id, nominated_by, reason, status, created_at,
-  nominee:profiles!award_nominations_nominee_profile_id_fkey ( id, username, display_name, avatar_url, fan_level )
+  nominee:profiles!award_nominations_nominee_profile_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season )
 ` as const;
 
 interface CategoryRow {
@@ -101,7 +101,7 @@ interface NominationRow {
 }
 
 const FALLBACK_CATEGORY: AwardCategory = { id: "", key: "unknown", name: "Award", description: null };
-const FALLBACK_NOMINEE: FeedAuthor = { id: "", username: "unknown", display_name: null, avatar_url: null, fan_level: 1 };
+const FALLBACK_NOMINEE: FeedAuthor = { id: "", username: "unknown", display_name: null, avatar_url: null, fan_level: 1, is_current_fan_of_month: false, is_current_fan_of_season: false };
 
 function normalizePeriod(row: PeriodRow): AwardPeriod {
   return {
@@ -265,10 +265,44 @@ export async function determineWinner(supabase: AnySupabase, periodId: string): 
   return { error: error ? error.message : null };
 }
 
+/**
+ * Award-manager/super-admin only (or the Vercel Cron route in 8d, which
+ * authenticates as service_role) — calls auto_nominate_award_period()
+ * (migration 051), which scores every profile's posts/comments/room
+ * participation/predictions/reactions-given over the period's own date
+ * range and inserts the top-scoring fans as already-'approved' nominations,
+ * ready to vote on immediately. Idempotent: re-running it after some
+ * nominees already exist for the period just tops up, via the same
+ * (period_id, nominee_profile_id) unique constraint every other nomination
+ * path relies on.
+ */
+export async function autoNominateForPeriod(supabase: AnySupabase, periodId: string): Promise<{ inserted: number; error: string | null }> {
+  const { data, error } = await supabase.rpc("auto_nominate_award_period", { p_period_id: periodId });
+  return { inserted: error ? 0 : (data ?? 0), error: error ? error.message : null };
+}
+
+/**
+ * Award-manager/super-admin only — the "Run now" side of the lifecycle
+ * automation (migration 052). Advances *every* category's current period
+ * one step at whatever stage it's due: starts the next period once the
+ * last one has fully wrapped up, auto-nominates + opens a 3-day vote once
+ * a period's own window ends, or closes voting + announces a winner once
+ * that 3-day window elapses. The Vercel Cron route
+ * (src/app/api/cron/award-periods/route.ts) calls the exact same RPC on a
+ * schedule, authenticated as service_role instead of an admin session —
+ * this button exists so a manager doesn't have to wait for the next tick.
+ * Returns a human-readable log of whatever it actually did (often nothing,
+ * since most calls land between milestones — that's expected, not an error).
+ */
+export async function advancePeriods(supabase: AnySupabase): Promise<{ log: string[]; error: string | null }> {
+  const { data, error } = await supabase.rpc("advance_award_periods");
+  return { log: error ? [] : (data ?? []), error: error ? error.message : null };
+}
+
 const WINNER_SELECT = `
   id, period_id, vote_count, announced_at,
   period:award_periods ( category:award_categories ( key, name ) ),
-  nomination:award_nominations ( id, nominee:profiles!award_nominations_nominee_profile_id_fkey ( id, username, display_name, avatar_url, fan_level ) )
+  nomination:award_nominations ( id, nominee:profiles!award_nominations_nominee_profile_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season ) )
 ` as const;
 
 interface WinnerRow {
@@ -278,6 +312,27 @@ interface WinnerRow {
   announced_at: string;
   period: { category: { key: string; name: string } | null } | null;
   nomination: { id: string; nominee: FeedAuthor | null } | null;
+}
+
+/**
+ * Award-manager/super-admin only — corrects a wrongly-announced winner.
+ * Both RPCs (migration 050) are SECURITY DEFINER with their own has_role()
+ * check as the real boundary (same posture as determine_award_winner()
+ * itself), so a non-manager calling these gets a clear Postgres exception
+ * back as `error.message`, not a silent no-op.
+ */
+export async function deleteAwardWinner(supabase: AnySupabase, winnerId: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.rpc("delete_award_winner", { p_winner_id: winnerId });
+  return { error: error ? error.message : null };
+}
+
+/** Award-manager/super-admin only — reassigns a winner row to a different (already-approved) nominee, recomputing its vote_count from the real ballots and moving the crown across. */
+export async function reassignAwardWinner(
+  supabase: AnySupabase,
+  { winnerId, newNominationId }: { winnerId: string; newNominationId: string },
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.rpc("reassign_award_winner", { p_winner_id: winnerId, p_new_nomination_id: newNominationId });
+  return { error: error ? error.message : null };
 }
 
 /** Winners history/archive — publicly readable (migration 009), newest first. */

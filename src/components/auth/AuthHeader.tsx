@@ -19,7 +19,7 @@ export function AuthHeader({ heading, subtext }: AuthHeaderProps) {
         <TheatreOfDreamsMark className="text-sm" />
       </div>
       <div>
-        <h1 className="font-display text-2xl font-bold uppercase text-white sm:text-3xl">
+        <h1 className="font-display text-2xl font-bold uppercase text-ink sm:text-3xl">
           {heading}
         </h1>
         <p className="mt-2 text-sm text-text-muted">{subtext}</p>

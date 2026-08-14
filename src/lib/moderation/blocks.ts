@@ -4,7 +4,7 @@ import type { FeedAuthor } from "@/lib/community/posts";
 
 type AnySupabase = SupabaseClient<Database>;
 
-const PROFILE_FIELDS = "id, username, display_name, avatar_url, fan_level";
+const PROFILE_FIELDS = "id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season";
 
 /**
  * Block and Mute are deliberately kept in one file (unlike Report, which is

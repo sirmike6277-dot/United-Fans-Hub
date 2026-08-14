@@ -9,20 +9,25 @@ export interface AuthLayoutProps {
 }
 
 /**
- * Shared shell for /login, /signup, /forgot-password: a premium split-screen
- * on desktop (cinematic visual + dark auth panel) that collapses to a single
- * centered column on mobile, keeping a subtle version of the same red-glow
- * atmosphere rather than just hiding it outright.
+ * Shared shell for /login, /signup, /forgot-password, /reset-password: a
+ * premium split-screen on desktop (cinematic photography + auth panel) that
+ * collapses to a single centered column on mobile, keeping a subtle version
+ * of the same red-glow atmosphere rather than just hiding it outright.
  *
  * On desktop, <AuthBackdrop /> paints one full-bleed background behind both
- * columns before either is rendered, so the right-hand panel (previously
- * flat bg-bg-void with no imagery at all) shares the same photography +
- * emblem canvas as the left, blending together at the column seam instead
- * of the page reading as "half" designed.
+ * columns before either is rendered, so the right-hand panel shares the
+ * same photography + emblem canvas as the left, blending together at the
+ * column seam instead of the page reading as "half" designed — and unlike
+ * the landing hero/stadium banners (which stay permanently cinematic;
+ * that's real photography, not UI chrome), AuthBackdrop itself is
+ * theme-reactive, so this whole canvas — left and right alike — genuinely
+ * relights in light mode instead of the panel getting its own separate,
+ * seam-creating surface. See AuthBackdrop's own doc comment for the token
+ * choices that make that work.
  */
 export function AuthLayout({ visual, children }: AuthLayoutProps) {
   return (
-    <div className="relative flex min-h-screen bg-cinema-void lg:grid lg:grid-cols-[2fr_3fr]">
+    <div className="relative flex min-h-screen bg-bg-void lg:grid lg:grid-cols-[2fr_3fr]">
       <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
         <AuthBackdrop
           leftSrc="/images/stadium/old-trafford-trinity-statue.jpg"

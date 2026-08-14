@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Avatar } from "./Avatar";
+import { Avatar, type AvatarCrown } from "./Avatar";
 
 export interface UserIdentityProps {
   name: string;
@@ -11,6 +11,8 @@ export interface UserIdentityProps {
   /** "inline" = name and @username on one baseline (PostCard's header row); "stack" (default) = name then @username on the line below (MemberCard). */
   layout?: "inline" | "stack";
   className?: string;
+  /** The current reigning Fan of the Month/Season, if either — see Avatar's own crownFor() helper for deriving this from a FeedAuthor. */
+  crown?: AvatarCrown;
 }
 
 /**
@@ -22,10 +24,10 @@ export interface UserIdentityProps {
  * trailing column) — see FanLevelBadge for that piece, composed alongside
  * this one by the caller.
  */
-export function UserIdentity({ name, username, avatarUrl, size = 44, href, layout = "stack", className = "" }: UserIdentityProps) {
+export function UserIdentity({ name, username, avatarUrl, size = 44, href, layout = "stack", className = "", crown = null }: UserIdentityProps) {
   const content = (
     <>
-      <Avatar url={avatarUrl} name={name} size={size} />
+      <Avatar url={avatarUrl} name={name} size={size} crown={crown} />
       {layout === "inline" ? (
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
           <span className="font-display font-semibold text-ink">{name}</span>

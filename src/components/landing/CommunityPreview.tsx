@@ -21,7 +21,7 @@ export function CommunityPreview({ posts }: CommunityPreviewProps) {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <Badge tone="red">Community</Badge>
-          <h2 className="mt-4 font-display text-3xl font-bold uppercase text-white sm:text-4xl">
+          <h2 className="mt-4 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
             The debate never stops
           </h2>
           <p className="mt-4 text-text-muted">A glimpse at what fans are posting right now.</p>
@@ -40,7 +40,7 @@ export function CommunityPreview({ posts }: CommunityPreviewProps) {
                   <div className="flex items-center gap-3">
                     <Avatar url={post.author.avatar_url} name={name} size={36} />
                     <div>
-                      <p className="text-sm font-semibold text-white">{name}</p>
+                      <p className="text-sm font-semibold text-ink">{name}</p>
                       <p className="text-xs text-text-muted">@{post.author.username}</p>
                     </div>
                   </div>

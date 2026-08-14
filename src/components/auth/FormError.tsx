@@ -13,7 +13,7 @@ export function FormError({ message }: FormErrorProps) {
     <div
       role="alert"
       aria-live="assertive"
-      className="rounded-control border border-red-primary/40 bg-red-primary/10 px-4 py-3 text-sm text-white"
+      className="rounded-control border border-red-primary/40 bg-red-primary/10 px-4 py-3 text-sm text-ink"
     >
       {message}
     </div>

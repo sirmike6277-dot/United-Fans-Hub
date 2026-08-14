@@ -33,7 +33,7 @@ export function ForgotPasswordForm() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center gap-3 text-center">
-        <h2 className="font-display text-xl font-bold uppercase text-white">Check your inbox</h2>
+        <h2 className="font-display text-xl font-bold uppercase text-ink">Check your inbox</h2>
         <p className="text-sm text-text-muted">
           If an account exists for this email address, we&apos;ve sent instructions to reset your
           password.

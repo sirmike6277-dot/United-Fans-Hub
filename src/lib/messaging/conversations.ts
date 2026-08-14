@@ -96,7 +96,7 @@ export async function fetchConversations(
   const { data: coParticipantRows } = await supabase
     .from("conversation_participants")
     .select(
-      "conversation_id, profile:profiles!conversation_participants_profile_id_fkey ( id, username, display_name, avatar_url, fan_level )",
+      "conversation_id, profile:profiles!conversation_participants_profile_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season )",
     )
     .in("conversation_id", conversationIds)
     .neq("profile_id", currentUserId);

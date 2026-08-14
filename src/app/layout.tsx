@@ -47,12 +47,43 @@ export const viewport: Viewport = {
   themeColor: "#050505",
 };
 
+// Runs synchronously in <head>, before hydration — the standard no-FOUC
+// technique (same idea as next-themes) applied by hand rather than adding a
+// dependency. Reads the same "theme-mode" key resolveTheme.ts's
+// readStoredThemeMode/writeStoredThemeMode mirror, and resolves "auto"
+// using the same 06:00–18:00 local-clock rule as resolveTheme() — that rule
+// is duplicated here deliberately: this script can't import a module, it
+// has to be a self-contained string that runs before any JS bundle loads.
+// Without this, the theme is only ever known after AppearanceEffect's async
+// Supabase fetch resolves, which is the exact flash this exists to prevent.
+const NO_FLASH_THEME_SCRIPT = `
+(function () {
+  try {
+    var mode = window.localStorage.getItem("theme-mode");
+    var resolved;
+    if (mode === "light" || mode === "dark") {
+      resolved = mode;
+    } else {
+      var hour = new Date().getHours();
+      resolved = hour >= 6 && hour < 18 ? "light" : "dark";
+    }
+    if (resolved === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${oswald.variable} ${inter.variable} ${playfairDisplay.variable} ${cinzel.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-bg-void text-text-body">
         {children}
       </body>

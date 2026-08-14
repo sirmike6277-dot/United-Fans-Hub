@@ -36,7 +36,7 @@ export interface FeedReport {
 
 const REPORT_SELECT = `
   id, target_type, target_id, reason, details, status, created_at, resolved_at,
-  reporter:profiles!reports_reporter_id_fkey ( id, username, display_name, avatar_url, fan_level )
+  reporter:profiles!reports_reporter_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season )
 ` as const;
 
 interface ReportRow {
@@ -51,7 +51,7 @@ interface ReportRow {
   reporter: FeedAuthor | null;
 }
 
-const FALLBACK_REPORTER: FeedAuthor = { id: "", username: "unknown", display_name: null, avatar_url: null, fan_level: 1 };
+const FALLBACK_REPORTER: FeedAuthor = { id: "", username: "unknown", display_name: null, avatar_url: null, fan_level: 1, is_current_fan_of_month: false, is_current_fan_of_season: false };
 
 function normalize(row: ReportRow): FeedReport {
   return {

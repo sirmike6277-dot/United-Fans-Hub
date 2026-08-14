@@ -59,7 +59,7 @@ export async function searchMentionCandidates(
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, fan_level")
+    .select("id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season")
     .neq("id", excludeId)
     .ilike("username", `${query}%`)
     .order("username", { ascending: true })
@@ -87,7 +87,7 @@ export async function searchRoomMentionCandidates(
   // avoids relying on embedded-filter query syntax for something this size.
   const { data } = await supabase
     .from("conversation_participants")
-    .select("profile:profiles!conversation_participants_profile_id_fkey ( id, username, display_name, avatar_url, fan_level )")
+    .select("profile:profiles!conversation_participants_profile_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season )")
     .eq("conversation_id", conversationId)
     .neq("profile_id", excludeId);
 

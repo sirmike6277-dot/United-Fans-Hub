@@ -286,6 +286,10 @@ export function PostComposer({ currentUser, clubId, onPostCreated }: PostCompose
         display_name: currentUser.displayName,
         avatar_url: currentUser.avatarUrl,
         fan_level: currentUser.fanLevel,
+        // Optimistic local echo of a post this same viewer just published —
+        // real crown state (if any) refreshes from the server on next load.
+        is_current_fan_of_month: false,
+        is_current_fan_of_season: false,
       },
       media: mediaRows,
       reactionCount: 0,

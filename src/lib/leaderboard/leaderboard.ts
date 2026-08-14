@@ -43,7 +43,7 @@ export async function fetchFanLeaderboard(
 ): Promise<{ entries: LeaderboardEntry[]; error: string | null }> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, fan_level, fan_points")
+    .select("id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season, fan_points")
     .order("fan_points", { ascending: false })
     .order("id", { ascending: true })
     .range(from, to);
@@ -59,6 +59,8 @@ export async function fetchFanLeaderboard(
       display_name: row.display_name,
       avatar_url: row.avatar_url,
       fan_level: row.fan_level,
+      is_current_fan_of_month: row.is_current_fan_of_month,
+      is_current_fan_of_season: row.is_current_fan_of_season,
       fan_points: row.fan_points,
     })),
     error: null,

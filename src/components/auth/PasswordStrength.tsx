@@ -18,13 +18,13 @@ function getStrength(password: string): Strength {
   return "strong";
 }
 
-// Deliberately stays within the brand palette (red / white) rather than
+// Deliberately stays within the brand palette (red / ink) rather than
 // introducing a semantic green — see docs/architecture for why.
 const styles: Record<Strength, { label: string; bars: number; className: string }> = {
-  empty: { label: "", bars: 0, className: "bg-white/10" },
+  empty: { label: "", bars: 0, className: "bg-ink/10" },
   weak: { label: "Weak", bars: 1, className: "bg-red-deep" },
   fair: { label: "Fair", bars: 2, className: "bg-red-primary" },
-  strong: { label: "Strong", bars: 3, className: "bg-white" },
+  strong: { label: "Strong", bars: 3, className: "bg-ink" },
 };
 
 export function PasswordStrength({ password }: PasswordStrengthProps) {
@@ -39,7 +39,7 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
           <span
             key={i}
             className={`h-1 flex-1 rounded-full transition-colors ${
-              i < bars ? className : "bg-white/10"
+              i < bars ? className : "bg-ink/10"
             }`}
           />
         ))}

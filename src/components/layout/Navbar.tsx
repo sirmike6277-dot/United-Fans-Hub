@@ -11,7 +11,7 @@ import { MessageBubbleIcon } from "@/components/messaging/MessagingIcons";
 import { fetchUnreadConversationCount } from "@/lib/messaging/conversations";
 import { NAV_ITEMS, MODERATION_NAV_ITEM, ADMIN_NAV_ITEM } from "./navItems";
 import { SunIcon, MoonIcon } from "./ShellIcons";
-import { applyThemeAttribute, type ThemeMode } from "@/lib/theme/resolveTheme";
+import { applyThemeAttribute, writeStoredThemeMode, type ThemeMode } from "@/lib/theme/resolveTheme";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -125,6 +125,12 @@ export function Navbar({ brand }: NavbarProps) {
     // Optimistic — the reader sees the switch instantly, matching every
     // other toggle in this app (AppearancePanel's own save() does the same).
     applyThemeAttribute(nextMode);
+    // Mirror immediately, same as AppearancePanel/AppearanceEffect — without
+    // this, a theme changed from this quick toggle never reaches the
+    // synchronous no-flash script in layout.tsx, so it reverts to whatever
+    // was last mirrored (or "auto") on the very next load or after signing
+    // out, even though Supabase itself was updated correctly.
+    writeStoredThemeMode(nextMode);
     setThemeSaving(true);
 
     const supabase = createClient();

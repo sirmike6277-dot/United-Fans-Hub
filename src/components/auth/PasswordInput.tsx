@@ -40,9 +40,9 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             ref={ref}
             id={inputId}
             type={visible ? "text" : "password"}
-            className={`h-11 w-full rounded-control border bg-bg-elevated pr-11 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary ${
+            className={`h-11 w-full rounded-control border bg-bg-elevated pr-11 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary ${
               icon ? "pl-11" : "pl-4"
-            } ${error ? "border-red-hover" : "border-white/10"} ${className}`}
+            } ${error ? "border-red-hover" : "border-ink/10"} ${className}`}
             aria-invalid={Boolean(error) || undefined}
             aria-describedby={error ? `${inputId}-error` : undefined}
             {...props}
@@ -50,7 +50,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
           <button
             type="button"
             onClick={() => setVisible((v) => !v)}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
             aria-label={visible ? "Hide password" : "Show password"}
             aria-pressed={visible}
           >

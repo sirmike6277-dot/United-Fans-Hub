@@ -1,4 +1,4 @@
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { CrownIcon } from "@/components/achievements/AchievementIcons";
@@ -31,7 +31,7 @@ export function WinnerAnnouncement({ winner }: WinnerAnnouncementProps) {
         <CrownIcon size={28} />
       </span>
       <Badge tone="red">{winner.categoryName}</Badge>
-      <Avatar url={winner.nomination.nominee.avatar_url} name={name} size={72} />
+      <Avatar url={winner.nomination.nominee.avatar_url} name={name} size={72} crown={crownFor(winner.nomination.nominee)} />
       <div>
         <p className="font-display text-xl font-bold text-ink">{name}</p>
         <p className="text-sm text-text-muted">@{winner.nomination.nominee.username}</p>

@@ -20,7 +20,7 @@ export default function ResetPasswordError({
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg-void px-4 text-center">
       <Wordmark />
       <div className="max-w-sm">
-        <p className="font-display text-xl font-bold text-white">Something went wrong</p>
+        <p className="font-display text-xl font-bold text-ink">Something went wrong</p>
         <p className="mt-2 text-sm text-text-muted">
           We couldn&apos;t load this page. Your reset link may have expired — request a new one.
         </p>

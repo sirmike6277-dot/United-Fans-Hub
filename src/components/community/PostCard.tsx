@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import { Card } from "@/components/ui/Card";
@@ -38,7 +38,7 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
   return (
     <Card className="!p-4 sm:!p-5">
       <div className="flex items-start gap-3">
-        <Avatar url={post.author.avatar_url} name={authorName} size={44} />
+        <Avatar url={post.author.avatar_url} name={authorName} size={44} crown={crownFor(post.author)} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
             <span className="font-display font-semibold text-ink">{authorName}</span>

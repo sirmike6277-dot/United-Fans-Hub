@@ -73,7 +73,7 @@ export function SocialAuthButtons() {
           type="button"
           onClick={() => handleClick("google")}
           disabled={loadingProvider !== null}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-control border border-white/15 bg-transparent text-sm font-medium text-white transition-colors hover:border-white/30 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-void disabled:opacity-50"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-control border border-ink/15 bg-transparent text-sm font-medium text-ink transition-colors hover:border-ink/30 hover:bg-ink/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-void disabled:opacity-50"
         >
           <GoogleIcon />
           {loadingProvider === "google" ? "Redirecting..." : "Google"}
@@ -82,7 +82,7 @@ export function SocialAuthButtons() {
           type="button"
           onClick={() => handleClick("apple")}
           disabled={loadingProvider !== null}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-control border border-white/15 bg-transparent text-sm font-medium text-white transition-colors hover:border-white/30 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-void disabled:opacity-50"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-control border border-ink/15 bg-transparent text-sm font-medium text-ink transition-colors hover:border-ink/30 hover:bg-ink/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-void disabled:opacity-50"
         >
           <AppleIcon />
           {loadingProvider === "apple" ? "Redirecting..." : "Apple"}

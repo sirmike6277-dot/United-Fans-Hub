@@ -16,7 +16,7 @@ export const POST_SELECT = `
   category,
   created_at,
   author_id,
-  author:profiles!posts_author_id_fkey ( id, username, display_name, avatar_url, fan_level ),
+  author:profiles!posts_author_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season ),
   post_media ( id, storage_path, media_type, order_index, width, height ),
   reactions:post_reactions ( count ),
   comment_total:comments ( count ),
@@ -33,6 +33,9 @@ export interface FeedAuthor {
   display_name: string | null;
   avatar_url: string | null;
   fan_level: number;
+  /** The current reigning Fan of the Month/Season, if either — never both true and neither ever true for more than one profile at once (see determine_award_winner(), migration 049). Drives the crown overlay on Avatar wherever this author's identity is shown. */
+  is_current_fan_of_month: boolean;
+  is_current_fan_of_season: boolean;
 }
 
 export interface FeedPostMedia {
@@ -98,6 +101,8 @@ const FALLBACK_AUTHOR: FeedAuthor = {
   display_name: null,
   avatar_url: null,
   fan_level: 1,
+  is_current_fan_of_month: false,
+  is_current_fan_of_season: false,
 };
 
 function normalizePost(row: FeedPostRow, reactedPostIds: ReadonlySet<string>): FeedPost {

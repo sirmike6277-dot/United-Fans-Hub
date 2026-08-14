@@ -33,7 +33,7 @@ export function FeatureSection() {
     <section id="features" className="bg-bg-void py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-bold uppercase text-white sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
             Everything a United fan needs
           </h2>
           <p className="mt-4 text-text-muted">
@@ -50,7 +50,7 @@ export function FeatureSection() {
               >
                 <Icon />
               </span>
-              <h3 className="font-display text-lg font-semibold uppercase text-white">{title}</h3>
+              <h3 className="font-display text-lg font-semibold uppercase text-ink">{title}</h3>
               <p className="text-sm text-text-muted">{description}</p>
             </Card>
           ))}

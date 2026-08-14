@@ -263,7 +263,7 @@ export async function fetchRoomMembers(
   const { data, error } = await supabase
     .from("conversation_participants")
     .select(
-      "profile_id, role, joined_at, profile:profiles!conversation_participants_profile_id_fkey ( id, username, display_name, avatar_url, fan_level )",
+      "profile_id, role, joined_at, profile:profiles!conversation_participants_profile_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season )",
     )
     .eq("conversation_id", conversationId)
     .order("joined_at", { ascending: true });
@@ -364,7 +364,7 @@ export async function fetchRoomBans(
   const { data, error } = await supabase
     .from("room_bans")
     .select(
-      "profile_id, created_at, banned_until, reason, profile:profiles!room_bans_profile_id_fkey ( id, username, display_name, avatar_url, fan_level )",
+      "profile_id, created_at, banned_until, reason, profile:profiles!room_bans_profile_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season )",
     )
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: false });

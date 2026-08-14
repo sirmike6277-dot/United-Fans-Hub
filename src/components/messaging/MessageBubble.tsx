@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { formatRelativeTime } from "@/lib/format";
 import { getSignedMediaUrl, type MessageReactionSummary } from "@/lib/messaging/messages";
 import { FileGenericIcon } from "@/components/community/RoomIcons";
@@ -42,7 +42,7 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
 
   return (
     <div className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
-      {!isOwn ? <Avatar url={message.sender.avatar_url} name={senderName} size={32} /> : null}
+      {!isOwn ? <Avatar url={message.sender.avatar_url} name={senderName} size={32} crown={crownFor(message.sender)} /> : null}
       <div className={`flex max-w-[75%] flex-col gap-1 ${isOwn ? "items-end" : "items-start"}`}>
         {showSenderName && !isOwn ? (
           <span className="px-1 text-xs font-medium text-text-muted">{senderName}</span>

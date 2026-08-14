@@ -11,11 +11,13 @@ import { NominationForm } from "./NominationForm";
 import { NomineeVoteCard } from "./NomineeVoteCard";
 import { WinnerAnnouncement } from "./WinnerAnnouncement";
 import { AwardPeriodAdminPanel } from "./AwardPeriodAdminPanel";
+import { Button } from "@/components/ui/Button";
 import {
   fetchAwardPeriods,
   fetchNominations,
   fetchWinners,
   castAwardVote,
+  advancePeriods,
   type AwardCategory,
   type AwardPeriod,
   type AwardNomination,
@@ -162,7 +164,14 @@ function CategoryPanel({
   return (
     <div className="flex flex-col gap-4">
       {canManage ? (
-        <AwardPeriodAdminPanel category={category} period={period} pendingNominations={pendingNominations} onChanged={onPeriodChanged} />
+        <AwardPeriodAdminPanel
+          category={category}
+          period={period}
+          pendingNominations={pendingNominations}
+          winner={winner}
+          approvedNominations={approvedNominations}
+          onChanged={onPeriodChanged}
+        />
       ) : null}
 
       {!period ? (
@@ -252,6 +261,9 @@ export function AwardsHub({ categories, initialPeriods, initialWinners, currentU
   const [activeCategoryKey, setActiveCategoryKey] = useState(categories[0]?.key ?? "");
   const [periods, setPeriods] = useState(initialPeriods);
   const [winners, setWinners] = useState(initialWinners);
+  const [advancing, setAdvancing] = useState(false);
+  const [advanceLog, setAdvanceLog] = useState<string[] | null>(null);
+  const [advanceError, setAdvanceError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     const supabase = createClient();
@@ -288,12 +300,56 @@ export function AwardsHub({ categories, initialPeriods, initialWinners, currentU
 
   const winnerByPeriodId = useMemo(() => new Map(winners.map((w) => [w.periodId, w])), [winners]);
 
+  async function handleAdvance() {
+    if (advancing) return;
+    setAdvancing(true);
+    setAdvanceError(null);
+    setAdvanceLog(null);
+    const supabase = createClient();
+    const { log, error: advanceRpcError } = await advancePeriods(supabase);
+    setAdvancing(false);
+    if (advanceRpcError) {
+      setAdvanceError(advanceRpcError);
+      return;
+    }
+    setAdvanceLog(log);
+    refresh();
+  }
+
   if (categories.length === 0) {
     return <EmptyState icon={<CrownIcon size={28} />} title="Awards aren't set up yet" description="Check back soon." />;
   }
 
   return (
     <div className="flex flex-col gap-6">
+      {canManage ? (
+        <div className="flex flex-col gap-2 rounded-card border border-ink/10 bg-bg-elevated p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium text-ink">Period lifecycle automation</p>
+              <p className="text-xs text-text-muted">
+                A Vercel Cron job also runs this automatically — use this to advance every category&apos;s period right now instead of waiting for the next scheduled run.
+              </p>
+            </div>
+            <Button type="button" variant="secondary" size="sm" onClick={handleAdvance} loading={advancing} disabled={advancing} className="shrink-0">
+              Run now
+            </Button>
+          </div>
+          {advanceError ? <p className="text-sm text-red-hover">{advanceError}</p> : null}
+          {advanceLog ? (
+            advanceLog.length > 0 ? (
+              <ul className="flex flex-col gap-1 border-t border-ink/10 pt-2 text-xs text-text-muted">
+                {advanceLog.map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="border-t border-ink/10 pt-2 text-xs text-text-muted">Nothing to do yet — no period has hit its next milestone.</p>
+            )
+          ) : null}
+        </div>
+      ) : null}
+
       <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-ink/10">
         {categories.map((category) => {
           const isActive = activeCategoryKey === category.key;

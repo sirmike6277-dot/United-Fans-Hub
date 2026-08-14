@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { CrownIcon } from "@/components/achievements/AchievementIcons";
 import type { AwardWinner } from "@/lib/awards/awards";
 
@@ -37,7 +37,13 @@ export function FanOfMonthTeaser({ winner }: FanOfMonthTeaserProps) {
 
         {winner ? (
           <>
-            <Avatar url={winner.nomination.nominee.avatar_url} name={name ?? "Winner"} size={72} className="mx-auto mt-5" />
+            <Avatar
+              url={winner.nomination.nominee.avatar_url}
+              name={name ?? "Winner"}
+              size={72}
+              className="mx-auto mt-5"
+              crown={crownFor(winner.nomination.nominee)}
+            />
             <p className="mt-3 font-display text-base font-bold text-ink">{name}</p>
             <p className="text-xs text-text-muted">{winner.voteCount.toLocaleString()} votes</p>
           </>

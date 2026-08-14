@@ -49,3 +49,37 @@ export function applyThemeAttribute(resolved: ResolvedTheme) {
     root.removeAttribute("data-theme");
   }
 }
+
+// Device-local mirror of the theme preference, independent of any signed-in
+// account. Two jobs: (1) lets the inline no-flash script in layout.tsx
+// (which runs before React/Supabase are available) resolve the correct
+// theme synchronously on first paint, and (2) is the only theme source at
+// all for a signed-out visitor, who has no `profiles` row to read from.
+// AppearanceEffect mirrors the real, account-scoped preference in here on
+// every fetch, so the two stay in sync on any device the user has signed in
+// on; a browser that's never seen a signed-in session just falls back to
+// "auto" below, same as this app's own default.
+const STORAGE_KEY = "theme-mode";
+
+function isThemeMode(value: unknown): value is ThemeMode {
+  return value === "auto" || value === "light" || value === "dark";
+}
+
+/** Reads the mirrored theme preference. SSR/private-browsing-safe — never throws, falls back to "auto". */
+export function readStoredThemeMode(): ThemeMode {
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    return isThemeMode(stored) ? stored : "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+/** Mirrors a theme preference for the next load's synchronous read. Best-effort — a write failure (e.g. private browsing) just means the next load falls back to "auto", never an error the user sees. */
+export function writeStoredThemeMode(mode: ThemeMode): void {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, mode);
+  } catch {
+    // Ignored — see doc comment above.
+  }
+}

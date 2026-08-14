@@ -1426,6 +1426,8 @@ export type Database = {
           favourite_player_id: string | null
           favourite_shirt: string | null
           id: string
+          is_current_fan_of_month: boolean
+          is_current_fan_of_season: boolean
           location: string | null
           matchday_routine: string | null
           notification_preferences: Json
@@ -1453,6 +1455,8 @@ export type Database = {
           favourite_player_id?: string | null
           favourite_shirt?: string | null
           id: string
+          is_current_fan_of_month?: boolean
+          is_current_fan_of_season?: boolean
           location?: string | null
           matchday_routine?: string | null
           notification_preferences?: Json
@@ -1480,6 +1484,8 @@ export type Database = {
           favourite_player_id?: string | null
           favourite_shirt?: string | null
           id?: string
+          is_current_fan_of_month?: boolean
+          is_current_fan_of_season?: boolean
           location?: string | null
           matchday_routine?: string | null
           notification_preferences?: Json
@@ -1500,6 +1506,35 @@ export type Database = {
             columns: ["favourite_player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reaction_point_awards: {
+        Row: {
+          awarded_at: string
+          item_id: string
+          item_type: string
+          reactor_profile_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          item_id: string
+          item_type: string
+          reactor_profile_id: string
+        }
+        Update: {
+          awarded_at?: string
+          item_id?: string
+          item_type?: string
+          reactor_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reaction_point_awards_reactor_profile_id_fkey"
+            columns: ["reactor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2002,6 +2037,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      advance_award_periods: { Args: never; Returns: string[] }
+      auto_nominate_award_period: {
+        Args: { p_count?: number; p_period_id: string }
+        Returns: number
+      }
       award_vote_counts: {
         Args: { p_period_id: string }
         Returns: {
@@ -2013,6 +2053,7 @@ export type Database = {
         Args: { p_key: string; p_ttl_seconds: number }
         Returns: boolean
       }
+      delete_award_winner: { Args: { p_winner_id: string }; Returns: undefined }
       determine_award_winner: {
         Args: { p_period_id: string }
         Returns: {
@@ -2023,7 +2064,11 @@ export type Database = {
       email_for_username: { Args: { lookup_username: string }; Returns: string }
       get_profile_role_badges: {
         Args: { target_profile_ids: string[] }
-        Returns: { profile_id: string; role_key: string; role_name: string }[]
+        Returns: {
+          profile_id: string
+          role_key: string
+          role_name: string
+        }[]
       }
       has_blocked_participant_in_conversation: {
         Args: { p_conversation_id: string; p_profile_id: string }
@@ -2045,6 +2090,10 @@ export type Database = {
       is_conversation_participant: {
         Args: { p_conversation_id: string }
         Returns: boolean
+      }
+      reassign_award_winner: {
+        Args: { p_new_nomination_id: string; p_winner_id: string }
+        Returns: undefined
       }
       record_moderation_action: {
         Args: {

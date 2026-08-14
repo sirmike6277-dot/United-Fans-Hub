@@ -50,11 +50,11 @@ export async function MatchdayPreview() {
   const awayLabel = nextMatch?.isHome ? nextMatch?.opponentName : "Man United";
 
   return (
-    <section id="matchday" className="bg-bg-elevated py-20 sm:py-28">
+    <section id="matchday" className="bg-bg-void py-20 sm:py-28">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
         <div>
           <Badge tone="red">Match Centre</Badge>
-          <h2 className="mt-4 font-display text-3xl font-bold uppercase text-white sm:text-4xl">
+          <h2 className="mt-4 font-display text-3xl font-bold uppercase text-ink sm:text-4xl">
             Never miss a matchday
           </h2>
           <p className="mt-4 max-w-md text-text-muted">
@@ -79,7 +79,7 @@ export async function MatchdayPreview() {
                     name={homeLabel ?? "Manchester United"}
                     size={48}
                   />
-                  <span className="text-sm font-semibold text-white">{homeLabel}</span>
+                  <span className="text-sm font-semibold text-ink">{homeLabel}</span>
                 </div>
                 <span className="font-display text-lg font-bold text-text-muted">VS</span>
                 <div className="flex flex-1 flex-col items-center gap-2">
@@ -89,7 +89,7 @@ export async function MatchdayPreview() {
                     name={awayLabel ?? "Manchester United"}
                     size={48}
                   />
-                  <span className="text-sm font-semibold text-white">{awayLabel}</span>
+                  <span className="text-sm font-semibold text-ink">{awayLabel}</span>
                 </div>
               </div>
 
@@ -101,7 +101,7 @@ export async function MatchdayPreview() {
                 <div className="mt-6 flex justify-center gap-6 rounded-control bg-bg-void py-4">
                   {countdownParts(nextMatch.kickoffAt).map((c) => (
                     <div key={c.label} className="flex flex-col items-center">
-                      <span className="font-display text-2xl font-bold text-white">{c.value}</span>
+                      <span className="font-display text-2xl font-bold text-ink">{c.value}</span>
                       <span className="text-[10px] uppercase tracking-wide text-text-muted">{c.label}</span>
                     </div>
                   ))}

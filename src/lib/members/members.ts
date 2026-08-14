@@ -38,7 +38,7 @@ export async function fetchMembersPage(
 ): Promise<{ members: MemberWithFollowState[]; error: string | null }> {
   let request = supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, fan_level")
+    .select("id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season")
     .neq("id", currentUserId)
     .order("username", { ascending: true })
     .range(from, to);

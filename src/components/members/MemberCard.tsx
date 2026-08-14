@@ -1,4 +1,5 @@
 import { UserIdentity } from "@/components/ui/UserIdentity";
+import { crownFor } from "@/components/ui/Avatar";
 import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { Card } from "@/components/ui/Card";
 import { FollowButton } from "@/components/community/FollowButton";
@@ -22,6 +23,7 @@ export function MemberCard({ member, currentUserId, initialIsFollowing }: Member
         size={48}
         href={`/profile/${member.id}`}
         className="flex-1"
+        crown={crownFor(member)}
       />
       <div className="flex shrink-0 flex-col items-end gap-1.5">
         <FanLevelBadge level={member.fan_level} />

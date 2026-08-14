@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import type { LeaderboardEntry } from "@/lib/leaderboard/leaderboard";
@@ -60,6 +60,7 @@ export function LeaderboardRow({ entry, rank, isCurrentUser }: LeaderboardRowPro
           name={name}
           size={40}
           className={podium ? `${podium.ring} ring-offset-2 ring-offset-bg-surface` : undefined}
+          crown={crownFor(entry)}
         />
         <div className="min-w-0 flex-1">
           <p className="flex items-baseline gap-2 font-display font-semibold text-ink">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { HeartIcon, ReplyIcon } from "./CommunityIcons";
 import { MentionText } from "./MentionText";
@@ -49,7 +49,7 @@ export function CommentItem({ comment, currentUserId, onReply, isReply = false }
 
   return (
     <div className="flex gap-3">
-      <Avatar url={comment.author.avatar_url} name={name} size={isReply ? 28 : 32} />
+      <Avatar url={comment.author.avatar_url} name={name} size={isReply ? 28 : 32} crown={crownFor(comment.author)} />
       <div className="flex-1">
         <div className="rounded-card bg-bg-elevated px-3 py-2">
           <div className="flex flex-wrap items-baseline gap-1.5">

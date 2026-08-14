@@ -23,7 +23,7 @@ export function AuthVisual() {
         An independent Manchester United fan community
       </span>
 
-      <div className="relative mx-auto h-[45vh] w-full max-w-md overflow-hidden rounded-card border border-white/10 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.7)]">
+      <div className="relative mx-auto h-[45vh] w-full max-w-md overflow-hidden rounded-card border border-ink/10 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.7)]">
         <Image
           src="/images/stadium/old-trafford-reds-mural.jpg"
           alt="'THE REDS GO MARCHING ON' — the mural on Old Trafford's forecourt wall"

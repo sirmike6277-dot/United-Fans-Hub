@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { resolveTheme, msUntilNextThemeBoundary, applyThemeAttribute, type ThemeMode } from "@/lib/theme/resolveTheme";
+import {
+  resolveTheme,
+  msUntilNextThemeBoundary,
+  applyThemeAttribute,
+  writeStoredThemeMode,
+  type ThemeMode,
+} from "@/lib/theme/resolveTheme";
 
 interface AppearancePreferences {
   reduce_motion: boolean;
@@ -41,7 +47,14 @@ export function AppearanceEffect() {
         .single()
         .then(({ data: row }) => {
           const raw = (row?.appearance_preferences ?? {}) as Partial<AppearancePreferences>;
-          setPrefs({ ...DEFAULTS, ...raw });
+          const resolved = { ...DEFAULTS, ...raw };
+          setPrefs(resolved);
+          // Mirror into localStorage so layout.tsx's synchronous no-flash
+          // script can resolve this account's real preference on the very
+          // next load, before Supabase has answered — and so a signed-out
+          // page reached from this same browser afterwards (landing, auth)
+          // still knows it.
+          writeStoredThemeMode(resolved.theme);
         });
     });
   }, []);
@@ -63,20 +76,20 @@ export function AppearanceEffect() {
     applyThemeAttribute(resolveTheme(prefs.theme));
 
     // Next.js client-side navigation keeps <html> itself mounted across
-    // route changes — AppShell (and this effect) unmounting when a
-    // signed-in visitor navigates to the landing page or an auth screen
-    // does NOT reset any attribute already sitting on <html> unless this
-    // cleanup does it explicitly. Without this, a light-theme fan clicking
-    // through to "/" would carry data-theme="light" onto a page whose own
-    // bg-bg-void/bg-bg-elevated etc. never expected to be overridden —
-    // exactly the "landing page stays dark regardless of theme" rule
-    // silently breaking on navigation, not on first load.
-    const clearOnUnmount = () => applyThemeAttribute("dark");
-
+    // route changes, so the attribute this effect sets simply carries over
+    // to wherever the visitor navigates next — including the landing page
+    // and auth screens, which is now correct: their UI chrome (Navbar,
+    // Footer, the auth form panel) is theme-reactive too. Only the
+    // permanently-cinematic photography sections (landing hero,
+    // stadium banners, the auth visual/backdrop column) don't read
+    // data-theme at all, so this attribute persisting has no effect on
+    // them either way. Deliberately NOT reset on unmount (it used to be —
+    // that forced an instant dark flash on every single navigation while
+    // the next mount's async fetch re-applied the real preference).
+    //
     // Only "auto" needs to keep watching the clock — "light"/"dark" are a
-    // fixed manual override, already applied above, nothing left to
-    // schedule, just the same unmount cleanup.
-    if (prefs.theme !== "auto") return clearOnUnmount;
+    // fixed manual override, already applied above, nothing left to do.
+    if (prefs.theme !== "auto") return;
 
     let timeoutId: ReturnType<typeof setTimeout>;
     const scheduleNext = () => {
@@ -87,10 +100,7 @@ export function AppearanceEffect() {
     };
     scheduleNext();
 
-    return () => {
-      clearTimeout(timeoutId);
-      clearOnUnmount();
-    };
+    return () => clearTimeout(timeoutId);
   }, [prefs]);
 
   return null;

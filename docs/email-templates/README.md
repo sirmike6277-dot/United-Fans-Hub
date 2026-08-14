@@ -103,20 +103,44 @@ header comment for where to get one and where to put it — never in chat).
 
 ## Required manual Supabase Dashboard settings
 
-### URL Configuration (required for every button to land on this app, not localhost)
+### URL Configuration — FIXED directly, but one more manual step remains
 
-Authentication → URL Configuration:
+**Bug found and fixed this build**: real password-reset (and every other
+auth) emails were landing users on `united-fans-hub.vercel.app` instead of
+the real custom domain, `www.manutdfanshub.com`. Root cause, confirmed by
+querying the live config (`GET /v1/projects/{ref}/config/auth`), not
+assumed:
 
-- **Site URL**: `https://united-fans-hub.vercel.app`
-- **Redirect URLs** (allowlist) — add both:
-  - `https://united-fans-hub.vercel.app/**`
-  - `http://localhost:3000/**` (so local dev still verifies correctly)
+| Field | Before | After (fixed via the Management API this build) |
+| --- | --- | --- |
+| `site_url` | `https://united-fans-hub.vercel.app/` | `https://www.manutdfanshub.com` |
+| `uri_allow_list` | `https://united-fans-hub.vercel.app/,http://localhost:3000/` | `https://www.manutdfanshub.com/**,https://manutdfanshub.com/**,https://united-fans-hub.vercel.app/**,http://localhost:3000/**` |
 
 Without an entry matching the app's `emailRedirectTo`/`redirectTo` value,
-Supabase silently falls back to the Site URL instead of honoring the
-requested redirect — this allowlist is also the actual security boundary
-against an open redirect, independent of the `next`-path validation done in
-`src/app/auth/callback/route.ts`.
+Supabase silently substitutes the Site URL instead of honoring the
+requested redirect — that's exactly why every real `redirectTo` the app
+already correctly requests (`window.location.origin` from
+`ForgotPasswordForm.tsx`, `SettingsShell.tsx`, `SocialAuthButtons.tsx`, or
+`getSiteUrl()` from the server-side invite route) was silently getting
+overridden back to the stale Vercel URL. This allowlist is also the actual
+security boundary against an open redirect, independent of the `next`-path
+validation done in `src/app/auth/callback/route.ts`. Verified via
+`curl -I https://www.manutdfanshub.com/` (200, real deployment — the bare
+apex `manutdfanshub.com` 308-redirects to the `www` subdomain, so `www.` is
+the canonical form used everywhere above) before making this change, and
+re-fetched the config afterward to confirm it actually persisted.
+
+**One related thing this fix could NOT reach — a manual step still needed**:
+`NEXT_PUBLIC_SITE_URL` in the *live Vercel project's own environment
+variables* (Project Settings → Environment Variables — separate from
+anything in this repo) most likely still holds the old
+`https://united-fans-hub.vercel.app` value, per `.env.example`'s own
+previous (now-corrected) guidance to set it that way. This var is only
+consulted server-side, when there's no `window` to read the real origin
+from — currently that's exactly one place: the admin "Invite user" route's
+`redirectTo`. Update it to `https://www.manutdfanshub.com` in Vercel's
+dashboard directly; this repo's code can't set it, only document the
+correct value (now fixed in `.env.example`).
 
 ### Email delivery (SMTP) — already configured, nothing to do here
 

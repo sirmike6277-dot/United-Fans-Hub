@@ -38,15 +38,25 @@
        assuming: WebP is only partially/unreliably supported across Gmail
        and Outlook, full stop - not a safe bet for a hosted email image
        either. The universal answer for hosted email images is PNG or JPEG.
-    4. Current fix: hosted URL pointing at the crest .png -
+    4. Hosted URL pointing at the crest .png on the Vercel-issued domain -
        https://united-fans-hub.vercel.app/images/branding/manchester-united-emblem.png
        - the most universally-supported format for a real, standalone
        <img src> in email, across Gmail, Outlook, and Apple Mail alike.
-       This ONLY works once that exact file is actually deployed to
-       production (public/images/branding/manchester-united-emblem.png,
-       committed via the fix/email-crest-asset branch/PR) - do not paste
-       this template into Supabase until that's confirmed live (curl -I
-       the URL and check for 200, not 404), or this repeats attempt #1's
+    5. Current fix: switched to the real custom domain -
+       https://www.manutdfanshub.com/images/branding/manchester-united-emblem.png
+       - discovered while investigating a separate but related bug: real
+       password-reset emails were landing users on united-fans-hub.vercel.app
+       instead of the custom domain. Root cause was Supabase's own Auth
+       "Site URL"/"Redirect URLs" config (Authentication -> URL
+       Configuration), still pointing only at the Vercel URL + localhost
+       from before the custom domain existed - fixed directly via the
+       Management API (see README's "Required manual Supabase Dashboard
+       settings" section for the before/after values). This crest URL was
+       still technically working either way (both domains serve the same
+       deployment), but was switched to the real domain for consistency -
+       do not paste this template into Supabase until that's confirmed
+       live (curl -I the URL and check for 200, not 404), or this repeats
+       attempt #1's
        mistake a second time.
     Lesson: a hosted URL pointing at a real PNG/JPEG - actually deployed -
     is the only image mechanism that's reliable across real email clients
@@ -121,7 +131,7 @@
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
         <tr>
           <td valign="middle" align="center" class="uf-plate" style="width:128px; height:128px; background-color:#ffffff; border-radius:50%; padding:14px;">
-            <img src="https://united-fans-hub.vercel.app/images/branding/manchester-united-emblem.png"
+            <img src="https://www.manutdfanshub.com/images/branding/manchester-united-emblem.png"
                  alt="Manchester United crest"
                  width="100" height="100"
                  class="uf-crest"

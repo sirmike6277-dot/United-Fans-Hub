@@ -89,7 +89,7 @@ function EventRow({ event }: { event: MatchEvent }) {
   const secondaryLine = secondaryDetailLine(event.eventType, detail);
 
   return (
-    <li className="flex items-center gap-2.5 rounded-control border border-white/10 bg-bg-surface px-3 py-2">
+    <li className="flex items-center gap-2.5 rounded-control border border-ink/10 bg-bg-surface px-3 py-2">
       <span className="flex h-6 w-11 shrink-0 items-center justify-center rounded bg-bg-elevated text-[11px] font-semibold tabular-nums text-text-muted">
         {formatEventMinute(event.minute, detail.minute_extra)}
       </span>
@@ -98,7 +98,7 @@ function EventRow({ event }: { event: MatchEvent }) {
       </span>
       {playerName ? <Avatar url={null} name={playerName} size={20} /> : null}
       <div className="min-w-0 flex-1 truncate text-sm">
-        <span className="font-medium text-white">{playerName ?? eventLabel(event.eventType, detail)}</span>
+        <span className="font-medium text-ink">{playerName ?? eventLabel(event.eventType, detail)}</span>
         {playerName ? <span className="text-text-muted"> — {eventLabel(event.eventType, detail)}</span> : null}
         {secondaryLine ? <span className="text-text-muted"> · {secondaryLine}</span> : null}
       </div>
@@ -120,7 +120,7 @@ function groupByHalf(events: MatchEvent[]): { label: string; events: MatchEvent[
 export function EventTimeline({ events }: EventTimelineProps) {
   if (events.length === 0) {
     return (
-      <div className="rounded-card border border-white/10 bg-bg-surface p-8 text-center text-sm text-text-muted">
+      <div className="rounded-card border border-ink/10 bg-bg-surface p-8 text-center text-sm text-text-muted">
         No match events yet.
       </div>
     );

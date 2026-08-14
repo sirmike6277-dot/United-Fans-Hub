@@ -119,7 +119,7 @@ export function MessageComposer({ conversationId, currentUser, onSent }: Message
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-white/10 p-3">
+    <form onSubmit={handleSubmit} className="border-t border-ink/10 p-3">
       {error ? <FormError message={error} /> : null}
 
       {image ? (
@@ -145,7 +145,7 @@ export function MessageComposer({ conversationId, currentUser, onSent }: Message
           onClick={() => fileInputRef.current?.click()}
           disabled={submitting || image !== null}
           aria-label="Add an image"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
         >
           <ImageIcon />
         </button>
@@ -159,7 +159,7 @@ export function MessageComposer({ conversationId, currentUser, onSent }: Message
           maxLength={MAX_BODY_LENGTH}
           placeholder="Write a message..."
           aria-label="Message text"
-          className="min-h-11 flex-1 resize-none rounded-control border border-white/10 bg-bg-elevated px-3 py-2.5 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+          className="min-h-11 flex-1 resize-none rounded-control border border-ink/10 bg-bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

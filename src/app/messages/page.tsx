@@ -12,7 +12,7 @@ export default function MessagesPage() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
       <MessageBubbleIcon size={32} />
-      <p className="font-display text-lg font-semibold text-white">Select a conversation</p>
+      <p className="font-display text-lg font-semibold text-ink">Select a conversation</p>
       <p className="text-sm text-text-muted">Choose someone from your messages to start reading.</p>
     </div>
   );

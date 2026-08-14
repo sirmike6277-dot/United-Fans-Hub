@@ -95,11 +95,11 @@ export function MessageThread({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-ink/10 px-4 py-3">
         <Link
           href="/messages"
           aria-label="Back to conversations"
-          className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white lg:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink lg:hidden"
         >
           <BackIcon />
         </Link>
@@ -110,7 +110,7 @@ export function MessageThread({
         ) : (
           <Avatar url={other?.avatar_url ?? null} name={title} size={36} />
         )}
-        <span className="font-display font-semibold text-white">{title}</span>
+        <span className="font-display font-semibold text-ink">{title}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4">
@@ -120,7 +120,7 @@ export function MessageThread({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-1 text-center">
-            <p className="font-display text-base font-semibold text-white">No messages yet</p>
+            <p className="font-display text-base font-semibold text-ink">No messages yet</p>
             <p className="text-sm text-text-muted">Say something to get the conversation started.</p>
           </div>
         ) : (

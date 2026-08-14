@@ -15,7 +15,7 @@ export function CommunityTeaser({ posts }: { posts: FeedPost[] }) {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold uppercase text-white">Community Activity</h2>
+        <h2 className="font-display text-lg font-bold uppercase text-red-primary">Community Activity</h2>
         <Link href="/community" className="text-xs font-medium text-red-primary hover:text-red-hover">
           View all
         </Link>
@@ -33,12 +33,12 @@ export function CommunityTeaser({ posts }: { posts: FeedPost[] }) {
               <Link
                 key={post.id}
                 href="/community"
-                className="-mx-2 flex items-start gap-3 rounded-control p-2 transition-colors hover:bg-white/5"
+                className="-mx-2 flex items-start gap-3 rounded-control p-2 transition-colors hover:bg-ink/5"
               >
                 <Avatar url={post.author.avatar_url} name={name} size={36} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-1.5">
-                    <span className="text-sm font-semibold text-white">{name}</span>
+                    <span className="text-sm font-semibold text-ink">{name}</span>
                     <time className="text-xs text-text-muted" suppressHydrationWarning>
                       {formatRelativeTime(post.createdAt)}
                     </time>

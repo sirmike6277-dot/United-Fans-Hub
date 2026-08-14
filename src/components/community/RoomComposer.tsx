@@ -1,14 +1,14 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { FormError } from "@/components/auth/FormError";
-import { ImageIcon, CloseIcon, SendIcon } from "@/components/community/CommunityIcons";
+import { ImageIcon, EmojiIcon, CloseIcon, SendIcon } from "@/components/community/CommunityIcons";
 import { FileGenericIcon, VideoIcon } from "@/components/community/RoomIcons";
 import { MentionAutocomplete } from "@/components/community/MentionAutocomplete";
-import { sendMessage, attachFileToMessage, type FeedMessage } from "@/lib/messaging/messages";
+import { sendMessage, attachFileToMessage, MESSAGE_REACTION_EMOJIS, type FeedMessage } from "@/lib/messaging/messages";
 import {
   activeMentionQuery,
   applyMention,
@@ -67,11 +67,23 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mentionCandidates, setMentionCandidates] = useState<FeedAuthor[]>([]);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mentionRequestId = useRef(0);
 
   const canSubmit = !disabled && (body.trim().length > 0 || attachment !== null) && !submitting;
+
+  // Escape closes the emoji picker — same convention as
+  // MessageReactionBar's own full-screen picker overlay.
+  useEffect(() => {
+    if (!emojiPickerOpen) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setEmojiPickerOpen(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [emojiPickerOpen]);
 
   async function handleBodyChange(value: string, cursorPos: number) {
     setBody(value);
@@ -93,6 +105,27 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
     const { value, cursorPos: nextCursor } = applyMention(body, cursorPos, username);
     setBody(value);
     setMentionCandidates([]);
+    requestAnimationFrame(() => {
+      el?.focus();
+      el?.setSelectionRange(nextCursor, nextCursor);
+    });
+  }
+
+  /**
+   * Inserts an emoji into the message text at the current cursor position —
+   * a compose-time reaction picker, distinct from MessageReactionBar's
+   * react-to-an-already-sent-message picker, but reusing the exact same
+   * curated emoji set (MESSAGE_REACTION_EMOJIS) for a consistent "these are
+   * this app's reactions" vocabulary rather than a second, unrelated list.
+   * Same cursor-preserving pattern as selectMention above.
+   */
+  function insertEmoji(emoji: string) {
+    const el = textareaRef.current;
+    const cursorPos = el?.selectionStart ?? body.length;
+    const next = `${body.slice(0, cursorPos)}${emoji}${body.slice(cursorPos)}`;
+    setBody(next);
+    setEmojiPickerOpen(false);
+    const nextCursor = cursorPos + emoji.length;
     requestAnimationFrame(() => {
       el?.focus();
       el?.setSelectionRange(nextCursor, nextCursor);
@@ -187,9 +220,9 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-white/10 p-3">
+    <form onSubmit={handleSubmit} className="border-t border-ink/10 p-3">
       {disabled && disabledReason ? (
-        <div className="mb-2 rounded-control border border-white/10 bg-bg-elevated px-3 py-2 text-xs text-text-muted">
+        <div className="mb-2 rounded-control border border-ink/10 bg-bg-elevated px-3 py-2 text-xs text-text-muted">
           {disabledReason}
         </div>
       ) : null}
@@ -198,14 +231,14 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
       {replyTo ? (
         <div className="mb-2 flex items-center justify-between gap-2 rounded-control border-l-2 border-red-primary/50 bg-bg-elevated px-3 py-1.5">
           <div className="min-w-0">
-            <p className="text-xs font-medium text-white">Replying to {replyTo.senderName}</p>
+            <p className="text-xs font-medium text-ink">Replying to {replyTo.senderName}</p>
             <p className="truncate text-xs text-text-muted">{replyTo.preview}</p>
           </div>
           <button
             type="button"
             onClick={onCancelReply}
             aria-label="Cancel reply"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:text-white"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:text-ink"
           >
             <CloseIcon />
           </button>
@@ -244,11 +277,22 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || submitting || attachment !== null}
           aria-label="Add an attachment"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
         >
           <ImageIcon />
         </button>
         <input ref={fileInputRef} type="file" onChange={handleFileSelected} className="sr-only" />
+
+        <button
+          type="button"
+          onClick={() => setEmojiPickerOpen(true)}
+          disabled={disabled || submitting}
+          aria-label="Add a reaction emoji"
+          aria-expanded={emojiPickerOpen}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+        >
+          <EmojiIcon />
+        </button>
 
         <div className="relative flex-1">
           <textarea
@@ -260,7 +304,7 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
             maxLength={MAX_BODY_LENGTH}
             placeholder={disabled ? "You can't post in this room right now" : replyTo ? "Write a reply..." : "Message the room..."}
             aria-label="Message text"
-            className="min-h-11 w-full resize-none rounded-control border border-white/10 bg-bg-elevated px-3 py-2.5 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary disabled:opacity-60"
+            className="min-h-11 w-full resize-none rounded-control border border-ink/10 bg-bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary disabled:opacity-60"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -286,6 +330,46 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
           <SendIcon />
         </button>
       </div>
+
+      {emojiPickerOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setEmojiPickerOpen(false)}
+        >
+          <div
+            role="menu"
+            aria-label="Choose an emoji to add to your message"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-xs rounded-2xl border border-ink/10 bg-bg-elevated p-4 shadow-2xl"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold text-ink">Add a reaction</p>
+              <button
+                type="button"
+                onClick={() => setEmojiPickerOpen(false)}
+                aria-label="Close"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-ink/10 hover:text-ink"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {MESSAGE_REACTION_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => insertEmoji(emoji)}
+                  aria-label={`Add ${emoji}`}
+                  className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl transition-colors hover:bg-ink/10"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </form>
   );
 }

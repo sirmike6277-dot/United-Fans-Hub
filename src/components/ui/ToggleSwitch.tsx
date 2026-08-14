@@ -26,7 +26,7 @@ export function ToggleSwitch({ checked, onChange, disabled, label, labelHidden }
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary disabled:cursor-not-allowed disabled:opacity-50 ${
-        checked ? "border-red-primary bg-red-primary" : "border-white/15 bg-bg-elevated"
+        checked ? "border-red-primary bg-red-primary" : "border-ink/15 bg-bg-elevated"
       }`}
     >
       <span

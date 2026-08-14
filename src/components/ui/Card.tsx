@@ -19,7 +19,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-card border border-white/10 bg-bg-surface p-6 ${
+      className={`rounded-card border border-ink/10 bg-bg-surface p-6 ${
         featured
           ? "shadow-[0_0_0_1px_rgba(218,41,28,0.4),0_24px_48px_-24px_rgba(218,41,28,0.35)]"
           : "shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"

@@ -39,7 +39,7 @@ export function LeaderboardRow({ entry, rank, isCurrentUser }: LeaderboardRowPro
   return (
     <Link href={`/profile/${entry.id}`} className="block">
       <Card
-        className={`!p-4 flex items-center gap-3 transition-colors hover:border-white/30 sm:!p-5 ${
+        className={`!p-4 flex items-center gap-3 transition-colors hover:border-ink/30 sm:!p-5 ${
           isCurrentUser ? "border-red-primary/50 bg-red-primary/5" : ""
         }`}
       >
@@ -62,7 +62,7 @@ export function LeaderboardRow({ entry, rank, isCurrentUser }: LeaderboardRowPro
           className={podium ? `${podium.ring} ring-offset-2 ring-offset-bg-surface` : undefined}
         />
         <div className="min-w-0 flex-1">
-          <p className="flex items-baseline gap-2 font-display font-semibold text-white">
+          <p className="flex items-baseline gap-2 font-display font-semibold text-ink">
             {/* truncate lives on the name alone, not the whole line — "(You)"
                 is a sibling with shrink-0 so it can never itself get clipped
                 by a long display name/username. */}
@@ -72,7 +72,7 @@ export function LeaderboardRow({ entry, rank, isCurrentUser }: LeaderboardRowPro
           <p className="truncate text-sm text-text-muted">@{entry.username}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <span className="whitespace-nowrap text-sm font-semibold text-white">
+          <span className="whitespace-nowrap text-sm font-semibold text-ink">
             {entry.fan_points.toLocaleString()} pts
           </span>
           <Badge tone="outline" className="!px-1.5 !py-0 text-[10px]">

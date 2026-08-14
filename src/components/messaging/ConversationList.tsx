@@ -29,7 +29,7 @@ export function ConversationList({ initialConversations, initialError, currentUs
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
         <MessageBubbleIcon size={28} />
-        <p className="font-display text-base font-semibold text-white">No conversations yet</p>
+        <p className="font-display text-base font-semibold text-ink">No conversations yet</p>
         <p className="text-sm text-text-muted">Your direct messages will appear here.</p>
       </div>
     );

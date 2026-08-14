@@ -49,7 +49,7 @@ export function FixtureList({ title, matches, error, emptyMessage }: FixtureList
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-lg font-bold uppercase text-white sm:text-xl">{title}</h2>
+        <h2 className="font-display text-lg font-bold uppercase text-red-primary sm:text-xl">{title}</h2>
 
         {/* Only worth showing once there's actually more than one real
             season to choose between — see seasonsIn's own doc comment. */}
@@ -62,7 +62,7 @@ export function FixtureList({ title, matches, error, emptyMessage }: FixtureList
               className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                 selectedSeason === ALL_SEASONS
                   ? "bg-red-primary text-white"
-                  : "border border-white/20 text-text-muted hover:text-white"
+                  : "border border-ink/20 text-text-muted hover:text-ink"
               }`}
             >
               All seasons
@@ -76,7 +76,7 @@ export function FixtureList({ title, matches, error, emptyMessage }: FixtureList
                 className={`rounded-full px-3 py-1 text-xs font-semibold tabular-nums transition-colors ${
                   selectedSeason === season
                     ? "bg-red-primary text-white"
-                    : "border border-white/20 text-text-muted hover:text-white"
+                    : "border border-ink/20 text-text-muted hover:text-ink"
                 }`}
               >
                 {formatSeasonLabel(season)}
@@ -87,11 +87,11 @@ export function FixtureList({ title, matches, error, emptyMessage }: FixtureList
       </div>
 
       {error ? (
-        <div className="mt-3 rounded-card border border-white/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
+        <div className="mt-3 rounded-card border border-ink/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
           {error}
         </div>
       ) : visible.length === 0 ? (
-        <div className="mt-3 rounded-card border border-white/10 bg-bg-surface p-8 text-center">
+        <div className="mt-3 rounded-card border border-ink/10 bg-bg-surface p-8 text-center">
           <p className="text-sm text-text-muted">
             {matches.length === 0
               ? emptyMessage

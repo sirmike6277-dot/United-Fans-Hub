@@ -135,7 +135,7 @@ export function Feed({ currentUser, clubId, initialPosts, initialError, initialH
               onClick={() => switchTab(t.key)}
               aria-pressed={tab === t.key}
               className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                tab === t.key ? "bg-red-primary text-white" : "bg-white/5 text-text-muted hover:text-white"
+                tab === t.key ? "bg-red-primary text-white" : "bg-ink/5 text-text-muted hover:text-ink"
               }`}
             >
               {t.label}
@@ -154,7 +154,7 @@ export function Feed({ currentUser, clubId, initialPosts, initialError, initialH
       </div>
 
       {error ? (
-        <div className="rounded-card border border-white/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
+        <div className="rounded-card border border-ink/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
           {error}
         </div>
       ) : loading ? (
@@ -163,8 +163,8 @@ export function Feed({ currentUser, clubId, initialPosts, initialError, initialH
           <PostCardSkeleton />
         </>
       ) : posts.length === 0 ? (
-        <div className="rounded-card border border-white/10 bg-bg-surface p-10 text-center">
-          <p className="font-display text-lg font-semibold text-white">
+        <div className="rounded-card border border-ink/10 bg-bg-surface p-10 text-center">
+          <p className="font-display text-lg font-semibold text-ink">
             {tab === "following" ? "No posts from fans you follow yet" : "No posts yet"}
           </p>
           <p className="mt-1 text-sm text-text-muted">

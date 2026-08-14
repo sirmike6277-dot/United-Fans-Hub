@@ -27,7 +27,7 @@ function initials(name: string): string {
 function CrestPlaceholder({ name, size, className }: { name: string; size: number; className: string }) {
   return (
     <span
-      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-bg-elevated text-text-muted ${className}`}
+      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-ink/15 bg-bg-elevated text-text-muted ${className}`}
       style={{ width: size, height: size }}
       role="img"
       aria-label={`${name} crest`}

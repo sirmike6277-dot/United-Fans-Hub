@@ -37,7 +37,7 @@ export function PredictionSection({
     <Card>
       <div className="flex items-center gap-2">
         <TrophyIcon />
-        <h2 className="font-display text-lg font-bold uppercase text-white">Prediction</h2>
+        <h2 className="font-display text-lg font-bold uppercase text-red-primary">Prediction</h2>
       </div>
 
       <div className="mt-4">

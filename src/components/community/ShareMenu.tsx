@@ -105,14 +105,14 @@ export function ShareMenu({ postId, shareText }: ShareMenuProps) {
         onClick={handleTriggerClick}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+        className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
       >
         <ShareIcon />
         <span>Share</span>
       </button>
 
       {open ? (
-        <div role="menu" aria-label="Share this post" className="absolute left-0 z-20 mt-2 w-56 rounded-control border border-white/10 bg-bg-elevated p-1.5 shadow-lg">
+        <div role="menu" aria-label="Share this post" className="absolute left-0 z-20 mt-2 w-56 rounded-control border border-ink/10 bg-bg-elevated p-1.5 shadow-lg">
           {platforms.map(({ name, Icon, href }) => (
             <a
               key={name}
@@ -121,18 +121,18 @@ export function ShareMenu({ postId, shareText }: ShareMenuProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-white/5"
+              className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-ink/5"
             >
               <Icon />
               <span>Share to {name}</span>
             </a>
           ))}
-          <div className="my-1 border-t border-white/10" />
+          <div className="my-1 border-t border-ink/10" />
           <button
             type="button"
             role="menuitem"
             onClick={handleCopyLink}
-            className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-white/5"
+            className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-ink/5"
           >
             {copied ? <CheckIcon /> : <LinkIcon />}
             <span>{copied ? "Link copied!" : "Copy link"}</span>

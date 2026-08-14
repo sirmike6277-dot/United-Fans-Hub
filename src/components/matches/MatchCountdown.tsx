@@ -38,9 +38,9 @@ export function MatchCountdown({ kickoffAtIso }: { kickoffAtIso: string }) {
       {tiles.map((tile) => (
         <div
           key={tile.label}
-          className="flex w-16 flex-col items-center gap-0.5 rounded-control border border-white/10 bg-bg-elevated py-2"
+          className="flex w-16 flex-col items-center gap-0.5 rounded-control border border-ink/10 bg-bg-elevated py-2"
         >
-          <span className="font-display text-xl font-bold tabular-nums text-white">{tile.value}</span>
+          <span className="font-display text-xl font-bold tabular-nums text-ink">{tile.value}</span>
           <span className="text-[10px] uppercase tracking-wide text-text-muted">{tile.label}</span>
         </div>
       ))}

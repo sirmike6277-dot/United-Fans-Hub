@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
+import { resolveTheme, applyThemeAttribute, type ThemeMode } from "@/lib/theme/resolveTheme";
 
 export interface AppearancePanelProps {
   currentUserId: string;
@@ -11,20 +12,26 @@ export interface AppearancePanelProps {
 interface AppearancePreferences {
   reduce_motion: boolean;
   text_size: "normal" | "large";
+  theme: ThemeMode;
 }
 
-const DEFAULTS: AppearancePreferences = { reduce_motion: false, text_size: "normal" };
+const DEFAULTS: AppearancePreferences = { reduce_motion: false, text_size: "normal", theme: "auto" };
+
+const THEME_OPTIONS: { value: ThemeMode; label: string; description: string }[] = [
+  { value: "auto", label: "Auto", description: "Light 6am–6pm, dark otherwise — follows this device's clock" },
+  { value: "light", label: "Light", description: "Always light" },
+  { value: "dark", label: "Dark", description: "Always dark" },
+];
 
 /**
  * The "Appearance" settings tab's real content — was a permanent "Coming
- * soon" placeholder. Deliberately not a light/dark theme: this app has
- * exactly one designed palette and no theme system at all (confirmed
- * before building this — see the phase report), and a real light mode
- * would mean re-skinning every component, out of scope. Two real, small,
- * genuinely-working controls instead, both backed by
- * profiles.appearance_preferences and actually applied globally by
- * AppearanceEffect.tsx (rendered once in AppShell) — not a toggle that
- * just sits there.
+ * soon" placeholder, then reduce-motion/text-size (still real, still here).
+ * Theme (auto/light/dark) joins them: a real light palette for the app
+ * chrome, not just a CSS media query nobody can override — see
+ * globals.css's `[data-theme="light"]` block and AppearanceEffect.tsx
+ * (applies it globally, keeps "auto" live-synced to the clock). The
+ * landing page, auth screens, and stadium-photo banners deliberately keep
+ * their cinematic dark treatment regardless of this setting.
  */
 export function AppearancePanel({ currentUserId }: AppearancePanelProps) {
   const [prefs, setPrefs] = useState<AppearancePreferences>(DEFAULTS);
@@ -64,7 +71,9 @@ export function AppearancePanel({ currentUserId }: AppearancePanelProps) {
     // index-signature compatibility.
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ appearance_preferences: { reduce_motion: next.reduce_motion, text_size: next.text_size } })
+      .update({
+        appearance_preferences: { reduce_motion: next.reduce_motion, text_size: next.text_size, theme: next.theme },
+      })
       .eq("id", currentUserId);
 
     setSaving(false);
@@ -78,27 +87,63 @@ export function AppearancePanel({ currentUserId }: AppearancePanelProps) {
     // otherwise need a full refresh to actually be visible.
     document.documentElement.setAttribute("data-reduce-motion", String(next.reduce_motion));
     document.documentElement.setAttribute("data-text-size", next.text_size);
+    applyThemeAttribute(resolveTheme(next.theme));
   }
 
   return (
     <div>
-      <h2 className="font-display text-xl font-bold uppercase text-white">Appearance</h2>
+      <h2 className="font-display text-xl font-bold uppercase text-red-primary">Appearance</h2>
       <p className="mt-1 text-sm text-text-muted">
-        Real accessibility controls — applied everywhere in the app the moment you change them.
+        Real accessibility and display controls — applied everywhere in the app the moment you change them.
       </p>
 
       {error ? <p className="mt-4 text-sm text-red-hover">{error}</p> : null}
 
       {loading ? (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="h-16 animate-pulse rounded-control bg-white/5" />
-          <div className="h-16 animate-pulse rounded-control bg-white/5" />
+          <div className="h-16 animate-pulse rounded-control bg-ink/5" />
+          <div className="h-16 animate-pulse rounded-control bg-ink/5" />
+          <div className="h-16 animate-pulse rounded-control bg-ink/5" />
         </div>
       ) : (
-        <div className="mt-6 flex flex-col divide-y divide-white/10">
-          <div className="flex items-center justify-between gap-4 py-4 first:pt-0">
+        <div className="mt-6 flex flex-col divide-y divide-ink/10">
+          <div className="flex flex-col gap-3 py-4 first:pt-0">
+            <div>
+              <p className="text-sm font-medium text-ink">Theme</p>
+              <p className="mt-0.5 text-xs text-text-muted">
+                Auto switches with real-time day/night on this device — pick Light or Dark to override it.
+              </p>
+            </div>
+            <div
+              role="radiogroup"
+              aria-label="Theme"
+              className="grid grid-cols-3 gap-2 rounded-control border border-ink/10 bg-bg-elevated p-1"
+            >
+              {THEME_OPTIONS.map((option) => {
+                const selected = prefs.theme === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    title={option.description}
+                    disabled={saving}
+                    onClick={() => save({ ...prefs, theme: option.value })}
+                    className={`rounded-control px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      selected ? "bg-red-primary text-white" : "text-text-muted hover:text-ink"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 py-4">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white">Reduce motion</p>
+              <p className="text-sm font-medium text-ink">Reduce motion</p>
               <p className="mt-0.5 text-xs text-text-muted">
                 Turns off animations and transitions across the app.
               </p>
@@ -114,7 +159,7 @@ export function AppearancePanel({ currentUserId }: AppearancePanelProps) {
 
           <div className="flex items-center justify-between gap-4 py-4 last:pb-0">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white">Larger text</p>
+              <p className="text-sm font-medium text-ink">Larger text</p>
               <p className="mt-0.5 text-xs text-text-muted">Increases text size across the app.</p>
             </div>
             <ToggleSwitch

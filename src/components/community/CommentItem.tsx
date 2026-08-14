@@ -53,7 +53,7 @@ export function CommentItem({ comment, currentUserId, onReply, isReply = false }
       <div className="flex-1">
         <div className="rounded-card bg-bg-elevated px-3 py-2">
           <div className="flex flex-wrap items-baseline gap-1.5">
-            <span className="text-sm font-semibold text-white">{name}</span>
+            <span className="text-sm font-semibold text-ink">{name}</span>
             <span className="text-xs text-text-muted">@{comment.author.username}</span>
             <FanLevelBadge level={comment.author.fan_level} />
           </div>
@@ -74,7 +74,7 @@ export function CommentItem({ comment, currentUserId, onReply, isReply = false }
             aria-pressed={reacted}
             aria-label={reacted ? "Remove like" : "Like this comment"}
             className={`inline-flex h-8 min-w-[32px] items-center gap-1 rounded-control px-1.5 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary disabled:opacity-60 ${
-              reacted ? "text-red-primary" : "text-text-muted hover:text-white"
+              reacted ? "text-red-primary" : "text-text-muted hover:text-ink"
             }`}
           >
             <HeartIcon filled={reacted} />
@@ -85,7 +85,7 @@ export function CommentItem({ comment, currentUserId, onReply, isReply = false }
               type="button"
               onClick={() => onReply(comment.id, name, comment.author.username)}
               aria-label={`Reply to ${name}`}
-              className="inline-flex h-8 min-w-[32px] items-center gap-1 rounded-control px-1.5 font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+              className="inline-flex h-8 min-w-[32px] items-center gap-1 rounded-control px-1.5 font-medium text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
             >
               <ReplyIcon />
               <span>Reply</span>
@@ -94,7 +94,7 @@ export function CommentItem({ comment, currentUserId, onReply, isReply = false }
         </div>
 
         {comment.replies.length > 0 ? (
-          <div className="mt-3 flex flex-col gap-3 border-l border-white/10 pl-4">
+          <div className="mt-3 flex flex-col gap-3 border-l border-ink/10 pl-4">
             {comment.replies.map((reply) => (
               <CommentItem key={reply.id} comment={reply} currentUserId={currentUserId} onReply={onReply} isReply />
             ))}

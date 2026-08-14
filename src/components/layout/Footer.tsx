@@ -22,7 +22,7 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer id="about" className="border-t border-white/10 bg-bg-elevated">
+    <footer id="about" className="border-t border-ink/10 bg-bg-elevated">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div className="flex flex-col gap-3">
           <Wordmark />
@@ -39,7 +39,7 @@ export function Footer() {
           <ul className="mt-4 flex flex-col gap-3">
             {productLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="text-sm text-text-body hover:text-white">
+                <Link href={link.href} className="text-sm text-text-body hover:text-ink">
                   {link.label}
                 </Link>
               </li>
@@ -52,7 +52,7 @@ export function Footer() {
           <ul className="mt-4 flex flex-col gap-3">
             {legalLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="text-sm text-text-body hover:text-white">
+                <Link href={link.href} className="text-sm text-text-body hover:text-ink">
                   {link.label}
                 </Link>
               </li>
@@ -71,7 +71,7 @@ export function Footer() {
                   href={link.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-sm text-text-body hover:text-white"
+                  className="text-sm text-text-body hover:text-ink"
                 >
                   {link.label}
                 </a>
@@ -81,7 +81,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 px-4 py-6 text-center text-xs text-text-muted sm:px-6 lg:px-8">
+      <div className="border-t border-ink/10 px-4 py-6 text-center text-xs text-text-muted sm:px-6 lg:px-8">
         © {new Date().getFullYear()} United Fans Hub. An independent fan community — unofficial
         and unaffiliated with Manchester United Football Club.
       </div>

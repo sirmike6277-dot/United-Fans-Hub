@@ -12,9 +12,9 @@ export interface StatTileProps {
  */
 export function StatTile({ label, value, caption }: StatTileProps) {
   return (
-    <div className="rounded-control border border-white/10 bg-bg-elevated p-3">
+    <div className="rounded-control border border-ink/10 bg-bg-elevated p-3">
       <p className="text-xs font-medium uppercase tracking-wide text-text-muted">{label}</p>
-      <p className="mt-1 font-display text-lg font-bold text-white">{value}</p>
+      <p className="mt-1 font-display text-lg font-bold text-ink">{value}</p>
       {caption ? <p className="mt-0.5 text-[11px] text-text-muted">{caption}</p> : null}
     </div>
   );

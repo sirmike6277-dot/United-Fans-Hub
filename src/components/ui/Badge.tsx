@@ -4,8 +4,8 @@ type Tone = "red" | "neutral" | "outline";
 
 const tones: Record<Tone, string> = {
   red: "bg-red-primary text-white",
-  neutral: "bg-white/10 text-text-body",
-  outline: "border border-white/20 text-text-muted",
+  neutral: "bg-ink/10 text-text-body",
+  outline: "border border-ink/20 text-text-muted",
 };
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

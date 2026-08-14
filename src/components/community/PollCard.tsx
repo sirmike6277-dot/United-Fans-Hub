@@ -61,9 +61,9 @@ export function PollCard({ poll, currentUserId, canModerate, onChange }: PollCar
   return (
     <Card className="!p-4 flex flex-col gap-3 sm:!p-5">
       <div className="flex items-start justify-between gap-2">
-        <p className="font-display font-semibold text-white">{poll.question}</p>
+        <p className="font-display font-semibold text-ink">{poll.question}</p>
         {!open ? (
-          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-muted">
+          <span className="shrink-0 rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-muted">
             Closed
           </span>
         ) : null}
@@ -81,16 +81,16 @@ export function PollCard({ poll, currentUserId, canModerate, onChange }: PollCar
               disabled={!open || voting !== null}
               aria-pressed={isMine}
               className={`relative overflow-hidden rounded-control border px-3 py-2 text-left text-sm transition-colors disabled:cursor-default ${
-                isMine ? "border-red-primary/50" : "border-white/10"
+                isMine ? "border-red-primary/50" : "border-ink/10"
               }`}
             >
               <span
-                className={`absolute inset-y-0 left-0 ${isMine ? "bg-red-primary/25" : "bg-white/10"}`}
+                className={`absolute inset-y-0 left-0 ${isMine ? "bg-red-primary/25" : "bg-ink/10"}`}
                 style={{ width: `${percent}%` }}
                 aria-hidden="true"
               />
               <span className="relative z-10 flex items-center justify-between gap-2">
-                <span className={isMine ? "font-medium text-white" : "text-text-body"}>{option.label}</span>
+                <span className={isMine ? "font-medium text-ink" : "text-text-body"}>{option.label}</span>
                 <span className="shrink-0 text-xs text-text-muted">
                   {percent}% ({option.votes.toLocaleString()})
                 </span>
@@ -118,7 +118,7 @@ export function PollCard({ poll, currentUserId, canModerate, onChange }: PollCar
               </Button>
             </span>
           ) : (
-            <button type="button" onClick={() => setConfirmingClose(true)} className="text-text-muted transition-colors hover:text-white">
+            <button type="button" onClick={() => setConfirmingClose(true)} className="text-text-muted transition-colors hover:text-ink">
               Close poll
             </button>
           )

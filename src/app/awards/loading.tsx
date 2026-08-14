@@ -11,9 +11,9 @@ export default function AwardsLoading() {
           <div className="h-[240px] animate-pulse rounded-card bg-bg-surface sm:h-[300px]" />
         </div>
         <div className="flex flex-col gap-4 pb-6 sm:pb-8" aria-hidden="true">
-          <div className="flex gap-4 border-b border-white/10 pb-2.5">
-            <div className="h-4 w-28 animate-pulse rounded bg-white/10" />
-            <div className="h-4 w-28 animate-pulse rounded bg-white/5" />
+          <div className="flex gap-4 border-b border-ink/10 pb-2.5">
+            <div className="h-4 w-28 animate-pulse rounded bg-ink/10" />
+            <div className="h-4 w-28 animate-pulse rounded bg-ink/5" />
           </div>
           <div className="flex flex-col gap-2">
             {[0, 1, 2].map((i) => (

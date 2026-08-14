@@ -29,9 +29,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
-            className={`h-11 w-full rounded-control border bg-bg-elevated text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary ${
+            className={`h-11 w-full rounded-control border bg-bg-elevated text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary ${
               icon ? "pl-11 pr-4" : "px-4"
-            } ${error ? "border-red-hover" : "border-white/10"} ${className}`}
+            } ${error ? "border-red-hover" : "border-ink/10"} ${className}`}
             aria-invalid={Boolean(error) || undefined}
             aria-describedby={error && inputId ? `${inputId}-error` : undefined}
             {...props}

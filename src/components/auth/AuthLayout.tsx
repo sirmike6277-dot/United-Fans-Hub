@@ -22,7 +22,7 @@ export interface AuthLayoutProps {
  */
 export function AuthLayout({ visual, children }: AuthLayoutProps) {
   return (
-    <div className="relative flex min-h-screen bg-bg-void lg:grid lg:grid-cols-[2fr_3fr]">
+    <div className="relative flex min-h-screen bg-cinema-void lg:grid lg:grid-cols-[2fr_3fr]">
       <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
         <AuthBackdrop
           leftSrc="/images/stadium/old-trafford-trinity-statue.jpg"

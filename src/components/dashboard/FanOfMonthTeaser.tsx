@@ -25,20 +25,20 @@ export function FanOfMonthTeaser({ winner }: FanOfMonthTeaserProps) {
     <Link href="/awards" className="block">
       <Card
         featured
-        className="relative overflow-hidden text-center transition-colors hover:border-white/30"
+        className="relative overflow-hidden text-center transition-colors hover:border-ink/30"
         style={{
           backgroundImage: "radial-gradient(circle at 50% 0%, rgba(242,193,78,0.16), transparent 60%)",
         }}
       >
         <div className="flex items-center justify-between gap-2 text-left">
-          <h2 className="font-display text-lg font-bold uppercase text-white">Fan of the Month</h2>
+          <h2 className="font-display text-lg font-bold uppercase text-red-primary">Fan of the Month</h2>
           <Badge tone={winner ? "red" : "outline"}>{winner ? "Winner" : "Vote now"}</Badge>
         </div>
 
         {winner ? (
           <>
             <Avatar url={winner.nomination.nominee.avatar_url} name={name ?? "Winner"} size={72} className="mx-auto mt-5" />
-            <p className="mt-3 font-display text-base font-bold text-white">{name}</p>
+            <p className="mt-3 font-display text-base font-bold text-ink">{name}</p>
             <p className="text-xs text-text-muted">{winner.voteCount.toLocaleString()} votes</p>
           </>
         ) : (

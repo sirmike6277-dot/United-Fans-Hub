@@ -9,6 +9,7 @@ import { SectionBanner } from "@/components/layout/SectionBanner";
 import { Tabs } from "@/components/ui/Tabs";
 import { Card } from "@/components/ui/Card";
 import { PullQuote } from "@/components/ui/PullQuote";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { fetchPredictionHistory, derivePredictionStats } from "@/lib/predictions/predictions";
 import { fetchUpcomingMatches } from "@/lib/matches/matches";
@@ -88,10 +89,7 @@ export default async function PredictionsPage() {
             )}
           </section>
           <Card>
-            <PullQuote
-              quote="Football is a simple game based on the giving and taking of passes, of controlling the ball and of making yourself available to receive a pass."
-              attribution="Sir Matt Busby"
-            />
+            <PullQuote quotes={pickLegendQuotes("predictions-rail")} />
           </Card>
         </div>
       }
@@ -104,10 +102,7 @@ export default async function PredictionsPage() {
             kicker="Predictions"
             title="Back your judgement. Climb the table."
             subtitle="Predict results, earn points, and climb the rankings."
-            quote={{
-              quote: "Form is temporary, class is permanent.",
-              attribution: "Sir Alex Ferguson",
-            }}
+            quotes={pickLegendQuotes("predictions-banner")}
           />
 
           <PredictionStatsCard

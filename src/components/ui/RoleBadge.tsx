@@ -47,7 +47,7 @@ export function RoleBadge({ profileId, className = "" }: RoleBadgeProps) {
   const primary = badges[0];
   if (!primary) return null;
 
-  const style = ROLE_STYLES[primary.roleKey] ?? "border border-white/20 text-text-muted";
+  const style = ROLE_STYLES[primary.roleKey] ?? "border border-ink/20 text-text-muted";
 
   return (
     <span

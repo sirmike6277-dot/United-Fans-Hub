@@ -23,7 +23,7 @@ export function RoomJoinPreview({ room, currentUserId, activeBan }: RoomJoinPrev
       <Card className="w-full max-w-sm text-center">
         <Link
           href="/community/rooms"
-          className="mb-4 inline-flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-white"
+          className="mb-4 inline-flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-ink"
         >
           <BackIcon size={14} />
           All Fan Rooms
@@ -31,7 +31,7 @@ export function RoomJoinPreview({ room, currentUserId, activeBan }: RoomJoinPrev
         <div className="flex justify-center">
           <RoomAvatar name={room.name} slug={room.slug} size={56} />
         </div>
-        <p className="mt-3 font-display text-xl font-bold text-white">{room.name}</p>
+        <p className="mt-3 font-display text-xl font-bold text-ink">{room.name}</p>
         {room.description ? <p className="mt-2 text-sm text-text-muted">{room.description}</p> : null}
         <p className="mt-3 text-xs text-text-muted">
           {room.memberCount.toLocaleString()} {room.memberCount === 1 ? "member" : "members"}

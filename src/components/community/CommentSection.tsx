@@ -179,13 +179,13 @@ export function CommentSection({
   }
 
   return (
-    <div className="mt-3 flex flex-col gap-3 border-t border-white/10 pt-3">
+    <div className="mt-3 flex flex-col gap-3 border-t border-ink/10 pt-3">
       {state === "loading" ? (
         <div className="flex flex-col gap-3" aria-live="polite" aria-label="Loading comments">
           {[0, 1].map((i) => (
             <div key={i} className="flex gap-3">
-              <div className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-white/10" />
-              <div className="h-10 flex-1 animate-pulse rounded-card bg-white/5" />
+              <div className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-ink/10" />
+              <div className="h-10 flex-1 animate-pulse rounded-card bg-ink/5" />
             </div>
           ))}
         </div>
@@ -209,13 +209,13 @@ export function CommentSection({
         {replyTo ? (
           <div className="flex items-center gap-2 pl-11 text-xs text-text-muted">
             <span>
-              Replying to <span className="font-medium text-white">{replyTo.authorName}</span>
+              Replying to <span className="font-medium text-ink">{replyTo.authorName}</span>
             </span>
             <button
               type="button"
               onClick={cancelReply}
               aria-label="Cancel reply"
-              className="flex h-6 w-6 items-center justify-center rounded-full text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
             >
               <CloseIcon />
             </button>
@@ -235,7 +235,7 @@ export function CommentSection({
                 maxLength={1000}
                 placeholder={replyTo ? `Reply to ${replyTo.authorName}...` : "Add a comment..."}
                 aria-label={replyTo ? `Reply to ${replyTo.authorName}` : "Add a comment"}
-                className="min-h-11 flex-1 resize-none rounded-control border border-white/10 bg-bg-elevated px-3 py-2.5 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+                className="min-h-11 flex-1 resize-none rounded-control border border-ink/10 bg-bg-elevated px-3 py-2.5 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();

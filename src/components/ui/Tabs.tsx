@@ -77,7 +77,7 @@ export function Tabs({ tabs, defaultTab, sticky = false }: TabsProps) {
     <div>
       <div
         role="tablist"
-        className={`flex gap-1 overflow-x-auto border-b border-white/10 ${sticky ? "sticky top-16 z-10 bg-bg-void" : ""}`}
+        className={`flex gap-1 overflow-x-auto border-b border-ink/10 ${sticky ? "sticky top-16 z-10 bg-bg-void" : ""}`}
       >
         {tabs.map((tab) => {
           const isActive = active === tab.key;
@@ -92,7 +92,7 @@ export function Tabs({ tabs, defaultTab, sticky = false }: TabsProps) {
               tabIndex={isActive ? 0 : -1}
               onClick={() => setActive(tab.key)}
               className={`relative shrink-0 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                isActive ? "text-white" : "text-text-muted hover:text-white"
+                isActive ? "text-ink" : "text-text-muted hover:text-ink"
               }`}
             >
               {tab.label}

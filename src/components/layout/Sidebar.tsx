@@ -61,7 +61,7 @@ export function Sidebar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={`flex items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                active ? "bg-white/10 text-white" : "text-text-muted hover:bg-white/5 hover:text-white"
+                active ? "bg-ink/10 text-ink" : "text-text-muted hover:bg-ink/5 hover:text-ink"
               }`}
             >
               <span className={active ? "text-red-primary" : undefined}>

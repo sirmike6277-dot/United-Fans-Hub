@@ -33,7 +33,7 @@ export function MatchOverviewCard({ nextMatch, recentResults }: MatchOverviewCar
             <div className="flex w-full items-center justify-center gap-6 sm:gap-12">
               <div className="flex flex-1 flex-col items-center gap-2">
                 <TeamCrest variant="manUtd" name="Manchester United" size={88} />
-                <span className="font-display text-sm font-bold text-white sm:text-base">Manchester United</span>
+                <span className="font-display text-sm font-bold text-ink sm:text-base">Manchester United</span>
               </div>
 
               <div className="flex flex-col items-center gap-2">
@@ -45,7 +45,7 @@ export function MatchOverviewCard({ nextMatch, recentResults }: MatchOverviewCar
 
               <div className="flex flex-1 flex-col items-center gap-2">
                 <TeamCrest variant="opponent" externalRef={nextMatch.opponentExternalRef} name={nextMatch.opponentName} size={88} />
-                <span className="font-display text-sm font-bold text-white sm:text-base">{nextMatch.opponentName}</span>
+                <span className="font-display text-sm font-bold text-ink sm:text-base">{nextMatch.opponentName}</span>
               </div>
             </div>
 
@@ -89,7 +89,7 @@ export function MatchOverviewCard({ nextMatch, recentResults }: MatchOverviewCar
         </div>
         <div className="flex items-center gap-3">
           <TeamCrest variant="manUtd" name="Manchester United" size={32} />
-          <span className="text-sm font-semibold text-white">Man Utd</span>
+          <span className="text-sm font-semibold text-ink">Man Utd</span>
           <RecentFormStrip matches={recentResults} />
         </div>
         {recentResults.length === 0 ? (

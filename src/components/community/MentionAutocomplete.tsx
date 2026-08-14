@@ -20,7 +20,7 @@ export function MentionAutocomplete({ candidates, onSelect }: MentionAutocomplet
     <div
       role="listbox"
       aria-label="Mention suggestions"
-      className="absolute z-20 mt-1 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-control border border-white/10 bg-bg-elevated shadow-lg"
+      className="absolute z-20 mt-1 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-control border border-ink/10 bg-bg-elevated shadow-lg"
     >
       {candidates.map((candidate) => {
         const name = candidate.display_name || candidate.username;
@@ -35,10 +35,10 @@ export function MentionAutocomplete({ candidates, onSelect }: MentionAutocomplet
               e.preventDefault();
               onSelect(candidate.username);
             }}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-white/5 focus-visible:bg-white/5 focus-visible:outline-none"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-ink/5 focus-visible:bg-ink/5 focus-visible:outline-none"
           >
             <Avatar url={candidate.avatar_url} name={name} size={24} />
-            <span className="min-w-0 flex-1 truncate text-white">{name}</span>
+            <span className="min-w-0 flex-1 truncate text-ink">{name}</span>
             <span className="shrink-0 text-xs text-text-muted">@{candidate.username}</span>
           </button>
         );

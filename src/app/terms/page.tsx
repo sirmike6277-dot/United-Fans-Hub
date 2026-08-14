@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="font-display text-base font-bold uppercase text-white">{title}</h2>
+      <h2 className="font-display text-base font-bold uppercase text-red-primary">{title}</h2>
       <div className="mt-2 flex flex-col gap-3">{children}</div>
     </section>
   );

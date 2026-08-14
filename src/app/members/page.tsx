@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionBanner } from "@/components/layout/SectionBanner";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { MembersDirectory } from "@/components/members/MembersDirectory";
 import { fetchMembersPage, MEMBERS_PAGE_SIZE } from "@/lib/members/members";
 
@@ -33,10 +34,7 @@ export default async function MembersPage() {
             imageAlt="The 'THE REDS GO MARCHING ON' mural on Old Trafford's forecourt wall"
             kicker="Members"
             title="Meet the Red Army"
-            quote={{
-              quote: "Manchester United is a special club. There is nothing quite like it.",
-              attribution: "Sir Bobby Charlton",
-            }}
+            quotes={pickLegendQuotes("members-banner")}
           />
         </div>
         <MembersDirectory

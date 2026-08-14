@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -407,17 +408,17 @@ export function RoomChat({
 
   return (
     <div className="flex h-[calc(100dvh-4rem)] flex-col">
-      <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-ink/10 px-4 py-3">
         <Link
           href="/community/rooms"
           aria-label="Back to Fan Rooms"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink"
         >
           <BackIcon />
         </Link>
         <RoomAvatar name={room.name} slug={room.slug} size={36} />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display font-semibold text-white">{room.name}</p>
+          <p className="truncate font-display font-semibold text-ink">{room.name}</p>
           <p className="truncate text-xs text-text-muted">
             {room.memberCount.toLocaleString()} {room.memberCount === 1 ? "member" : "members"}
             {connectionLost ? " · reconnecting..." : ""}
@@ -429,7 +430,7 @@ export function RoomChat({
             onClick={() => setPollsOpen(true)}
             aria-label="Room polls"
             title="Polls"
-            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink"
           >
             <ChartIcon size={18} />
           </button>
@@ -439,7 +440,7 @@ export function RoomChat({
               onClick={() => setMembersOpen(true)}
               aria-label="Manage room members"
               title="Manage members"
-              className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink"
             >
               <ShieldIcon size={18} />
             </button>
@@ -449,7 +450,7 @@ export function RoomChat({
               onClick={() => setMembersOpen(true)}
               aria-label="View room members"
               title="Members"
-              className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink"
             >
               <MoreIcon />
             </button>
@@ -459,20 +460,65 @@ export function RoomChat({
             targetId={room.conversationId}
             currentUserId={currentUser.id}
             ariaLabel="Report this room"
-            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink"
           >
             <FlagIcon size={18} />
           </ReportButton>
         </div>
       </div>
 
-      <div className="relative flex-1 overflow-hidden">
-        <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden px-4 py-4">
+      <div className="relative flex-1 overflow-hidden bg-bg-void">
+        {/*
+          Every room's default background — same for every room, existing or
+          newly created, since this is the shared chat surface, not a
+          per-room setting. A large, centered Manchester United crest
+          watermark plus a very soft brand-red wash, both fixed in place
+          behind the scrollable message list below (a sibling, not a child,
+          of the scroll container — so it reads as a wallpaper that doesn't
+          drift as the reader scrolls through history, not part of the
+          content). Deliberately understated: every message bubble is fully
+          opaque (bg-red-primary for your own, bg-bg-elevated for everyone
+          else's — see MessageBubble), so this never competes with a
+          message's own legibility — it only fills the space around them,
+          which is the actual point: an empty dark/light void around every
+          bubble read as less finished than a room that visibly belongs to
+          United. Opacity is theme-aware (see globals.css watermark-opacity
+          tokens) so it doesn't wash out in light mode.
+        */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(218,41,28,0.07),transparent_60%)]"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[var(--watermark-opacity-ambient)]"
+            aria-hidden="true"
+          >
+            {/*
+              Plain next/image, not <ClubEmblem> — ClubEmblem checks the
+              filesystem (existsSync) to decide whether to render at all,
+              which only works server-side, and this is a "use client"
+              component. Same fix RoomVisual.tsx's RoomAvatar already
+              applies for the same reason (see its manchester-united-news/
+              -fans entries) — this is that established pattern, not a new
+              one.
+            */}
+            <Image
+              src="/images/branding/manchester-united-emblem.webp"
+              alt=""
+              width={440}
+              height={440}
+              style={{ width: 440, height: 440 }}
+            />
+          </div>
+        </div>
+
+        <div ref={scrollRef} className="relative h-full overflow-y-auto overflow-x-hidden px-4 py-4">
           {initialError ? (
             <div className="flex h-full items-center justify-center text-center text-sm text-text-muted">{initialError}</div>
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-1 text-center">
-              <p className="font-display text-base font-semibold text-white">No messages yet</p>
+              <p className="font-display text-base font-semibold text-ink">No messages yet</p>
               <p className="text-sm text-text-muted">Be the first to say something in {room.name}.</p>
             </div>
           ) : (
@@ -524,7 +570,7 @@ export function RoomChat({
                   >
                     <ChartIcon size={14} />
                     <span>
-                      New poll: <span className="font-medium text-white">{poll.question}</span>
+                      New poll: <span className="font-medium text-ink">{poll.question}</span>
                     </span>
                     <span className="font-semibold text-red-primary">Vote now</span>
                   </button>
@@ -539,7 +585,7 @@ export function RoomChat({
             type="button"
             onClick={scrollToBottomNow}
             aria-label={newMessageCount > 0 ? `${newMessageCount} new messages — jump to latest` : "Jump to latest messages"}
-            className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/10 bg-bg-elevated px-3 py-1.5 text-xs font-medium text-white shadow-lg transition-colors hover:bg-white/10"
+            className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-ink/10 bg-bg-elevated px-3 py-1.5 text-xs font-medium text-ink shadow-lg transition-colors hover:bg-ink/10"
           >
             {newMessageCount > 0 ? `${newMessageCount} new message${newMessageCount === 1 ? "" : "s"}` : "Jump to latest"}
             <ArrowDownIcon size={14} />
@@ -555,7 +601,7 @@ export function RoomChat({
         onCancelReply={() => setReplyTo(null)}
       />
 
-      <div className="flex justify-center border-t border-white/10 py-2">
+      <div className="flex justify-center border-t border-ink/10 py-2">
         <button
           type="button"
           onClick={handleLeave}

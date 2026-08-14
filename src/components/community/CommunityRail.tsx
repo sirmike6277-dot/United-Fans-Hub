@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/Card";
 import { PullQuote } from "@/components/ui/PullQuote";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { TopFansWidget } from "@/components/dashboard/TopFansWidget";
 import type { MatchSummary } from "@/lib/matches/matches";
@@ -37,10 +38,7 @@ export function CommunityRail({ nextMatch, topFans, currentUserId }: CommunityRa
       <TopFansWidget entries={topFans} currentUserId={currentUserId} />
 
       <Card>
-        <PullQuote
-          quote="You can change your wife, your politics, your religion, but never, ever can you change your favourite football team."
-          attribution="Eric Cantona"
-        />
+        <PullQuote quotes={pickLegendQuotes("community-rail")} />
       </Card>
     </div>
   );

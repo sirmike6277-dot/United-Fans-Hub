@@ -21,7 +21,7 @@ export default function ConversationError({
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center">
-      <p className="font-display text-base font-semibold text-white">Something went wrong</p>
+      <p className="font-display text-base font-semibold text-ink">Something went wrong</p>
       <p className="text-sm text-text-muted">We couldn&apos;t load this conversation. Please try again.</p>
       <div className="mt-4 flex items-center gap-3">
         <Button size="sm" onClick={reset}>

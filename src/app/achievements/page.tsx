@@ -45,13 +45,13 @@ export default async function AchievementsPage() {
             subtitle="Unlock badges. Show your United pride."
             action={
               <span className="text-sm text-text-muted">
-                <span className="font-display font-bold text-white">{earnedCount}</span> / {badges.length} earned
+                <span className="font-display font-bold text-ink">{earnedCount}</span> / {badges.length} earned
               </span>
             }
           />
 
           {badgesError ? (
-            <div className="rounded-card border border-white/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
+            <div className="rounded-card border border-ink/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
               {badgesError}
             </div>
           ) : (

@@ -14,7 +14,7 @@ export default function FanRoomsLoading() {
           <div className="h-11 w-full max-w-md animate-pulse rounded-control bg-bg-elevated" />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-32 animate-pulse rounded-card border border-white/10 bg-bg-surface" />
+              <div key={i} className="h-32 animate-pulse rounded-card border border-ink/10 bg-bg-surface" />
             ))}
           </div>
         </div>

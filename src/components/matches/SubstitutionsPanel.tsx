@@ -33,7 +33,7 @@ function OneSub({ row }: { row: SubRow }) {
       </span>
       <div className="flex flex-1 flex-col gap-1.5 text-sm">
         {row.onName ? (
-          <span className="flex items-center gap-1.5 font-medium text-white">
+          <span className="flex items-center gap-1.5 font-medium text-ink">
             <SubOnBadge size={16} />
             {row.onShirt ? <span className="text-text-muted">#{row.onShirt}</span> : null} {row.onName}
           </span>
@@ -79,14 +79,14 @@ export function SubstitutionsPanel({ events, entries, manUtdClubId, opponentName
 
   return (
     <Card>
-      <h3 className="font-display text-base font-bold uppercase text-white">Substitutions</h3>
+      <h3 className="font-display text-base font-bold uppercase text-ink">Substitutions</h3>
       <div className="mt-2 grid grid-cols-1 gap-x-6 sm:grid-cols-2">
-        <div className="divide-y divide-white/10">
+        <div className="divide-y divide-ink/10">
           {manUtdRows.map((row, i) => (
             <OneSub key={i} row={row} />
           ))}
         </div>
-        <div className="divide-y divide-white/10 border-t border-white/10 pt-0 sm:border-t-0 sm:pt-0">
+        <div className="divide-y divide-ink/10 border-t border-ink/10 pt-0 sm:border-t-0 sm:pt-0">
           {opponentRows.map((row, i) => (
             <OneSub key={i} row={row} />
           ))}

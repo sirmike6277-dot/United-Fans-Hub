@@ -114,7 +114,7 @@ export function AdminRolesManager({ currentUserId }: AdminRolesManagerProps) {
       {loading ? (
         <div className="flex flex-col gap-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-16 animate-pulse rounded-card bg-white/5" />
+            <div key={i} className="h-16 animate-pulse rounded-card bg-ink/5" />
           ))}
         </div>
       ) : profiles.length === 0 ? (
@@ -125,11 +125,11 @@ export function AdminRolesManager({ currentUserId }: AdminRolesManagerProps) {
             const name = profile.display_name || profile.username;
             const granted = grants.get(profile.id) ?? new Set<string>();
             return (
-              <div key={profile.id} className="flex flex-col gap-2 rounded-card border border-white/10 bg-bg-surface p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div key={profile.id} className="flex flex-col gap-2 rounded-card border border-ink/10 bg-bg-surface p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar url={profile.avatar_url} name={name} size={36} />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-white">{name}</p>
+                    <p className="truncate text-sm font-medium text-ink">{name}</p>
                     <p className="truncate text-xs text-text-muted">@{profile.username}</p>
                   </div>
                 </div>
@@ -146,7 +146,7 @@ export function AdminRolesManager({ currentUserId }: AdminRolesManagerProps) {
                         aria-pressed={isGranted}
                         title={role.description ?? role.name}
                         className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-colors disabled:opacity-50 ${
-                          isGranted ? "bg-red-primary text-white" : "border border-white/20 text-text-muted hover:text-white"
+                          isGranted ? "bg-red-primary text-white" : "border border-ink/20 text-text-muted hover:text-ink"
                         }`}
                       >
                         {role.name}

@@ -77,7 +77,7 @@ export function MessageReactionBar({ messageId, currentUserId, reactions, onChan
           aria-pressed={r.reactedByMe}
           aria-label={`${r.emoji} reaction, ${r.count} ${r.count === 1 ? "person" : "people"}${r.reactedByMe ? ", including you" : ""}`}
           className={`flex h-6 items-center gap-1 rounded-full border px-1.5 text-xs transition-colors disabled:opacity-60 ${
-            r.reactedByMe ? "border-red-primary/50 bg-red-primary/15" : "border-white/10 bg-white/5 hover:border-white/30"
+            r.reactedByMe ? "border-red-primary/50 bg-red-primary/15" : "border-ink/10 bg-ink/5 hover:border-ink/30"
           }`}
         >
           <span>{r.emoji}</span>
@@ -91,7 +91,7 @@ export function MessageReactionBar({ messageId, currentUserId, reactions, onChan
         disabled={pending}
         aria-label="Add reaction"
         aria-expanded={pickerOpen}
-        className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xs text-text-muted transition-colors hover:border-white/30 hover:text-white disabled:opacity-60"
+        className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/10 bg-ink/5 text-xs text-text-muted transition-colors hover:border-ink/30 hover:text-ink disabled:opacity-60"
       >
         +
       </button>
@@ -105,15 +105,15 @@ export function MessageReactionBar({ messageId, currentUserId, reactions, onChan
             role="menu"
             aria-label="Choose a reaction"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xs rounded-2xl border border-white/10 bg-bg-elevated p-4 shadow-2xl"
+            className="w-full max-w-xs rounded-2xl border border-ink/10 bg-bg-elevated p-4 shadow-2xl"
           >
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-semibold text-white">React with</p>
+              <p className="text-sm font-semibold text-ink">React with</p>
               <button
                 type="button"
                 onClick={() => setPickerOpen(false)}
                 aria-label="Close"
-                className="flex h-7 w-7 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-white/10 hover:text-white"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-ink/10 hover:text-ink"
               >
                 ✕
               </button>
@@ -126,7 +126,7 @@ export function MessageReactionBar({ messageId, currentUserId, reactions, onChan
                   role="menuitem"
                   onClick={() => handlePick(emoji)}
                   aria-label={`React with ${emoji}`}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl transition-colors hover:bg-white/10"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl transition-colors hover:bg-ink/10"
                 >
                   {emoji}
                 </button>

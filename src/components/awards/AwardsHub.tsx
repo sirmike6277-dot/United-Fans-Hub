@@ -171,7 +171,7 @@ function CategoryPanel({
         <>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="font-display text-base font-semibold text-white">{period.periodLabel}</p>
+              <p className="font-display text-base font-semibold text-ink">{period.periodLabel}</p>
               <p className="text-xs text-text-muted">
                 {new Date(period.periodStart).toLocaleDateString()} – {new Date(period.periodEnd).toLocaleDateString()}
               </p>
@@ -183,8 +183,8 @@ function CategoryPanel({
 
           {period.status === "nominations_open" ? (
             myPendingNomination ? (
-              <p className="rounded-control border border-white/10 bg-bg-elevated px-4 py-3 text-sm text-text-muted">
-                Your nomination for <span className="text-white">{myPendingNomination.nominee.display_name || myPendingNomination.nominee.username}</span> is pending review.
+              <p className="rounded-control border border-ink/10 bg-bg-elevated px-4 py-3 text-sm text-text-muted">
+                Your nomination for <span className="text-ink">{myPendingNomination.nominee.display_name || myPendingNomination.nominee.username}</span> is pending review.
               </p>
             ) : (
               <NominationForm periodId={period.id} currentUserId={currentUserId} onSubmitted={() => load().then(applyLoadResult)} />
@@ -196,7 +196,7 @@ function CategoryPanel({
           ) : loading ? (
             <div className="flex flex-col gap-2" aria-live="polite" aria-label="Loading nominees">
               {[0, 1].map((i) => (
-                <div key={i} className="h-14 animate-pulse rounded-control bg-white/5" />
+                <div key={i} className="h-14 animate-pulse rounded-control bg-ink/5" />
               ))}
             </div>
           ) : approvedNominations.length > 0 && (period.status === "voting_open" || period.status === "closed" || period.status === "announced") ? (
@@ -227,7 +227,7 @@ function CategoryPanel({
 function WinnersHistory({ winners }: { winners: AwardWinner[] }) {
   if (winners.length === 0) return null;
   return (
-    <div className="mt-8 border-t border-white/10 pt-6">
+    <div className="mt-8 border-t border-ink/10 pt-6">
       <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-text-muted">Past Winners</h2>
       <div className="flex flex-col gap-2">
         {winners.map((winner) => {
@@ -236,7 +236,7 @@ function WinnersHistory({ winners }: { winners: AwardWinner[] }) {
             <Card key={winner.id} className="!p-3 flex items-center gap-3">
               <Avatar url={winner.nomination.nominee.avatar_url} name={name} size={32} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-white">{name}</p>
+                <p className="truncate text-sm font-medium text-ink">{name}</p>
                 <p className="truncate text-xs text-text-muted">{winner.categoryName}</p>
               </div>
               <span className="shrink-0 text-xs text-text-muted">{winner.voteCount.toLocaleString()} votes</span>
@@ -294,7 +294,7 @@ export function AwardsHub({ categories, initialPeriods, initialWinners, currentU
 
   return (
     <div className="flex flex-col gap-6">
-      <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-white/10">
+      <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-ink/10">
         {categories.map((category) => {
           const isActive = activeCategoryKey === category.key;
           return (
@@ -308,7 +308,7 @@ export function AwardsHub({ categories, initialPeriods, initialWinners, currentU
               tabIndex={isActive ? 0 : -1}
               onClick={() => setActiveCategoryKey(category.key)}
               className={`relative shrink-0 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                isActive ? "text-white" : "text-text-muted hover:text-white"
+                isActive ? "text-ink" : "text-text-muted hover:text-ink"
               }`}
             >
               {category.name}

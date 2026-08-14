@@ -117,7 +117,7 @@ export function MembersDirectory({
       />
 
       {error ? (
-        <div className="flex flex-col items-center gap-2 rounded-card border border-white/10 bg-bg-surface p-6 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-card border border-ink/10 bg-bg-surface p-6 text-center">
           <p className="text-sm text-text-muted">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => runSearch(debouncedQuery)}>
             <RefreshIcon />
@@ -131,9 +131,9 @@ export function MembersDirectory({
           <MemberCardSkeleton />
         </div>
       ) : members.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-card border border-white/10 bg-bg-surface p-10 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-card border border-ink/10 bg-bg-surface p-10 text-center">
           <UsersIcon size={28} />
-          <p className="font-display text-lg font-semibold text-white">
+          <p className="font-display text-lg font-semibold text-ink">
             {isSearching ? "No members match your search" : "No other members yet"}
           </p>
           <p className="text-sm text-text-muted">

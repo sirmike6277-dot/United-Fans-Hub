@@ -55,7 +55,7 @@ export function CoverUpload({ userId, url, focusY, onUploaded, onFocusChange }: 
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="group relative h-40 w-full overflow-hidden rounded-card border border-white/10 bg-bg-elevated sm:h-56"
+        className="group relative h-40 w-full overflow-hidden rounded-card border border-ink/10 bg-bg-elevated sm:h-56"
         aria-label="Change cover image"
       >
         {url ? (

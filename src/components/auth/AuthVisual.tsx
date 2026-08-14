@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { PullQuote } from "@/components/ui/PullQuote";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 
 /**
  * Left-panel foreground content for the auth split-screen. The shared,
@@ -32,16 +33,12 @@ export function AuthVisual() {
           className="object-cover"
         />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-bg-void/80 via-transparent to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-cinema-void/80 via-transparent to-transparent"
           aria-hidden="true"
         />
       </div>
 
-      <PullQuote
-        quote="It's not just about winning. It's about being United."
-        attribution="Sir Alex Ferguson"
-        className="max-w-sm"
-      />
+      <PullQuote quotes={pickLegendQuotes("auth-visual")} className="max-w-sm" />
     </div>
   );
 }

@@ -107,7 +107,7 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, on
 
   if (!period) {
     return (
-      <div className="rounded-card border border-dashed border-white/15 p-4">
+      <div className="rounded-card border border-dashed border-ink/15 p-4">
         {creating ? (
           <form onSubmit={handleCreate} className="flex flex-col gap-3">
             {error ? <FormError message={error} /> : null}
@@ -137,11 +137,11 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, on
   const nextStatus = NEXT_STATUS[period.status];
 
   return (
-    <div className="flex flex-col gap-3 rounded-card border border-white/10 bg-bg-elevated p-4">
+    <div className="flex flex-col gap-3 rounded-card border border-ink/10 bg-bg-elevated p-4">
       {error ? <FormError message={error} /> : null}
 
       {pendingNominations.length > 0 ? (
-        <div className="flex flex-col gap-2 border-b border-white/10 pb-3">
+        <div className="flex flex-col gap-2 border-b border-ink/10 pb-3">
           <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
             Pending nominations ({pendingNominations.length})
           </p>
@@ -150,7 +150,7 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, on
             return (
               <div key={nomination.id} className="flex items-center gap-2.5">
                 <Avatar url={nomination.nominee.avatar_url} name={name} size={28} />
-                <span className="min-w-0 flex-1 truncate text-sm text-white">{name}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-ink">{name}</span>
                 <Button type="button" variant="secondary" size="sm" onClick={() => handleReview(nomination.id, "rejected")} disabled={busy}>
                   Reject
                 </Button>

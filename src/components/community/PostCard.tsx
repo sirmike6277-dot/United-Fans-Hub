@@ -41,7 +41,7 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
         <Avatar url={post.author.avatar_url} name={authorName} size={44} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="font-display font-semibold text-white">{authorName}</span>
+            <span className="font-display font-semibold text-ink">{authorName}</span>
             <span className="text-sm text-text-muted">@{post.author.username}</span>
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-text-muted">
@@ -68,7 +68,7 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
 
       <PostMedia media={post.media} />
 
-      <div className="mt-3 flex items-center gap-1 border-t border-white/10 pt-2">
+      <div className="mt-3 flex items-center gap-1 border-t border-ink/10 pt-2">
         <ReactionButton
           postId={post.id}
           userId={currentUser.id}
@@ -86,7 +86,7 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
             onClick={() => setCommentsOpen((v) => !v)}
             aria-expanded={commentsOpen}
             aria-label={commentsOpen ? "Hide comments" : "Show comments"}
-            className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+            className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
           >
             <CommentIcon />
             <span>{post.commentCount > 0 ? post.commentCount.toLocaleString() : "Comment"}</span>

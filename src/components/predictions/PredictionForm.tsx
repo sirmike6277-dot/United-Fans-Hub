@@ -139,7 +139,7 @@ export function PredictionForm({
                 className={`rounded-control border px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
                   selected
                     ? "border-red-primary bg-red-primary text-white"
-                    : "border-white/10 bg-bg-elevated text-text-body hover:border-white/30"
+                    : "border-ink/10 bg-bg-elevated text-text-body hover:border-ink/30"
                 }`}
               >
                 {pick.label}
@@ -156,7 +156,7 @@ export function PredictionForm({
             className={`rounded-control border px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
               isCustom
                 ? "border-red-primary bg-red-primary text-white"
-                : "border-white/10 bg-bg-elevated text-text-body hover:border-white/30"
+                : "border-ink/10 bg-bg-elevated text-text-body hover:border-ink/30"
             }`}
           >
             Other

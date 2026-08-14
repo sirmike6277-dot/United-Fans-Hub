@@ -114,9 +114,9 @@ export function RoomPollsPanel({ conversationId, currentUserId, canModerate, onC
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Room polls" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-card border border-white/10 bg-bg-surface shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]">
-        <div className="flex items-center justify-between border-b border-white/10 p-4">
-          <h2 className="font-display text-lg font-bold text-white">Polls</h2>
+      <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-card border border-ink/10 bg-bg-surface shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]">
+        <div className="flex items-center justify-between border-b border-ink/10 p-4">
+          <h2 className="font-display text-lg font-bold text-red-primary">Polls</h2>
           <div className="flex items-center gap-1">
             {canModerate ? (
               <Button type="button" variant="secondary" size="sm" onClick={() => setCreating(true)}>
@@ -129,7 +129,7 @@ export function RoomPollsPanel({ conversationId, currentUserId, canModerate, onC
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+              className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
             >
               <CloseIcon />
             </button>
@@ -142,7 +142,7 @@ export function RoomPollsPanel({ conversationId, currentUserId, canModerate, onC
           {loading ? (
             <div className="flex flex-col gap-3" aria-live="polite" aria-label="Loading polls">
               {[0, 1].map((i) => (
-                <div key={i} className="h-24 animate-pulse rounded-card bg-white/5" />
+                <div key={i} className="h-24 animate-pulse rounded-card bg-ink/5" />
               ))}
             </div>
           ) : polls.length === 0 ? (

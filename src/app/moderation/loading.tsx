@@ -7,8 +7,8 @@ export default function ModerationLoading() {
       <main className="flex-1 bg-bg-void">
         <div className="flex flex-col gap-4 py-6 sm:py-8" aria-hidden="true">
           <div className="space-y-2">
-            <div className="h-7 w-32 animate-pulse rounded bg-white/10" />
-            <div className="h-4 w-56 animate-pulse rounded bg-white/5" />
+            <div className="h-7 w-32 animate-pulse rounded bg-ink/10" />
+            <div className="h-4 w-56 animate-pulse rounded bg-ink/5" />
           </div>
           <div className="flex gap-3">
             <div className="h-11 w-40 animate-pulse rounded-control bg-bg-elevated" />

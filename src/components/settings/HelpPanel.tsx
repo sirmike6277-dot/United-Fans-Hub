@@ -51,13 +51,13 @@ const FAQS: { question: string; answer: string }[] = [
 export function HelpPanel() {
   return (
     <div>
-      <h2 className="font-display text-xl font-bold uppercase text-white">Help</h2>
+      <h2 className="font-display text-xl font-bold uppercase text-red-primary">Help</h2>
       <p className="mt-1 text-sm text-text-muted">Answers to the most common questions.</p>
 
-      <div className="mt-6 flex flex-col divide-y divide-white/10">
+      <div className="mt-6 flex flex-col divide-y divide-ink/10">
         {FAQS.map(({ question, answer }) => (
           <details key={question} className="group py-4 first:pt-0 last:pb-0">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-white marker:content-none">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-ink marker:content-none">
               {question}
               <span className="shrink-0 text-text-muted transition-transform group-open:rotate-45" aria-hidden="true">
                 +
@@ -68,11 +68,11 @@ export function HelpPanel() {
         ))}
       </div>
 
-      <div className="mt-6 rounded-control border border-white/10 bg-bg-elevated p-4">
-        <p className="text-sm font-medium text-white">Still need help?</p>
+      <div className="mt-6 rounded-control border border-ink/10 bg-bg-elevated p-4">
+        <p className="text-sm font-medium text-ink">Still need help?</p>
         <p className="mt-1 text-xs text-text-muted">
           There&apos;s no separate support inbox yet — the fastest way to reach a moderator is
-          the <strong className="font-medium text-white">Report</strong> option on any post,
+          the <strong className="font-medium text-ink">Report</strong> option on any post,
           comment, message, or profile. Every report is reviewed by a real moderator.
         </p>
       </div>

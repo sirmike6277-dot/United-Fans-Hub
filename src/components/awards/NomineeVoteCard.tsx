@@ -35,11 +35,11 @@ export function NomineeVoteCard({ nomination, totalVotes, isMyVote, votingOpen, 
       aria-pressed={isMyVote}
       aria-label={`Vote for ${name}${isMyVote ? " (your current vote)" : ""} — ${nomination.voteCount.toLocaleString()} ${nomination.voteCount === 1 ? "vote" : "votes"}`}
       className={`relative w-full overflow-hidden rounded-control border px-3 py-2.5 text-left transition-colors disabled:cursor-default ${
-        isMyVote ? "border-red-primary/50" : "border-white/10"
+        isMyVote ? "border-red-primary/50" : "border-ink/10"
       }`}
     >
       <span
-        className={`absolute inset-y-0 left-0 ${isMyVote ? "bg-red-primary/20" : "bg-white/10"}`}
+        className={`absolute inset-y-0 left-0 ${isMyVote ? "bg-red-primary/20" : "bg-ink/10"}`}
         style={{ width: `${percent}%` }}
         aria-hidden="true"
       />
@@ -47,7 +47,7 @@ export function NomineeVoteCard({ nomination, totalVotes, isMyVote, votingOpen, 
         <Avatar url={nomination.nominee.avatar_url} name={name} size={36} />
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
-            <span className={`truncate text-sm font-medium ${isMyVote ? "text-white" : "text-text-body"}`}>{name}</span>
+            <span className={`truncate text-sm font-medium ${isMyVote ? "text-ink" : "text-text-body"}`}>{name}</span>
             <FanLevelBadge level={nomination.nominee.fan_level} />
           </span>
           {nomination.reason ? <span className="block truncate text-xs text-text-muted">{nomination.reason}</span> : null}

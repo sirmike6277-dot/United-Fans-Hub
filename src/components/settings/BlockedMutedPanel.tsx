@@ -32,7 +32,7 @@ function AccountList({
     return (
       <div className="flex flex-col gap-2" aria-live="polite" aria-label="Loading">
         {[0, 1].map((i) => (
-          <div key={i} className="h-14 animate-pulse rounded-control bg-white/5" />
+          <div key={i} className="h-14 animate-pulse rounded-control bg-ink/5" />
         ))}
       </div>
     );
@@ -48,7 +48,7 @@ function AccountList({
           <li key={profile.id} className="flex items-center gap-3 rounded-control bg-bg-elevated p-3">
             <Avatar url={profile.avatar_url} name={name} size={36} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">{name}</p>
+              <p className="truncate text-sm font-medium text-ink">{name}</p>
               <p className="truncate text-xs text-text-muted">@{profile.username}</p>
             </div>
             <Button type="button" variant="secondary" size="sm" onClick={() => onAction(profile.id)} loading={busyId === profile.id} disabled={busyId !== null}>
@@ -111,7 +111,7 @@ export function BlockedMutedPanel({ currentUserId }: BlockedMutedPanelProps) {
 
   return (
     <div>
-      <h2 className="font-display text-xl font-bold uppercase text-white">Privacy</h2>
+      <h2 className="font-display text-xl font-bold uppercase text-red-primary">Privacy</h2>
       <p className="mt-1 text-sm text-text-muted">Manage who you&apos;ve blocked or muted.</p>
 
       <div className="mt-6">

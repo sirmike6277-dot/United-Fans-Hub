@@ -74,7 +74,7 @@ export function PlayerImage({
           // rather than letting the box behind it bleed through. Label sits
           // vertically centered (not bottom-aligned) so it stays legible
           // regardless of any bottom fade/gradient layered over the hero.
-          className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-card border border-dashed border-white/15 bg-bg-elevated px-4 text-center"
+          className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-card border border-dashed border-ink/15 bg-bg-elevated px-4 text-center"
           role="img"
           aria-label={alt}
         >

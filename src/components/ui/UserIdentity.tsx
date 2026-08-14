@@ -28,12 +28,12 @@ export function UserIdentity({ name, username, avatarUrl, size = 44, href, layou
       <Avatar url={avatarUrl} name={name} size={size} />
       {layout === "inline" ? (
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-          <span className="font-display font-semibold text-white">{name}</span>
+          <span className="font-display font-semibold text-ink">{name}</span>
           <span className="text-sm text-text-muted">@{username}</span>
         </div>
       ) : (
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display font-semibold text-white">{name}</p>
+          <p className="truncate font-display font-semibold text-ink">{name}</p>
           <p className="truncate text-sm text-text-muted">@{username}</p>
         </div>
       )}

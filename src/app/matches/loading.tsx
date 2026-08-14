@@ -15,7 +15,7 @@ export default function MatchesLoading() {
       <Navbar brand={<Brand />} />
       <main className="flex-1 bg-bg-void">
         <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-6 sm:px-6 sm:py-8">
-          <div className="h-8 w-56 animate-pulse rounded bg-white/10" />
+          <div className="h-8 w-56 animate-pulse rounded bg-ink/10" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <MatchCardSkeleton />
             <MatchCardSkeleton />

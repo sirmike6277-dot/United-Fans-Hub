@@ -81,7 +81,7 @@ function ReportRow({ report, currentUserId, onResolved }: { report: FeedReport; 
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-card border border-white/10 bg-bg-surface p-4">
+    <div className="flex flex-col gap-3 rounded-card border border-ink/10 bg-bg-surface p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <Badge tone="outline">{report.targetType}</Badge>
@@ -131,7 +131,7 @@ function ReportRow({ report, currentUserId, onResolved }: { report: FeedReport; 
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
+          <div className="flex flex-wrap gap-2 border-t border-ink/10 pt-3">
             <Button type="button" variant="ghost" size="sm" onClick={() => resolve("dismissed", canAct ? "report_dismissed" : undefined)} disabled={busy}>
               Dismiss
             </Button>
@@ -153,7 +153,7 @@ function ReportRow({ report, currentUserId, onResolved }: { report: FeedReport; 
           </div>
         )
       ) : (
-        <p className="border-t border-white/10 pt-3 text-xs text-text-muted">Resolved {report.resolvedAt ? formatRelativeTime(report.resolvedAt) : ""}</p>
+        <p className="border-t border-ink/10 pt-3 text-xs text-text-muted">Resolved {report.resolvedAt ? formatRelativeTime(report.resolvedAt) : ""}</p>
       )}
     </div>
   );
@@ -249,7 +249,7 @@ export function ModerationQueue({ currentUserId }: ModerationQueueProps) {
       ) : loading ? (
         <div className="flex flex-col gap-3" aria-live="polite" aria-label="Loading reports">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-32 animate-pulse rounded-card bg-white/5" />
+            <div key={i} className="h-32 animate-pulse rounded-card bg-ink/5" />
           ))}
         </div>
       ) : filtered.length === 0 ? (

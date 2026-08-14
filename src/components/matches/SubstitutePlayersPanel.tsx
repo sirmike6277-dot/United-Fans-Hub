@@ -26,7 +26,7 @@ function readIncomingSubNames(events: MatchEvent[]): Set<string> {
 function SubRow({ player, cameOn }: { player: LineupEntry; cameOn: boolean }) {
   return (
     <li className="flex items-center gap-2.5 text-sm text-text-body">
-      <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[11px] font-semibold text-white">
+      <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink/10 text-[11px] font-semibold text-ink">
         {player.shirtNumber ?? "-"}
         {cameOn ? (
           <span className="absolute -bottom-1 -right-1">
@@ -34,7 +34,7 @@ function SubRow({ player, cameOn }: { player: LineupEntry; cameOn: boolean }) {
           </span>
         ) : null}
       </span>
-      <span className="min-w-0 flex-1 truncate font-medium text-white">{player.playerName}</span>
+      <span className="min-w-0 flex-1 truncate font-medium text-ink">{player.playerName}</span>
       {player.position ? <span className="shrink-0 text-xs text-text-muted">{player.position}</span> : null}
     </li>
   );
@@ -60,7 +60,7 @@ export function SubstitutePlayersPanel({ entries, events, manUtdClubId, opponent
 
   return (
     <Card>
-      <h3 className="font-display text-base font-bold uppercase text-white">Substitute players</h3>
+      <h3 className="font-display text-base font-bold uppercase text-ink">Substitute players</h3>
       <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         <div>
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-muted">Manchester United</p>

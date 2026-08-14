@@ -18,7 +18,7 @@ export function MatchCard({ match }: MatchCardProps) {
       aria-label={`${match.isHome ? "Manchester United vs" : "Manchester United at"} ${match.opponentName}, ${match.competition ?? "match"} details`}
       className="block"
     >
-      <Card className="!p-4 transition-colors hover:border-white/30 sm:!p-5">
+      <Card className="!p-4 transition-colors hover:border-ink/30 sm:!p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {match.competition ? (

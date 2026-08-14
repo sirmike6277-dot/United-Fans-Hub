@@ -13,7 +13,7 @@ export interface MatchDetailHeaderProps {
 
 export function MatchDetailHeader({ match, opponentExternalRef = match.opponentExternalRef }: MatchDetailHeaderProps) {
   return (
-    <header className="rounded-card border border-white/10 bg-bg-surface p-6 text-center sm:p-8">
+    <header className="rounded-card border border-ink/10 bg-bg-surface p-6 text-center sm:p-8">
       <div className="flex flex-wrap items-center justify-center gap-2">
         {match.competition ? <Badge tone="outline">{match.competition}</Badge> : null}
         <Badge tone="outline">{match.isHome ? "Home" : "Away"}</Badge>

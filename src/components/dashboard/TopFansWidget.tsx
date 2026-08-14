@@ -15,7 +15,7 @@ export function TopFansWidget({ entries, currentUserId }: TopFansWidgetProps) {
     <Card>
       <div className="flex items-center gap-2">
         <TrophyIcon />
-        <h2 className="font-display text-lg font-bold uppercase text-white">Top Fans</h2>
+        <h2 className="font-display text-lg font-bold uppercase text-red-primary">Top Fans</h2>
       </div>
 
       <div className="mt-4 flex flex-col gap-2">

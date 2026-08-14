@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { FixtureList } from "@/components/matches/FixtureList";
 import { MatchOverviewCard } from "@/components/matches/MatchOverviewCard";
 import { SectionBanner } from "@/components/layout/SectionBanner";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { Tabs } from "@/components/ui/Tabs";
 import { fetchUpcomingMatches, fetchRecentResults } from "@/lib/matches/matches";
 import { maybeSyncFixtures } from "@/lib/matches/sync";
@@ -90,10 +91,7 @@ export default async function MatchesPage() {
         imageAlt="Old Trafford's forecourt at sunset, the 'The Reds Go Marching On' mural lit up on the stadium wall"
         kicker="Match Centre"
         title="Every fixture. Every result. Matchday starts here."
-        quote={{
-          quote: "At Manchester United we don't just try to win, we try to win with style.",
-          attribution: "Sir Matt Busby",
-        }}
+        quotes={pickLegendQuotes("matches-banner")}
       />
 
       <Tabs

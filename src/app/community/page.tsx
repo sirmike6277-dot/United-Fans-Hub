@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionBanner } from "@/components/layout/SectionBanner";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { Feed } from "@/components/community/Feed";
 import { CommunityRail } from "@/components/community/CommunityRail";
 import { fetchFeedPage, POSTS_PAGE_SIZE } from "@/lib/community/posts";
@@ -60,10 +61,7 @@ export default async function CommunityPage() {
             imageAlt="A packed Old Trafford stand, seen from inside the ground"
             kicker="Community"
             title="Every fan has a voice here."
-            quote={{
-              quote: "Manchester United is a religion, not a football club.",
-              attribution: "Sir Matt Busby",
-            }}
+            quotes={pickLegendQuotes("community-banner")}
           />
         </div>
         <Feed

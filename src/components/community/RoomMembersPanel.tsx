@@ -157,15 +157,15 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Room members" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-card border border-white/10 bg-bg-surface shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]">
-        <div className="flex items-center justify-between border-b border-white/10 p-4">
-          <h2 className="font-display text-lg font-bold text-white">Room Members</h2>
+      <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-card border border-ink/10 bg-bg-surface shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]">
+        <div className="flex items-center justify-between border-b border-ink/10 p-4">
+          <h2 className="font-display text-lg font-bold text-red-primary">Room Members</h2>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
           >
             <CloseIcon />
           </button>
@@ -177,7 +177,7 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
           {loading ? (
             <div className="flex flex-col gap-3" aria-live="polite" aria-label="Loading members">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-12 animate-pulse rounded-control bg-white/5" />
+                <div key={i} className="h-12 animate-pulse rounded-control bg-ink/5" />
               ))}
             </div>
           ) : (
@@ -193,7 +193,7 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                     <div className="flex items-center gap-2.5">
                       <Avatar url={member.profile.avatar_url} name={name} size={36} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-white">{name}</p>
+                        <p className="truncate text-sm font-medium text-ink">{name}</p>
                         <p className="truncate text-xs text-text-muted">@{member.profile.username}</p>
                       </div>
                       {member.role === "admin" ? (
@@ -212,7 +212,7 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                             disabled={isActioning}
                             aria-label={`Remove ${name} from the room`}
                             title="Remove from room"
-                            className="flex h-8 w-8 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white disabled:opacity-40"
+                            className="flex h-8 w-8 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink disabled:opacity-40"
                           >
                             <KickIcon />
                           </button>
@@ -234,7 +234,7 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                     </div>
 
                     {suspendTargetId === member.profileId && !pending ? (
-                      <div className="mt-2 flex flex-wrap gap-1.5 border-t border-white/10 pt-2">
+                      <div className="mt-2 flex flex-wrap gap-1.5 border-t border-ink/10 pt-2">
                         {SUSPEND_OPTIONS.map((opt) => (
                           <Button
                             key={opt.label}
@@ -262,20 +262,20 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                         <p className="text-xs text-text-body">
                           {pending.type === "kick" ? (
                             <>
-                              Remove <span className="font-semibold text-white">{name}</span> from this room? They can
+                              Remove <span className="font-semibold text-ink">{name}</span> from this room? They can
                               rejoin immediately — this only ends their current membership.
                             </>
                           ) : pending.hours === null ? (
                             <>
-                              <span className="font-semibold text-white">Permanently</span> suspend{" "}
-                              <span className="font-semibold text-white">{name}</span> from this room? They will{" "}
-                              <span className="font-semibold text-white">not be able to rejoin</span> unless a
+                              <span className="font-semibold text-ink">Permanently</span> suspend{" "}
+                              <span className="font-semibold text-ink">{name}</span> from this room? They will{" "}
+                              <span className="font-semibold text-ink">not be able to rejoin</span> unless a
                               moderator lifts the suspension.
                             </>
                           ) : (
                             <>
-                              Suspend <span className="font-semibold text-white">{name}</span> from this room for{" "}
-                              <span className="font-semibold text-white">
+                              Suspend <span className="font-semibold text-ink">{name}</span> from this room for{" "}
+                              <span className="font-semibold text-ink">
                                 {SUSPEND_OPTIONS.find((o) => o.hours === pending.hours)?.label}
                               </span>
                               ? They won&apos;t be able to rejoin until the suspension lifts.
@@ -310,7 +310,7 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
           )}
 
           {!loading && bans.length > 0 ? (
-            <div className="mt-5 border-t border-white/10 pt-4">
+            <div className="mt-5 border-t border-ink/10 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-muted">Suspended</p>
               <div className="flex flex-col gap-2">
                 {bans.map((ban) => {
@@ -322,7 +322,7 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                       <div className="flex items-center gap-2.5">
                         <Avatar url={ban.profile.avatar_url} name={name} size={32} />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-white">{name}</p>
+                          <p className="truncate text-sm font-medium text-ink">{name}</p>
                           <p className="truncate text-xs text-text-muted">
                             {ban.bannedUntil ? `Until ${new Date(ban.bannedUntil).toLocaleDateString()}` : "Permanent"}
                           </p>
@@ -342,10 +342,10 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                         <div
                           role="alertdialog"
                           aria-label={`Confirm lifting ${name}'s suspension`}
-                          className="mt-2 flex flex-col gap-2 rounded-control border border-white/20 bg-white/[0.04] p-2.5"
+                          className="mt-2 flex flex-col gap-2 rounded-control border border-ink/20 bg-ink/[0.04] p-2.5"
                         >
                           <p className="text-xs text-text-body">
-                            Lift the suspension for <span className="font-semibold text-white">{name}</span>? They
+                            Lift the suspension for <span className="font-semibold text-ink">{name}</span>? They
                             will be able to rejoin this room immediately.
                           </p>
                           <div className="flex justify-end gap-2">

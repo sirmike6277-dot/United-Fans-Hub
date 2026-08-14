@@ -83,6 +83,45 @@ export function GearIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+/** Shown when the resolved theme is currently dark — clicking switches to light. */
+export function SunIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.5v2.4M12 19.1v2.4M21.5 12h-2.4M4.9 12H2.5M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3 5.6 5.6" />
+    </svg>
+  );
+}
+
+/** Shown when the resolved theme is currently light — clicking switches to dark. */
+export function MoonIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 14.2A8.5 8.5 0 1 1 10.3 4a6.8 6.8 0 0 0 9.7 10.2Z" />
+    </svg>
+  );
+}
+
 export function ProfileIcon({ size = 20 }: { size?: number }) {
   return (
     <svg

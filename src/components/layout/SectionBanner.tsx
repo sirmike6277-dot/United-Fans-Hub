@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { PullQuote } from "@/components/ui/PullQuote";
+import type { LegendQuote } from "@/lib/quotes/legends";
 
 export interface SectionBannerProps {
   imageSrc: string;
@@ -7,7 +8,8 @@ export interface SectionBannerProps {
   kicker?: string;
   title: string;
   subtitle?: string;
-  quote?: { quote: string; attribution: string };
+  /** One or several — several rotate automatically (see PullQuote). */
+  quotes?: LegendQuote[];
 }
 
 /**
@@ -17,15 +19,23 @@ export interface SectionBannerProps {
  * page's own <h1>, so callers should not also render <PageHeader> alongside
  * this. Real, licensed photography only (see public/images/stadium/README.md)
  * — never AI-generated, never a scraped/branded graphic.
+ *
+ * Every color here is deliberately literal (bg-cinema-*, text-white,
+ * text-white/70), never a bg-void/bg-elevated/text-muted token — this
+ * banner is used on pages the light theme legitimately applies to
+ * (Community, Notifications) as well as pages it doesn't, and it must look
+ * identical either way. A token-based background paired with hardcoded
+ * white text is exactly the bug a real pass caught: the background would
+ * flip light while the text stayed white, going straight to illegible.
  */
-export function SectionBanner({ imageSrc, imageAlt, kicker, title, subtitle, quote }: SectionBannerProps) {
+export function SectionBanner({ imageSrc, imageAlt, kicker, title, subtitle, quotes }: SectionBannerProps) {
   return (
-    <section className="relative overflow-hidden rounded-card border border-white/10 bg-bg-elevated">
+    <section className="relative overflow-hidden rounded-card border border-white/10 bg-cinema-elevated">
       <div className="absolute inset-0" aria-hidden="true">
         <Image src={imageSrc} alt={imageAlt} fill priority sizes="100vw" className="object-cover opacity-60" />
       </div>
       <div
-        className="absolute inset-0 bg-gradient-to-t from-bg-void via-bg-void/75 to-bg-void/20"
+        className="absolute inset-0 bg-gradient-to-t from-cinema-void via-cinema-void/75 to-cinema-void/20"
         aria-hidden="true"
       />
       <div
@@ -41,9 +51,9 @@ export function SectionBanner({ imageSrc, imageAlt, kicker, title, subtitle, quo
           <h1 className="mt-2 font-display text-3xl font-bold uppercase leading-tight text-white sm:text-4xl">
             {title}
           </h1>
-          {subtitle ? <p className="mt-2 max-w-xl text-sm text-text-muted sm:text-base">{subtitle}</p> : null}
+          {subtitle ? <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">{subtitle}</p> : null}
         </div>
-        {quote ? <PullQuote quote={quote.quote} attribution={quote.attribution} className="max-w-md" /> : null}
+        {quotes && quotes.length > 0 ? <PullQuote quotes={quotes} className="max-w-md" tone="white" /> : null}
       </div>
     </section>
   );

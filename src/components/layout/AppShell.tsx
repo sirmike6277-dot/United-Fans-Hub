@@ -42,7 +42,7 @@ export function AppShell({ children, rail }: AppShellProps) {
     <>
       <AppearanceEffect />
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -right-40 -top-40 opacity-[0.035]">
+        <div className="absolute -right-40 -top-40 opacity-[var(--watermark-opacity-ambient)]">
           <ClubEmblem size={720} />
         </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(218,41,28,0.08),transparent_45%)]" />

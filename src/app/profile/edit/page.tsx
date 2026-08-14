@@ -26,7 +26,7 @@ export default async function EditProfilePage() {
     <AppShell>
       <main className="flex-1 bg-bg-void py-12">
         <div className="max-w-3xl">
-          <h1 className="font-display text-2xl font-bold uppercase text-white sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold uppercase text-ink sm:text-3xl">
             Edit Profile
           </h1>
           <p className="mt-2 text-sm text-text-muted">

@@ -80,9 +80,9 @@ export function SocialLinksEditor({ profileId, initialLinks }: SocialLinksEditor
           {links.map((link) => (
             <li
               key={link.id}
-              className="flex items-center justify-between gap-3 rounded-control border border-white/10 bg-bg-elevated px-4 py-2.5"
+              className="flex items-center justify-between gap-3 rounded-control border border-ink/10 bg-bg-elevated px-4 py-2.5"
             >
-              <span className="min-w-0 truncate text-sm text-white">
+              <span className="min-w-0 truncate text-sm text-ink">
                 <span className="text-text-muted">{PLATFORM_LABELS[link.platform]}:</span> {link.handleOrUrl}
               </span>
               <button

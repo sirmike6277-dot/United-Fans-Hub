@@ -85,7 +85,7 @@ function AccountPanel({ profileId, username, email, initialDisplayName, initialB
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-5">
-      <h2 className="font-display text-xl font-bold uppercase text-white">Account Settings</h2>
+      <h2 className="font-display text-xl font-bold uppercase text-red-primary">Account Settings</h2>
 
       {error ? <FormError message={error} /> : null}
       {saved ? <p className="text-sm text-green-400">Changes saved.</p> : null}
@@ -108,7 +108,7 @@ function AccountPanel({ profileId, username, email, initialDisplayName, initialB
           disabled={saving}
           rows={3}
           maxLength={280}
-          className="rounded-control border border-white/10 bg-bg-elevated px-4 py-3 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+          className="rounded-control border border-ink/10 bg-bg-elevated px-4 py-3 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
         />
       </div>
 
@@ -121,8 +121,8 @@ function AccountPanel({ profileId, username, email, initialDisplayName, initialB
         </Button>
       </div>
 
-      <div className="mt-2 border-t border-white/10 pt-5">
-        <p className="text-sm font-medium text-white">Password</p>
+      <div className="mt-2 border-t border-ink/10 pt-5">
+        <p className="text-sm font-medium text-ink">Password</p>
         <p className="mt-1 text-xs text-text-muted">
           We&apos;ll email you a secure link to set a new password.
         </p>
@@ -147,7 +147,7 @@ export function SettingsShell(props: SettingsShellProps) {
 
   const navItemClass = (key: string) =>
     `flex items-center gap-3 rounded-control px-4 py-2.5 text-left text-sm font-medium transition-colors ${
-      active === key ? "bg-red-primary text-white" : "text-text-muted hover:bg-white/5 hover:text-white"
+      active === key ? "bg-red-primary text-white" : "text-text-muted hover:bg-ink/5 hover:text-ink"
     }`;
 
   let panel: ReactNode;
@@ -185,7 +185,7 @@ export function SettingsShell(props: SettingsShellProps) {
         </button>
       </nav>
 
-      <div className="rounded-card border border-white/10 bg-bg-surface p-6 sm:p-8">{panel}</div>
+      <div className="rounded-card border border-ink/10 bg-bg-surface p-6 sm:p-8">{panel}</div>
     </div>
   );
 }

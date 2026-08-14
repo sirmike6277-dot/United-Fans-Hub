@@ -33,21 +33,21 @@ export function PredictionSummary({ prediction, opponentName, isHome, locked, on
       </div>
 
       <div className="flex items-center justify-center gap-3 text-lg">
-        <span className={isHome ? "font-semibold text-white" : "text-text-body"}>Man Utd</span>
-        <span className="font-display font-bold text-white">
+        <span className={isHome ? "font-semibold text-ink" : "text-text-body"}>Man Utd</span>
+        <span className="font-display font-bold text-ink">
           {manUtdScore}&ndash;{opponentScore}
         </span>
-        <span className={!isHome ? "font-semibold text-white" : "text-text-body"}>{opponentName}</span>
+        <span className={!isHome ? "font-semibold text-ink" : "text-text-body"}>{opponentName}</span>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-control border border-white/10 bg-bg-elevated p-3">
+        <div className="rounded-control border border-ink/10 bg-bg-elevated p-3">
           <p className="text-xs font-medium uppercase tracking-wide text-text-muted">First scorer</p>
-          <p className="mt-1 text-sm text-white">{prediction.predictedFirstScorerName ?? "No prediction"}</p>
+          <p className="mt-1 text-sm text-ink">{prediction.predictedFirstScorerName ?? "No prediction"}</p>
         </div>
-        <div className="rounded-control border border-white/10 bg-bg-elevated p-3">
+        <div className="rounded-control border border-ink/10 bg-bg-elevated p-3">
           <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Man of the Match</p>
-          <p className="mt-1 text-sm text-white">{prediction.predictedMotmName ?? "No prediction"}</p>
+          <p className="mt-1 text-sm text-ink">{prediction.predictedMotmName ?? "No prediction"}</p>
           <p className="mt-1 text-[11px] text-text-muted">Not scored yet</p>
         </div>
       </div>
@@ -55,7 +55,7 @@ export function PredictionSummary({ prediction, opponentName, isHome, locked, on
       {prediction.score ? (
         <div className="rounded-control border border-red-primary/40 bg-red-primary/10 p-3 text-center">
           <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Points earned</p>
-          <p className="mt-1 font-display text-2xl font-bold text-white">{prediction.score.pointsAwarded}</p>
+          <p className="mt-1 font-display text-2xl font-bold text-ink">{prediction.score.pointsAwarded}</p>
         </div>
       ) : null}
 

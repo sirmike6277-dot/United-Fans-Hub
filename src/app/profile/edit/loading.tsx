@@ -7,8 +7,8 @@ export default function EditProfileLoading() {
     <AppShell>
       <main className="flex-1 bg-bg-void py-12">
         <div className="max-w-3xl" aria-hidden="true">
-          <div className="h-8 w-48 animate-pulse rounded bg-white/10" />
-          <div className="mt-2 h-4 w-72 max-w-full animate-pulse rounded bg-white/5" />
+          <div className="h-8 w-48 animate-pulse rounded bg-ink/10" />
+          <div className="mt-2 h-4 w-72 max-w-full animate-pulse rounded bg-ink/5" />
 
           <div className="mt-8 flex flex-col gap-5">
             <div className="h-32 w-full animate-pulse rounded-card bg-bg-surface" />
@@ -16,12 +16,12 @@ export default function EditProfileLoading() {
 
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex flex-col gap-1.5">
-                <div className="h-3 w-24 animate-pulse rounded bg-white/10" />
+                <div className="h-3 w-24 animate-pulse rounded bg-ink/10" />
                 <div className="h-11 w-full animate-pulse rounded-control bg-bg-elevated" />
               </div>
             ))}
 
-            <div className="h-14 w-40 animate-pulse rounded-control bg-white/10" />
+            <div className="h-14 w-40 animate-pulse rounded-control bg-ink/10" />
           </div>
         </div>
       </main>

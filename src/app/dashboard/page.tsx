@@ -77,7 +77,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-6 py-6 sm:py-8">
           {/* Welcome header + stat row */}
           <Card className="relative overflow-hidden">
-            <div className="pointer-events-none absolute -right-16 -top-16 opacity-[0.07]" aria-hidden="true">
+            <div className="pointer-events-none absolute -right-16 -top-16 opacity-[var(--watermark-opacity-card)]" aria-hidden="true">
               <ClubEmblem size={280} />
             </div>
             <div
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
             <div className="relative flex flex-wrap items-center gap-4">
               <Avatar url={profile.avatar_url} name={displayName} size={56} />
               <div className="min-w-0 flex-1">
-                <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
+                <h1 className="font-display text-xl font-bold text-ink sm:text-2xl">
                   Welcome back, {displayName}
                 </h1>
                 <p className="text-sm text-text-muted">Here&apos;s what&apos;s happening in the Hub right now.</p>
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
             <div className="flex flex-col gap-6 lg:col-span-2">
               <section>
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="font-display text-lg font-bold uppercase text-white">Next Match</h2>
+                  <h2 className="font-display text-lg font-bold uppercase text-red-primary">Next Match</h2>
                 </div>
                 {nextMatch ? (
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">

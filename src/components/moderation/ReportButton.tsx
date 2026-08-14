@@ -32,7 +32,7 @@ export function ReportButton({ targetType, targetId, currentUserId, children, cl
         onClick={() => setOpen(true)}
         aria-label={ariaLabel ?? (children ? undefined : `Report this ${targetType}`)}
         title={children ? ariaLabel ?? `Report this ${targetType}` : undefined}
-        className={className ?? "text-xs text-text-muted underline transition-colors hover:text-white"}
+        className={className ?? "text-xs text-text-muted underline transition-colors hover:text-ink"}
       >
         {children ?? "Report"}
       </button>

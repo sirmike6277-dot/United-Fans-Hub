@@ -11,6 +11,45 @@
   --color-white: #ffffff;
   --color-text-body: #f4f4f4;
   --color-text-muted: #a1a1a1;
+  /*
+   * "ink" — foreground/hairline color relative to the app's OWN chrome
+   * surface (card headings, nav text, input text, hairline dividers):
+   * white on the dark theme (identical to --color-white here), something
+   * near-black on the light theme. Deliberately a SEPARATE token from
+   * --color-white, which stays literal white regardless of theme — a red
+   * button's label, or text/overlays composited over a fixed dark stadium
+   * photo, must never flip to dark-on-dark just because the app theme did.
+   * Use text-ink/border-ink/bg-ink for the former, text-white/border-white/
+   * bg-white (unchanged) for the latter.
+   */
+  --color-ink: #ffffff;
+
+  /*
+   * "cinema" — the permanent dark surface for a real stadium-photo hero/
+   * banner (SectionBanner, the landing Hero, AuthVisual/AuthBackdrop, and
+   * profile's own cover banner): NEVER overridden in the light-theme block
+   * below, on purpose. These sit behind literal-white text/gradients
+   * composited over a fixed dark photo — if this used the same token as
+   * the page's own bg-void/bg-elevated, switching to light theme would
+   * flip *this* background light while the text on top of it stayed
+   * hardcoded white, which is exactly the illegible-header/quote bug a
+   * real pass caught (light mode "affecting" banners it was never
+   * supposed to touch). Same literal values as bg-void/bg-elevated's own
+   * dark-theme defaults, just permanently pinned to them.
+   */
+  --color-cinema-void: #050505;
+  --color-cinema-elevated: #111111;
+
+  /*
+   * Low-opacity decorative crest watermarks (ClubEmblem behind Dashboard's
+   * welcome card, AppShell's ambient full-page one) were tuned to read as
+   * a subtle tint against a near-black surface — the same opacity against
+   * the light theme's near-white surface washes out to nearly nothing.
+   * Only overridden in the light-theme block below; the cinema-locked
+   * banners above use their own fixed, unrelated opacity values, not these.
+   */
+  --watermark-opacity-ambient: 0.035;
+  --watermark-opacity-card: 0.07;
 
   --radius-control: 0.5rem;
   --radius-card: 0.875rem;
@@ -26,6 +65,9 @@
   --color-white: var(--color-white);
   --color-text-body: var(--color-text-body);
   --color-text-muted: var(--color-text-muted);
+  --color-ink: var(--color-ink);
+  --color-cinema-void: var(--color-cinema-void);
+  --color-cinema-elevated: var(--color-cinema-elevated);
 
   --radius-control: var(--radius-control);
   --radius-card: var(--radius-card);
@@ -34,6 +76,36 @@
   --font-body: var(--font-body);
   --font-quote: var(--font-quote);
   --font-theatre: var(--font-theatre);
+}
+
+/*
+ * Settings → Appearance theme (see AppearanceEffect.tsx, AppearancePanel.tsx)
+ * — "auto" follows the local clock (light 06:00–18:00, dark otherwise, kept
+ * in sync live rather than only at page load), "light"/"dark" are an
+ * explicit manual override, stored per-account. AppearanceEffect sets
+ * data-theme="light" on <html> once resolved; no attribute (including
+ * before the effect has run on first paint) keeps the app's original dark
+ * palette — dark is the default/fallback in every sense, never a flash of
+ * an unstyled or wrongly-themed page.
+ *
+ * Scope: this covers the *app chrome* (dashboard, profile, community,
+ * messages, settings, nav/sidebar, cards, forms) — the landing page, auth
+ * screens, and stadium-photo hero/banner sections keep their cinematic dark
+ * treatment regardless of this setting (a deliberate scope cut, not every
+ * component re-skinned — see the phase report). Those surfaces never read
+ * data-theme, so this block has no effect on them either way.
+ */
+:root[data-theme="light"] {
+  --color-bg-void: #f5f5f6;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #eef0f2;
+  --color-text-body: #18181a;
+  --color-text-muted: #62636a;
+  --color-ink: #18181a;
+  /* Not --color-cinema-void/--color-cinema-elevated — see their definition
+     above for why those two are deliberately absent from this block. */
+  --watermark-opacity-ambient: 0.1;
+  --watermark-opacity-card: 0.16;
 }
 
 @media (prefers-reduced-motion: reduce) {

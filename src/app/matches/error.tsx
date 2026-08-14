@@ -24,7 +24,7 @@ export default function MatchesError({
       <Navbar brand={<Wordmark />} />
       <main className="flex flex-1 items-center justify-center bg-bg-void px-4 py-24">
         <div className="max-w-sm text-center">
-          <p className="font-display text-xl font-bold text-white">Something went wrong</p>
+          <p className="font-display text-xl font-bold text-ink">Something went wrong</p>
           <p className="mt-2 text-sm text-text-muted">
             We couldn&apos;t load the Match Centre. Please try again.
           </p>

@@ -53,11 +53,11 @@ export function WelcomeRulesModal({ profileId, logo }: WelcomeRulesModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="welcome-rules-title"
-        className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-card border border-white/10 bg-bg-surface shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"
+        className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-card border border-ink/10 bg-bg-surface shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]"
       >
         <div className="flex flex-col items-center gap-3 px-6 pt-6 text-center">
           {logo}
-          <h2 id="welcome-rules-title" className="font-display text-xl font-bold uppercase text-white">
+          <h2 id="welcome-rules-title" className="font-display text-xl font-bold uppercase text-red-primary">
             Welcome to United Fans Hub
           </h2>
           <p className="text-sm text-text-muted">
@@ -67,11 +67,11 @@ export function WelcomeRulesModal({ profileId, logo }: WelcomeRulesModalProps) {
 
         <div className="mt-5 flex flex-col gap-5 overflow-y-auto px-6 text-sm leading-relaxed text-text-body">
           <section>
-            <h3 className="font-display text-sm font-bold uppercase text-white">Respect every fan</h3>
+            <h3 className="font-display text-sm font-bold uppercase text-ink">Respect every fan</h3>
             <p className="mt-1.5">
               Everyone here supports the same club — disagree with each other&apos;s opinions all
               you like, but treat the person on the other end of it with respect.{" "}
-              <strong className="font-medium text-white">
+              <strong className="font-medium text-ink">
                 Insults, harassment, and hate speech — including racial slurs — are never
                 acceptable
               </strong>
@@ -80,7 +80,7 @@ export function WelcomeRulesModal({ profileId, logo }: WelcomeRulesModalProps) {
           </section>
 
           <section>
-            <h3 className="font-display text-sm font-bold uppercase text-white">If something goes wrong</h3>
+            <h3 className="font-display text-sm font-bold uppercase text-ink">If something goes wrong</h3>
             <p className="mt-1.5">
               Report any post, comment, message, or profile — every report is reviewed by a real
               moderator. Depending on what happened, that can mean the content being removed, a
@@ -91,7 +91,7 @@ export function WelcomeRulesModal({ profileId, logo }: WelcomeRulesModalProps) {
           </section>
 
           <section>
-            <h3 className="font-display text-sm font-bold uppercase text-white">How to earn points</h3>
+            <h3 className="font-display text-sm font-bold uppercase text-ink">How to earn points</h3>
             <p className="mt-1.5">
               Match Predictions are where points come from today: +3 for the correct result, +5
               more for the exact scoreline, +3 for the correct first goalscorer. Your points climb
@@ -100,7 +100,7 @@ export function WelcomeRulesModal({ profileId, logo }: WelcomeRulesModalProps) {
           </section>
 
           <section>
-            <h3 className="font-display text-sm font-bold uppercase text-white">Fan of the Month & Season</h3>
+            <h3 className="font-display text-sm font-bold uppercase text-ink">Fan of the Month & Season</h3>
             <p className="mt-1.5">
               Any member can nominate a fellow fan — you can&apos;t nominate yourself. A moderator
               approves real nominations, then the community votes. Most votes when voting closes
@@ -109,7 +109,7 @@ export function WelcomeRulesModal({ profileId, logo }: WelcomeRulesModalProps) {
           </section>
         </div>
 
-        <div className="mt-6 flex flex-col gap-2 border-t border-white/10 px-6 py-5">
+        <div className="mt-6 flex flex-col gap-2 border-t border-ink/10 px-6 py-5">
           <Button type="button" onClick={handleAgree} loading={saving} disabled={saving}>
             I Understand &amp; Agree
           </Button>

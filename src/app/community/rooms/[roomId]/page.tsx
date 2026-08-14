@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/Navbar";
 import { Brand } from "@/components/layout/Brand";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { AppearanceEffect } from "@/components/layout/AppearanceEffect";
 import { RoomJoinPreview } from "@/components/community/RoomJoinPreview";
 import { RoomChat } from "@/components/community/RoomChat";
 import { fetchRoomBySlug, fetchMyActiveBan } from "@/lib/community/rooms";
@@ -132,6 +133,12 @@ export default async function RoomPage({
 
   return (
     <>
+      {/* AppShell normally owns this — hand-composed here too, same as
+          Navbar/Sidebar below, since this route bypasses AppShell (see this
+          file's own doc comment). Without it, this route silently never
+          applied a signed-in fan's real theme/reduce-motion/text-size
+          preferences at all — a real gap this closes, not decoration. */}
+      <AppearanceEffect />
       <Navbar brand={<Brand />} />
       <main className="flex-1 bg-bg-void">
         <div className="mx-auto flex w-full max-w-[1440px] items-start px-4 sm:px-6 lg:px-8">

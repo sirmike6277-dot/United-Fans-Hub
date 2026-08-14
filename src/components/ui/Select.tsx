@@ -19,8 +19,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           id={selectId}
-          className={`h-11 w-full rounded-control border bg-bg-elevated px-4 text-sm text-white outline-none transition-colors focus:border-red-primary ${
-            error ? "border-red-hover" : "border-white/10"
+          className={`h-11 w-full rounded-control border bg-bg-elevated px-4 text-sm text-ink outline-none transition-colors focus:border-red-primary ${
+            error ? "border-red-hover" : "border-ink/10"
           } ${className}`}
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={error && selectId ? `${selectId}-error` : undefined}

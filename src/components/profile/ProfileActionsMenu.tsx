@@ -102,7 +102,7 @@ export function ProfileActionsMenu({ currentUserId, targetProfileId, targetName,
         aria-label="More actions"
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex h-10 w-10 items-center justify-center rounded-control border border-white/10 text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+        className="flex h-10 w-10 items-center justify-center rounded-control border border-ink/10 text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <circle cx="5" cy="12" r="2" />
@@ -112,11 +112,11 @@ export function ProfileActionsMenu({ currentUserId, targetProfileId, targetName,
       </button>
 
       {open ? (
-        <div role="menu" aria-label={`Actions for ${targetName}`} className="absolute right-0 z-20 mt-2 w-64 rounded-control border border-white/10 bg-bg-elevated p-1.5 shadow-lg">
+        <div role="menu" aria-label={`Actions for ${targetName}`} className="absolute right-0 z-20 mt-2 w-64 rounded-control border border-ink/10 bg-bg-elevated p-1.5 shadow-lg">
           {confirmingBlock ? (
             <div className="flex flex-col gap-2 p-2">
               <p className="text-xs text-text-body">
-                Block <span className="font-semibold text-white">{targetName}</span>? They won&apos;t be able to message
+                Block <span className="font-semibold text-ink">{targetName}</span>? They won&apos;t be able to message
                 or mention you, and you won&apos;t see each other&apos;s messages in shared Fan Rooms.
               </p>
               <div className="flex justify-end gap-2">
@@ -135,7 +135,7 @@ export function ProfileActionsMenu({ currentUserId, targetProfileId, targetName,
                 role="menuitem"
                 onClick={() => (isBlocked ? handleToggleBlock() : setConfirmingBlock(true))}
                 disabled={busy}
-                className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-white/5 disabled:opacity-50"
+                className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-ink/5 disabled:opacity-50"
               >
                 <SlashCircleIcon />
                 <span className="flex-1">
@@ -150,7 +150,7 @@ export function ProfileActionsMenu({ currentUserId, targetProfileId, targetName,
                 role="menuitem"
                 onClick={handleToggleMute}
                 disabled={busy}
-                className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-white/5 disabled:opacity-50"
+                className="flex w-full items-center gap-2.5 rounded-control px-3 py-2.5 text-left text-sm text-text-body transition-colors hover:bg-ink/5 disabled:opacity-50"
               >
                 <VolumeOffIcon />
                 <span className="flex-1">
@@ -160,7 +160,7 @@ export function ProfileActionsMenu({ currentUserId, targetProfileId, targetName,
                   </span>
                 </span>
               </button>
-              <div className="my-1 border-t border-white/10" />
+              <div className="my-1 border-t border-ink/10" />
               <button
                 type="button"
                 role="menuitem"
@@ -168,7 +168,7 @@ export function ProfileActionsMenu({ currentUserId, targetProfileId, targetName,
                   setOpen(false);
                   setReportOpen(true);
                 }}
-                className="flex w-full items-center rounded-control px-3 py-2.5 text-left text-sm text-red-hover transition-colors hover:bg-white/5"
+                className="flex w-full items-center rounded-control px-3 py-2.5 text-left text-sm text-red-hover transition-colors hover:bg-ink/5"
               >
                 Report {targetName}
               </button>

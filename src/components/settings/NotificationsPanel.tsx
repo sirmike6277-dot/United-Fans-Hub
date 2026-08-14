@@ -86,7 +86,7 @@ export function NotificationsPanel({ currentUserId }: NotificationsPanelProps) {
 
   return (
     <div>
-      <h2 className="font-display text-xl font-bold uppercase text-white">Notifications</h2>
+      <h2 className="font-display text-xl font-bold uppercase text-red-primary">Notifications</h2>
       <p className="mt-1 text-sm text-text-muted">
         Choose what shows up in your notification bell. Turning something off here doesn&apos;t
         stop it from happening — just from notifying you about it.
@@ -94,13 +94,13 @@ export function NotificationsPanel({ currentUserId }: NotificationsPanelProps) {
 
       {error ? <p className="mt-4 text-sm text-red-hover">{error}</p> : null}
 
-      <div className="mt-6 flex flex-col divide-y divide-white/10">
+      <div className="mt-6 flex flex-col divide-y divide-ink/10">
         {loading
-          ? [0, 1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse bg-white/5" />)
+          ? [0, 1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse bg-ink/5" />)
           : ROWS.map(({ key, label, description }) => (
               <div key={key} className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-white">{label}</p>
+                  <p className="text-sm font-medium text-ink">{label}</p>
                   <p className="mt-0.5 text-xs text-text-muted">{description}</p>
                 </div>
                 <ToggleSwitch
@@ -114,7 +114,7 @@ export function NotificationsPanel({ currentUserId }: NotificationsPanelProps) {
             ))}
       </div>
 
-      <p className="mt-6 border-t border-white/10 pt-4 text-xs text-text-muted">
+      <p className="mt-6 border-t border-ink/10 pt-4 text-xs text-text-muted">
         Account-safety notices (like moderation actions on your account) always show — they
         can&apos;t be turned off here.
       </p>

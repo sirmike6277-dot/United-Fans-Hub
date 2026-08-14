@@ -10,8 +10,8 @@ function resultFor(match: MatchSummary): "W" | "D" | "L" | null {
 }
 
 const RESULT_STYLE: Record<"W" | "D" | "L", string> = {
-  W: "bg-green-600/80 text-white",
-  D: "bg-white/15 text-white",
+  W: "bg-green-600/80 text-ink",
+  D: "bg-ink/15 text-ink",
   L: "bg-red-hover/80 text-white",
 };
 

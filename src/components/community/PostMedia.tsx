@@ -203,7 +203,7 @@ function MediaTile({ storagePath, tall, onOpen }: { storagePath: string; tall: b
       aria-label="View image full-screen"
       className={`relative block cursor-zoom-in bg-bg-elevated ${tall ? "row-span-2 aspect-square sm:aspect-auto" : "aspect-video"}`}
     >
-      {!loaded ? <div className="absolute inset-0 animate-pulse bg-white/5" aria-hidden="true" /> : null}
+      {!loaded ? <div className="absolute inset-0 animate-pulse bg-ink/5" aria-hidden="true" /> : null}
       <Image
         src={url}
         alt=""

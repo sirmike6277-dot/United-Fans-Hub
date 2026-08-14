@@ -83,14 +83,14 @@ export function CreatePollDialog({ conversationId, currentUserId, onCreated, onC
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Create a poll" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-md rounded-card border border-white/10 bg-bg-surface p-5 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]">
+      <div className="w-full max-w-md rounded-card border border-ink/10 bg-bg-surface p-5 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)]">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-white">Create a Poll</h2>
+          <h2 className="font-display text-lg font-bold text-red-primary">Create a Poll</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
           >
             <CloseIcon />
           </button>
@@ -129,7 +129,7 @@ export function CreatePollDialog({ conversationId, currentUserId, onCreated, onC
                     onClick={() => removeOption(index)}
                     disabled={submitting}
                     aria-label={`Remove option ${index + 1}`}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white disabled:opacity-40"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink disabled:opacity-40"
                   >
                     <CloseIcon />
                   </button>

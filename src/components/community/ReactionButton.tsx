@@ -58,7 +58,7 @@ export function ReactionButton({ postId, userId, initialReacted, initialCount }:
         aria-pressed={reacted}
         aria-label={reacted ? "Remove like" : "Like this post"}
         className={`inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary disabled:opacity-60 ${
-          reacted ? "text-red-primary" : "text-text-muted hover:text-white"
+          reacted ? "text-red-primary" : "text-text-muted hover:text-ink"
         }`}
       >
         <HeartIcon filled={reacted} />

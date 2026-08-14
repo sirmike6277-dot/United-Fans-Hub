@@ -49,7 +49,7 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
         ) : null}
 
         {message.deletedAt ? (
-          <div className="rounded-card border border-white/10 bg-bg-elevated px-3 py-2 text-sm italic text-text-muted">
+          <div className="rounded-card border border-ink/10 bg-bg-elevated px-3 py-2 text-sm italic text-text-muted">
             This message was deleted
           </div>
         ) : (
@@ -66,14 +66,14 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
                     onClick={() => onJumpToParent(message.replyTo!.id)}
                     aria-label={`Go to ${message.replyTo.senderName}'s original message`}
                     className={`mb-1.5 block w-full rounded-control border-l-2 px-2 py-1 text-left text-xs transition-colors ${
-                      isOwn ? "border-white/40 bg-black/10 hover:bg-black/20" : "border-white/20 bg-black/20 hover:bg-black/30"
+                      isOwn ? "border-white/40 bg-black/10 hover:bg-black/20" : "border-ink/20 bg-black/20 hover:bg-black/30"
                     }`}
                   >
                     <p className={isOwn ? "text-white/80" : "text-text-muted"}>{message.replyTo.senderName}</p>
                     <p className={`truncate ${isOwn ? "text-white/70" : "text-text-muted"}`}>{message.replyTo.body || "Attachment"}</p>
                   </button>
                 ) : (
-                  <div className={`mb-1.5 rounded-control border-l-2 px-2 py-1 text-xs ${isOwn ? "border-white/40 bg-black/10" : "border-white/20 bg-black/20"}`}>
+                  <div className={`mb-1.5 rounded-control border-l-2 px-2 py-1 text-xs ${isOwn ? "border-white/40 bg-black/10" : "border-ink/20 bg-black/20"}`}>
                     <p className={isOwn ? "text-white/80" : "text-text-muted"}>{message.replyTo.senderName}</p>
                     <p className={`truncate ${isOwn ? "text-white/70" : "text-text-muted"}`}>
                       {message.replyTo.deleted ? "Message deleted" : message.replyTo.body || "Attachment"}
@@ -98,7 +98,7 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
                 onClick={() => onReply(message)}
                 aria-label="Reply to this message"
                 title="Reply"
-                className={`absolute top-0 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-muted opacity-0 shadow-md transition-opacity hover:text-white focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary group-hover:opacity-100 ${
+                className={`absolute top-0 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-muted opacity-0 shadow-md transition-opacity hover:text-ink focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary group-hover:opacity-100 ${
                   isOwn ? "-left-8" : "-right-8"
                 }`}
               >
@@ -115,7 +115,7 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
                 targetId={message.id}
                 currentUserId={currentUserId}
                 ariaLabel="Report this message"
-                className={`absolute top-0 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-muted opacity-0 shadow-md transition-opacity hover:text-white focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary group-hover:opacity-100 ${
+                className={`absolute top-0 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-muted opacity-0 shadow-md transition-opacity hover:text-ink focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary group-hover:opacity-100 ${
                   interactive && onReply ? "-right-16" : "-right-8"
                 }`}
               >

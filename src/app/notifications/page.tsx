@@ -6,6 +6,7 @@ import { SectionBanner } from "@/components/layout/SectionBanner";
 import { NotificationsFeed } from "@/components/notifications/NotificationsFeed";
 import { Card } from "@/components/ui/Card";
 import { PullQuote } from "@/components/ui/PullQuote";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { TopFansWidget } from "@/components/dashboard/TopFansWidget";
 import { fetchNotificationsPage, NOTIFICATIONS_PAGE_SIZE } from "@/lib/notifications/notifications";
 import { fetchFanLeaderboard } from "@/lib/leaderboard/leaderboard";
@@ -32,10 +33,7 @@ export default async function NotificationsPage() {
         <div className="flex flex-col gap-6">
           <TopFansWidget entries={topFans} currentUserId={userId} />
           <Card>
-            <PullQuote
-              quote="Manchester United is a marvellous club, a marvellous life."
-              attribution="George Best"
-            />
+            <PullQuote quotes={pickLegendQuotes("notifications-rail")} />
           </Card>
         </div>
       }
@@ -47,11 +45,7 @@ export default async function NotificationsPage() {
             imageAlt="The United Trinity statue of George Best, Denis Law, and Sir Bobby Charlton outside Old Trafford"
             kicker="Notifications"
             title="Never miss a moment."
-            quote={{
-              quote:
-                "Once you've played for Manchester United, you can never play for anybody else. You'd retire first.",
-              attribution: "Denis Law",
-            }}
+            quotes={pickLegendQuotes("notifications-banner")}
           />
         </div>
         <NotificationsFeed

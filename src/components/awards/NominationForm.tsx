@@ -54,15 +54,15 @@ export function NominationForm({ periodId, currentUserId, onSubmitted }: Nominat
 
   if (submitted) {
     return (
-      <p className="rounded-control border border-white/10 bg-bg-elevated px-4 py-3 text-sm text-text-body">
+      <p className="rounded-control border border-ink/10 bg-bg-elevated px-4 py-3 text-sm text-text-body">
         Nomination submitted — it&apos;ll appear here once a moderator reviews it.
       </p>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-card border border-white/10 bg-bg-surface p-4">
-      <p className="text-sm font-medium text-white">Nominate a fan</p>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-card border border-ink/10 bg-bg-surface p-4">
+      <p className="text-sm font-medium text-ink">Nominate a fan</p>
       {error ? <FormError message={error} /> : null}
 
       <NomineeSearchInput currentUserId={currentUserId} selected={nominee} onSelect={setNominee} />
@@ -78,7 +78,7 @@ export function NominationForm({ periodId, currentUserId, onSubmitted }: Nominat
           maxLength={MAX_REASON_LENGTH}
           rows={2}
           placeholder="What have they done for the community this month?"
-          className="w-full resize-none rounded-control border border-white/10 bg-bg-elevated px-3 py-2 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+          className="w-full resize-none rounded-control border border-ink/10 bg-bg-elevated px-3 py-2 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
         />
       </div>
 

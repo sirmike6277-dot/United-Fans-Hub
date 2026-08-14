@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="font-display text-base font-bold uppercase text-white">{title}</h2>
+      <h2 className="font-display text-base font-bold uppercase text-red-primary">{title}</h2>
       <div className="mt-2 flex flex-col gap-3">{children}</div>
     </section>
   );
@@ -25,16 +25,16 @@ export default function PrivacyPage() {
 
       <Section title="1. What we collect">
         <p>
-          <strong className="font-medium text-white">Account information</strong>: your email
+          <strong className="font-medium text-ink">Account information</strong>: your email
           address and username, used to sign you in.
         </p>
         <p>
-          <strong className="font-medium text-white">Profile information you choose to add</strong>:
+          <strong className="font-medium text-ink">Profile information you choose to add</strong>:
           display name, bio, avatar and cover photos, favourite player/era/shirt, and any other
           fan-profile fields you fill in.
         </p>
         <p>
-          <strong className="font-medium text-white">Content you create</strong>: posts, comments,
+          <strong className="font-medium text-ink">Content you create</strong>: posts, comments,
           messages, match predictions, reactions, and reports you file.
         </p>
       </Section>
@@ -49,9 +49,9 @@ export default function PrivacyPage() {
 
       <Section title="3. Who we share it with">
         <p>
-          <strong className="font-medium text-white">Supabase</strong> hosts our database,
+          <strong className="font-medium text-ink">Supabase</strong> hosts our database,
           handles sign-in, and stores uploaded images (avatars, cover photos, post media). {" "}
-          <strong className="font-medium text-white">API-Football</strong> is the source of real
+          <strong className="font-medium text-ink">API-Football</strong> is the source of real
           fixture, score, and lineup data shown in Match Centre — we send it match/team
           identifiers, never your personal information. We don&apos;t use any advertising,
           analytics-tracking, or data-broker service, and we never sell your data.

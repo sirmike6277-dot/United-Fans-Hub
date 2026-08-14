@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
 import { PullQuote } from "@/components/ui/PullQuote";
+import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { MatchDetailHeader } from "@/components/matches/MatchDetailHeader";
 import { EventTimeline } from "@/components/matches/EventTimeline";
 import { PitchLineup } from "@/components/matches/PitchLineup";
@@ -121,7 +122,7 @@ export default async function MatchDetailPage({
           by clicking through from /matches themselves. */}
       <Link
         href="/matches"
-        className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+        className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M15 6l-6 6 6 6" />
@@ -143,7 +144,7 @@ export default async function MatchDetailPage({
 
       {club ? (
         <section>
-          <h2 className="font-display text-lg font-bold uppercase text-white sm:text-xl">Lineups</h2>
+          <h2 className="font-display text-lg font-bold uppercase text-red-primary sm:text-xl">Lineups</h2>
           <div className="mt-3">
             <PitchLineup
               entries={lineupEntries}
@@ -175,7 +176,7 @@ export default async function MatchDetailPage({
       ) : null}
 
       <section>
-        <h2 className="font-display text-lg font-bold uppercase text-white sm:text-xl">Match Events</h2>
+        <h2 className="font-display text-lg font-bold uppercase text-red-primary sm:text-xl">Match Events</h2>
         <div className="mt-3">
           <EventTimeline events={current.events} />
         </div>
@@ -185,10 +186,7 @@ export default async function MatchDetailPage({
 
   const rail = (
     <Card>
-      <PullQuote
-        quote="Attack wins you games, defence wins you titles."
-        attribution="Sir Alex Ferguson"
-      />
+      <PullQuote quotes={pickLegendQuotes("match-detail-rail")} />
     </Card>
   );
 

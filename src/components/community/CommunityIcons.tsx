@@ -58,6 +58,16 @@ export function ImageIcon() {
   );
 }
 
+export function EmojiIcon() {
+  return (
+    <svg {...iconProps()}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8.5 14c.9 1.2 2 1.8 3.5 1.8s2.6-.6 3.5-1.8" />
+      <path d="M8.5 9.5h.01M15.5 9.5h.01" strokeWidth="2.5" />
+    </svg>
+  );
+}
+
 export function CloseIcon() {
   return (
     <svg {...iconProps(2)}>

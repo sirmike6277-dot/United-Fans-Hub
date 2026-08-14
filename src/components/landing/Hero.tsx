@@ -26,7 +26,7 @@ const heroPhotos = [
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-bg-void">
+    <section className="relative overflow-hidden bg-cinema-void">
       {/*
         Cinematic backdrop — a real Old Trafford photo (Harry Walsh, Unsplash
         License; see public/images/stadium/README.md), subdued and blended
@@ -44,7 +44,7 @@ export function Hero() {
         />
       </div>
       <div
-        className="absolute inset-0 bg-gradient-to-b from-bg-elevated/45 via-bg-void/75 to-bg-void"
+        className="absolute inset-0 bg-gradient-to-b from-cinema-elevated/45 via-cinema-void/75 to-cinema-void"
         aria-hidden="true"
       />
 
@@ -129,13 +129,13 @@ export function Hero() {
                 className="object-cover"
               />
               <div
-                className="absolute inset-0 bg-gradient-to-t from-bg-void/50 via-transparent to-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-cinema-void/50 via-transparent to-transparent"
                 aria-hidden="true"
               />
             </div>
           ))}
           <div
-            className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg-void to-transparent"
+            className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-cinema-void to-transparent"
             aria-hidden="true"
           />
         </div>

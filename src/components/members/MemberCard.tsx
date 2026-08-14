@@ -14,7 +14,7 @@ export function MemberCard({ member, currentUserId, initialIsFollowing }: Member
   const name = member.display_name || member.username;
 
   return (
-    <Card className="!p-4 flex items-center gap-3 transition-colors hover:border-white/30 sm:!p-5">
+    <Card className="!p-4 flex items-center gap-3 transition-colors hover:border-ink/30 sm:!p-5">
       <UserIdentity
         name={name}
         username={member.username}

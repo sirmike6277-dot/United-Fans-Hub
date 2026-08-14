@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="font-display text-base font-bold uppercase text-white">{title}</h2>
+      <h2 className="font-display text-base font-bold uppercase text-red-primary">{title}</h2>
       <div className="mt-2 flex flex-col gap-3">{children}</div>
     </section>
   );
@@ -37,7 +37,7 @@ export default function ContactPage() {
             Terms of Service
           </a>{" "}
           — harassment, spam, impersonation, or anything else that needs moderator attention — use
-          the <strong className="font-medium text-white">Report</strong> option on the post,
+          the <strong className="font-medium text-ink">Report</strong> option on the post,
           comment, message, or profile itself. It reaches our moderation team directly and is the
           fastest way to get something looked at.
         </p>
@@ -53,7 +53,7 @@ export default function ContactPage() {
             . We aim to reply within a few business days.
           </p>
         ) : (
-          <p className="rounded-card border border-white/10 bg-bg-elevated p-4 text-text-muted">
+          <p className="rounded-card border border-ink/10 bg-bg-elevated p-4 text-text-muted">
             A dedicated contact email is on its way and will appear here shortly. In the meantime,
             please use the in-app Report option above for anything urgent.
           </p>

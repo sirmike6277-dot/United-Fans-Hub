@@ -29,7 +29,7 @@ export async function LegalPageShell({ title, lastUpdated, children }: LegalPage
   const content = (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
       <ClubEmblem size={56} />
-      <h1 className="mt-4 font-display text-2xl font-bold uppercase text-white sm:text-3xl">{title}</h1>
+      <h1 className="mt-4 font-display text-2xl font-bold uppercase text-red-primary sm:text-3xl">{title}</h1>
       <p className="mt-2 text-xs uppercase tracking-wide text-text-muted">Last updated {lastUpdated}</p>
       <div className="mt-8 flex flex-col gap-8 text-sm leading-relaxed text-text-body">{children}</div>
     </div>

@@ -10,6 +10,8 @@ import { fetchUnreadCount } from "@/lib/notifications/notifications";
 import { MessageBubbleIcon } from "@/components/messaging/MessagingIcons";
 import { fetchUnreadConversationCount } from "@/lib/messaging/conversations";
 import { NAV_ITEMS, MODERATION_NAV_ITEM, ADMIN_NAV_ITEM } from "./navItems";
+import { SunIcon, MoonIcon } from "./ShellIcons";
+import { applyThemeAttribute, type ThemeMode } from "@/lib/theme/resolveTheme";
 
 const navLinks = [
   { href: "#features", label: "Features" },
@@ -71,6 +73,19 @@ export function Navbar({ brand }: NavbarProps) {
   // rather than receiving them as props.
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  // Starts false (matches the app's true default/fallback — no data-theme
+  // attribute at all means dark, see globals.css) and is corrected from the
+  // real DOM attribute the instant this mounts client-side — never resolved
+  // from the clock directly here, unlike AppearanceEffect. That avoids a
+  // second, independent "what time is it" resolution (with its own
+  // server/client hydration-mismatch risk) existing alongside the one
+  // AppearanceEffect already owns; this just reads and toggles whatever
+  // AppearanceEffect already applied to <html>, the single source of truth.
+  const [isLight, setIsLight] = useState(
+    () => typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "light",
+  );
+  const [themeSaving, setThemeSaving] = useState(false);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
 
   // Escape closes the mobile menu and returns focus to the toggle button —
@@ -87,6 +102,40 @@ export function Navbar({ brand }: NavbarProps) {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
+
+  // Mirrors <html data-theme>, whatever set it (AppearanceEffect on load,
+  // its own live auto-mode boundary timer, or this button's own click) —
+  // a MutationObserver instead of re-deriving the value, so there is
+  // exactly one piece of code in the app that decides "is it light or dark
+  // right now" (see AppearanceEffect/resolveTheme) and everything else,
+  // including this button's icon, just reflects it.
+  useEffect(() => {
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      setIsLight(root.getAttribute("data-theme") === "light");
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+
+  async function handleToggleTheme() {
+    if (!userId || themeSaving) return;
+    const nextMode: ThemeMode = isLight ? "dark" : "light";
+
+    // Optimistic — the reader sees the switch instantly, matching every
+    // other toggle in this app (AppearancePanel's own save() does the same).
+    applyThemeAttribute(nextMode);
+    setThemeSaving(true);
+
+    const supabase = createClient();
+    const { data } = await supabase.from("profiles").select("appearance_preferences").eq("id", userId).single();
+    const current = (data?.appearance_preferences ?? {}) as Record<string, unknown>;
+    await supabase
+      .from("profiles")
+      .update({ appearance_preferences: { ...current, theme: nextMode } })
+      .eq("id", userId);
+    setThemeSaving(false);
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -113,11 +162,13 @@ export function Navbar({ brand }: NavbarProps) {
 
     supabase.auth.getUser().then(({ data }) => {
       setSignedIn(Boolean(data.user));
+      setUserId(data.user?.id ?? null);
       refreshUnreadCount(data.user?.id);
       refreshRoleFlags(data.user?.id);
     });
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       setSignedIn(Boolean(session?.user));
+      setUserId(session?.user?.id ?? null);
       refreshUnreadCount(session?.user?.id);
       refreshRoleFlags(session?.user?.id);
     });
@@ -143,7 +194,7 @@ export function Navbar({ brand }: NavbarProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-bg-elevated/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-ink/10 bg-bg-elevated/90 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {brand}
 
@@ -161,8 +212,8 @@ export function Navbar({ brand }: NavbarProps) {
                   <Link
                     href={resolved}
                     aria-current={active ? "page" : undefined}
-                    className={`text-sm font-medium transition-colors hover:text-white ${
-                      active ? "text-white" : "text-text-muted"
+                    className={`text-sm font-medium transition-colors hover:text-ink ${
+                      active ? "text-ink" : "text-text-muted"
                     }`}
                   >
                     {link.label}
@@ -180,12 +231,22 @@ export function Navbar({ brand }: NavbarProps) {
                   the Sidebar's job (see AppShell). Duplicating Home/Members/
                   Predictions in both places was the clutter the header
                   redesign was meant to remove. */}
+              <button
+                type="button"
+                onClick={handleToggleTheme}
+                disabled={themeSaving}
+                aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+                title={isLight ? "Switch to dark mode" : "Switch to light mode"}
+                className="flex h-10 w-10 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary disabled:opacity-50"
+              >
+                {isLight ? <MoonIcon /> : <SunIcon />}
+              </button>
               <Link
                 href="/messages"
                 aria-label={unreadMessages > 0 ? `Messages, ${unreadMessages} unread` : "Messages"}
                 aria-current={isRouteActive(pathname, "/messages") ? "page" : undefined}
-                className={`relative flex h-10 w-10 items-center justify-center rounded-control transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                  isRouteActive(pathname, "/messages") ? "bg-white/10 text-white" : "text-text-muted"
+                className={`relative flex h-10 w-10 items-center justify-center rounded-control transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
+                  isRouteActive(pathname, "/messages") ? "bg-ink/10 text-ink" : "text-text-muted"
                 }`}
               >
                 <MessageBubbleIcon />
@@ -199,8 +260,8 @@ export function Navbar({ brand }: NavbarProps) {
                 href="/notifications"
                 aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
                 aria-current={isRouteActive(pathname, "/notifications") ? "page" : undefined}
-                className={`relative flex h-10 w-10 items-center justify-center rounded-control transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                  isRouteActive(pathname, "/notifications") ? "bg-white/10 text-white" : "text-text-muted"
+                className={`relative flex h-10 w-10 items-center justify-center rounded-control transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
+                  isRouteActive(pathname, "/notifications") ? "bg-ink/10 text-ink" : "text-text-muted"
                 }`}
               >
                 <BellIcon />
@@ -215,7 +276,7 @@ export function Navbar({ brand }: NavbarProps) {
                 variant="ghost"
                 size="sm"
                 aria-current={isRouteActive(pathname, "/profile") ? "page" : undefined}
-                className={isRouteActive(pathname, "/profile") ? "!text-white bg-white/10" : undefined}
+                className={isRouteActive(pathname, "/profile") ? "!text-ink bg-ink/10" : undefined}
               >
                 Profile
               </Button>
@@ -238,7 +299,7 @@ export function Navbar({ brand }: NavbarProps) {
         <button
           ref={menuToggleRef}
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-control text-white lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-control text-ink lg:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           aria-controls={MOBILE_MENU_ID}
@@ -246,17 +307,17 @@ export function Navbar({ brand }: NavbarProps) {
         >
           <span className="relative block h-4 w-5">
             <span
-              className={`absolute left-0 top-0 h-0.5 w-5 bg-white transition-transform ${
+              className={`absolute left-0 top-0 h-0.5 w-5 bg-ink transition-transform ${
                 open ? "translate-y-[7px] rotate-45" : ""
               }`}
             />
             <span
-              className={`absolute left-0 top-[7px] h-0.5 w-5 bg-white transition-opacity ${
+              className={`absolute left-0 top-[7px] h-0.5 w-5 bg-ink transition-opacity ${
                 open ? "opacity-0" : "opacity-100"
               }`}
             />
             <span
-              className={`absolute left-0 top-[14px] h-0.5 w-5 bg-white transition-transform ${
+              className={`absolute left-0 top-[14px] h-0.5 w-5 bg-ink transition-transform ${
                 open ? "-translate-y-[7px] -rotate-45" : ""
               }`}
             />
@@ -274,7 +335,7 @@ export function Navbar({ brand }: NavbarProps) {
         // panel that's taller than what's actually visible.
         <div
           id={MOBILE_MENU_ID}
-          className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-white/10 bg-bg-elevated px-4 py-4 lg:hidden"
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-ink/10 bg-bg-elevated px-4 py-4 lg:hidden"
         >
           {!signedIn ? (
             <ul className="flex flex-col gap-4">
@@ -287,7 +348,7 @@ export function Navbar({ brand }: NavbarProps) {
                       href={resolved}
                       onClick={() => setOpen(false)}
                       aria-current={active ? "page" : undefined}
-                      className={`block text-sm font-medium hover:text-white ${active ? "text-white" : "text-text-muted"}`}
+                      className={`block text-sm font-medium hover:text-ink ${active ? "text-ink" : "text-text-muted"}`}
                     >
                       {link.label}
                     </Link>
@@ -299,6 +360,10 @@ export function Navbar({ brand }: NavbarProps) {
           <div className={signedIn ? "flex flex-col gap-3" : "mt-6 flex flex-col gap-3"}>
             {signedIn ? (
               <>
+                <Button variant="secondary" onClick={handleToggleTheme} disabled={themeSaving}>
+                  {isLight ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+                  {isLight ? "Switch to dark mode" : "Switch to light mode"}
+                </Button>
                 {mobileNavItems.map(({ href, label, icon: Icon, countKey }) => {
                   const active = isRouteActive(pathname, href);
                   const count = countKey ? unreadCounts[countKey] : 0;

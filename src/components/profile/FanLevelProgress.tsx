@@ -18,21 +18,21 @@ export function FanLevelProgress({ progress, fanPoints }: FanLevelProgressProps)
     <Card className="flex flex-col gap-3">
       <div className="flex items-baseline justify-between gap-2">
         <div>
-          <p className="font-display text-lg font-bold text-white">
+          <p className="font-display text-lg font-bold text-ink">
             Level {progress.currentLevel} — {progress.currentTitle}
           </p>
           <p className="text-sm text-text-muted">{fanPoints.toLocaleString()} fan points</p>
         </div>
         {progress.nextTitle ? (
           <p className="text-right text-xs text-text-muted">
-            Next: <span className="text-white">{progress.nextTitle}</span>
+            Next: <span className="text-ink">{progress.nextTitle}</span>
           </p>
         ) : (
           <p className="text-right text-xs text-text-muted">Top tier reached</p>
         )}
       </div>
 
-      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-ink/10">
         <div
           className="h-full rounded-full bg-red-primary transition-[width]"
           style={{ width: `${progress.progressPercent}%` }}

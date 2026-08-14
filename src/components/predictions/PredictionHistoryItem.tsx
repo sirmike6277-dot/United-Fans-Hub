@@ -14,7 +14,7 @@ export function PredictionHistoryItem({ entry }: { entry: PredictionHistoryEntry
 
   return (
     <Link href={`/matches/${entry.matchId}`} className="block">
-      <Card className="!p-4 transition-colors hover:border-white/30 sm:!p-5">
+      <Card className="!p-4 transition-colors hover:border-ink/30 sm:!p-5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {entry.competition ? (
@@ -37,7 +37,7 @@ export function PredictionHistoryItem({ entry }: { entry: PredictionHistoryEntry
           )}
         </div>
 
-        <p className="mt-3 font-display font-semibold text-white">Man Utd vs {entry.opponentName}</p>
+        <p className="mt-3 font-display font-semibold text-ink">Man Utd vs {entry.opponentName}</p>
         <time dateTime={entry.kickoffAt} suppressHydrationWarning className="text-xs text-text-muted">
           {formatMatchDateTime(entry.kickoffAt)}
         </time>

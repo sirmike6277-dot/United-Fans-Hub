@@ -81,20 +81,20 @@ export function LeaderboardSection({
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <TrophyIcon />
-        <h2 className="font-display text-lg font-bold uppercase text-white">Leaderboard</h2>
+        <h2 className="font-display text-lg font-bold uppercase text-red-primary">Leaderboard</h2>
       </div>
 
       {error ? (
-        <div className="flex flex-col items-center gap-2 rounded-card border border-white/10 bg-bg-surface p-6 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-card border border-ink/10 bg-bg-surface p-6 text-center">
           <p className="text-sm text-text-muted">{error}</p>
           <Button variant="secondary" size="sm" onClick={retry}>
             Try again
           </Button>
         </div>
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-card border border-white/10 bg-bg-surface p-10 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-card border border-ink/10 bg-bg-surface p-10 text-center">
           <TrophyIcon size={28} />
-          <p className="font-display text-lg font-semibold text-white">Leaderboard is empty</p>
+          <p className="font-display text-lg font-semibold text-ink">Leaderboard is empty</p>
           <p className="text-sm text-text-muted">The leaderboard will populate as fans join and earn points.</p>
         </div>
       ) : (

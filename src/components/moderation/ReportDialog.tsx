@@ -81,11 +81,11 @@ export function ReportDialog({ targetType, targetId, currentUserId, onClose }: R
         aria-modal="true"
         aria-label="Report"
         tabIndex={-1}
-        className="w-full max-w-sm rounded-card border border-white/10 bg-bg-surface p-5 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)] focus:outline-none"
+        className="w-full max-w-sm rounded-card border border-ink/10 bg-bg-surface p-5 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.6)] focus:outline-none"
       >
         {submitted ? (
           <div className="flex flex-col items-center gap-3 py-2 text-center">
-            <p className="font-display text-base font-semibold text-white">Report submitted</p>
+            <p className="font-display text-base font-semibold text-ink">Report submitted</p>
             <p className="text-sm text-text-muted">Thanks — our moderators will review it.</p>
             <Button type="button" size="sm" onClick={onClose}>
               Close
@@ -93,7 +93,7 @@ export function ReportDialog({ targetType, targetId, currentUserId, onClose }: R
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <h2 className="font-display text-lg font-bold text-white">Report</h2>
+            <h2 className="font-display text-lg font-bold text-red-primary">Report</h2>
             {error ? <FormError message={error} /> : null}
 
             <fieldset className="flex flex-col gap-2">
@@ -124,7 +124,7 @@ export function ReportDialog({ targetType, targetId, currentUserId, onClose }: R
                 maxLength={MAX_DETAILS_LENGTH}
                 rows={3}
                 placeholder="Anything that helps a moderator understand the issue"
-                className="w-full resize-none rounded-control border border-white/10 bg-bg-elevated px-3 py-2 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+                className="w-full resize-none rounded-control border border-ink/10 bg-bg-elevated px-3 py-2 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
               />
             </div>
 

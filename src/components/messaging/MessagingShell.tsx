@@ -30,7 +30,7 @@ export function MessagingShell({
   return (
     <div className="mx-auto flex h-[calc(100dvh-4rem)] max-w-6xl">
       <div
-        className={`w-full shrink-0 border-r border-white/10 lg:block lg:w-80 ${onIndex ? "block" : "hidden"}`}
+        className={`w-full shrink-0 border-r border-ink/10 lg:block lg:w-80 ${onIndex ? "block" : "hidden"}`}
       >
         <ConversationList
           initialConversations={initialConversations}

@@ -134,7 +134,7 @@ export function ProfileView({
           <div className="flex flex-1 flex-wrap items-center justify-between gap-3 pb-2">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
+                <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">
                   {profile.display_name || profile.username}
                 </h1>
                 <RoleBadge profileId={profile.id} />
@@ -148,11 +148,11 @@ export function ProfileView({
         {followerCount != null || followingCount != null ? (
           <div className="mt-4 flex items-center gap-4 text-sm">
             <span>
-              <span className="font-display font-bold text-white">{(followerCount ?? 0).toLocaleString()}</span>{" "}
+              <span className="font-display font-bold text-ink">{(followerCount ?? 0).toLocaleString()}</span>{" "}
               <span className="text-text-muted">{followerCount === 1 ? "Follower" : "Followers"}</span>
             </span>
             <span>
-              <span className="font-display font-bold text-white">{(followingCount ?? 0).toLocaleString()}</span>{" "}
+              <span className="font-display font-bold text-ink">{(followingCount ?? 0).toLocaleString()}</span>{" "}
               <span className="text-text-muted">Following</span>
             </span>
           </div>
@@ -224,7 +224,7 @@ export function ProfileView({
                         profile[key] ? (
                           <Card key={key}>
                             <p className="text-xs font-medium uppercase tracking-wide text-text-muted">{label}</p>
-                            <p className="mt-2 text-white">{profile[key]}</p>
+                            <p className="mt-2 text-ink">{profile[key]}</p>
                           </Card>
                         ) : null,
                       )}

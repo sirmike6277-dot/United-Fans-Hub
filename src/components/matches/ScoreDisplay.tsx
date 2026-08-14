@@ -23,7 +23,7 @@ function TeamLabel({
   opponentExternalRef?: string | null;
 }) {
   return (
-    <span className={`inline-flex items-center gap-2 ${bold ? "font-semibold text-white" : "text-text-body"}`}>
+    <span className={`inline-flex items-center gap-2 ${bold ? "font-semibold text-ink" : "text-text-body"}`}>
       {isManUtd ? (
         <TeamCrest variant="manUtd" name="Manchester United" size={emblemSize} />
       ) : (
@@ -92,7 +92,7 @@ export function ScoreDisplay({ match, size = "sm", opponentExternalRef = match.o
   return (
     <div className={`flex items-center justify-center gap-3 ${nameTextSize}`}>
       <TeamLabel label={homeLabel} isManUtd={match.isHome} bold={match.isHome} emblemSize={emblemSize} opponentExternalRef={opponentExternalRef} />
-      <span className={`font-display font-bold text-white ${scoreTextSize}`}>
+      <span className={`font-display font-bold text-ink ${scoreTextSize}`}>
         {match.homeScore ?? 0}&ndash;{match.awayScore ?? 0}
       </span>
       <TeamLabel label={awayLabel} isManUtd={!match.isHome} bold={!match.isHome} emblemSize={emblemSize} opponentExternalRef={opponentExternalRef} />

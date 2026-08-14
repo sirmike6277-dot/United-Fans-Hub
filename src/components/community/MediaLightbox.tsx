@@ -61,9 +61,19 @@ export function MediaLightbox({ images, index, onIndexChange, onClose }: MediaLi
       onClick={onClose}
     >
       <div
-        className="relative flex w-full max-w-3xl flex-col overflow-hidden rounded-card border border-white/10 bg-bg-elevated shadow-2xl"
+        className="relative flex w-full max-w-3xl flex-col overflow-hidden rounded-card border border-white/10 bg-cinema-elevated shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        {/*
+          bg-cinema-elevated, not bg-bg-elevated — a real bug a pass caught:
+          this header bar used the token that flips with the light theme,
+          while its own close/download buttons stayed hardcoded white, so
+          light mode silently went white-icon-on-near-white-bar. A photo
+          lightbox is a dark viewer by convention regardless of app theme
+          (same posture as the bg-black image well below it) — pinning the
+          bar to the same permanently-dark surface as its buttons is the
+          fix, not chasing the token everywhere it's used.
+        */}
         <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
           <span className="text-xs text-text-muted">
             {images.length > 1 ? `${index + 1} / ${images.length}` : null}

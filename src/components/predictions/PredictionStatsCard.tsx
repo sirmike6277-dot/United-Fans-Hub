@@ -24,9 +24,9 @@ interface StatTileProps {
 
 function StatTile({ label, value, caption }: StatTileProps) {
   return (
-    <div className="rounded-control border border-white/10 bg-bg-elevated p-3">
+    <div className="rounded-control border border-ink/10 bg-bg-elevated p-3">
       <p className="text-xs font-medium uppercase tracking-wide text-text-muted">{label}</p>
-      <p className="mt-1 font-display text-lg font-bold text-white">{value}</p>
+      <p className="mt-1 font-display text-lg font-bold text-ink">{value}</p>
       {caption ? <p className="mt-0.5 text-[11px] text-text-muted">{caption}</p> : null}
     </div>
   );
@@ -55,7 +55,7 @@ export function PredictionStatsCard({
     <Card>
       <div className="flex items-center gap-2">
         <TrophyIcon />
-        <h2 className="font-display text-lg font-bold uppercase text-white">Your Stats</h2>
+        <h2 className="font-display text-lg font-bold uppercase text-red-primary">Your Stats</h2>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -107,7 +107,7 @@ export function PredictionStatsCard({
                 key={entry.matchId}
                 title={`vs ${entry.opponentName} — ${entry.pointsAwarded} pt${entry.pointsAwarded === 1 ? "" : "s"}${entry.isCorrectResult ? ", correct result" : ""}`}
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                  entry.isCorrectResult ? "bg-red-primary text-white" : "bg-white/10 text-text-muted"
+                  entry.isCorrectResult ? "bg-red-primary text-white" : "bg-ink/10 text-text-muted"
                 }`}
               >
                 {entry.pointsAwarded}

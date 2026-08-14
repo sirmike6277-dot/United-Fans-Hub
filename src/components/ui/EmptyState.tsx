@@ -17,9 +17,9 @@ export interface EmptyStateProps {
  */
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-card border border-white/10 bg-bg-surface p-10 text-center">
+    <div className="flex flex-col items-center gap-2 rounded-card border border-ink/10 bg-bg-surface p-10 text-center">
       {icon}
-      <p className="font-display text-lg font-semibold text-white">{title}</p>
+      <p className="font-display text-lg font-semibold text-ink">{title}</p>
       {description ? <p className="text-sm text-text-muted">{description}</p> : null}
       {action ? <div className="mt-3">{action}</div> : null}
     </div>

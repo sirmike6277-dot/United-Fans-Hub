@@ -51,18 +51,18 @@ export default async function PostDetailPage({ params }: { params: Promise<{ pos
         <div className="flex max-w-2xl flex-col gap-4 py-6 sm:py-8">
           <Link
             href="/community"
-            className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-text-muted hover:text-white"
+            className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-text-muted hover:text-ink"
           >
             <BackIcon /> Back
           </Link>
 
           {error ? (
-            <div className="rounded-card border border-white/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
+            <div className="rounded-card border border-ink/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
               {error}
             </div>
           ) : !post ? (
-            <div className="rounded-card border border-white/10 bg-bg-surface p-10 text-center">
-              <p className="font-display text-lg font-semibold text-white">Post not found</p>
+            <div className="rounded-card border border-ink/10 bg-bg-surface p-10 text-center">
+              <p className="font-display text-lg font-semibold text-ink">Post not found</p>
               <p className="mt-1 text-sm text-text-muted">
                 It may have been removed, or the link is incorrect.
               </p>

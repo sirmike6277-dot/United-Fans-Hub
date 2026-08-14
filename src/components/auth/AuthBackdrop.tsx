@@ -26,7 +26,7 @@ export interface AuthBackdropProps {
  */
 export function AuthBackdrop({ leftSrc, rightSrc }: AuthBackdropProps) {
   return (
-    <div className="absolute inset-0 overflow-hidden bg-bg-elevated" aria-hidden="true">
+    <div className="absolute inset-0 overflow-hidden bg-cinema-elevated" aria-hidden="true">
       {/* Left photo — fades out toward the centre */}
       <div className="absolute inset-y-0 left-0 w-[62%] [mask-image:linear-gradient(to_right,black_45%,transparent_100%)]">
         <Image src={leftSrc} alt="" fill priority sizes="62vw" className="object-cover opacity-40" />
@@ -47,7 +47,7 @@ export function AuthBackdrop({ leftSrc, rightSrc }: AuthBackdropProps) {
 
       {/* Cross-fade + legibility gradients, echoing the landing hero's treatment */}
       <div
-        className="absolute inset-0 bg-gradient-to-b from-bg-elevated/40 via-bg-void/70 to-bg-void"
+        className="absolute inset-0 bg-gradient-to-b from-cinema-elevated/40 via-cinema-void/70 to-cinema-void"
         aria-hidden="true"
       />
       <div

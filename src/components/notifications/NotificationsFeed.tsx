@@ -146,13 +146,13 @@ export function NotificationsFeed({
       )}
 
       {initialError ? (
-        <div className="rounded-card border border-white/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
+        <div className="rounded-card border border-ink/10 bg-bg-surface p-6 text-center text-sm text-text-muted">
           {initialError}
         </div>
       ) : notifications.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-card border border-white/10 bg-bg-surface p-10 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-card border border-ink/10 bg-bg-surface p-10 text-center">
           <BellIcon size={28} />
-          <p className="font-display text-lg font-semibold text-white">No notifications yet</p>
+          <p className="font-display text-lg font-semibold text-ink">No notifications yet</p>
           <p className="text-sm text-text-muted">
             Likes, comments, replies, and follows will show up here.
           </p>
@@ -167,7 +167,7 @@ export function NotificationsFeed({
                 onClick={() => setFilter(f.key)}
                 aria-pressed={filter === f.key}
                 className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                  filter === f.key ? "bg-red-primary text-white" : "bg-white/5 text-text-muted hover:text-white"
+                  filter === f.key ? "bg-red-primary text-white" : "bg-ink/5 text-text-muted hover:text-ink"
                 }`}
               >
                 {f.label}

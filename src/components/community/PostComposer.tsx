@@ -309,7 +309,7 @@ export function PostComposer({ currentUser, clubId, onPostCreated }: PostCompose
         {notice ? (
           <div
             role="status"
-            className="rounded-control border border-white/10 bg-white/5 px-4 py-3 text-sm text-text-body"
+            className="rounded-control border border-ink/10 bg-ink/5 px-4 py-3 text-sm text-text-body"
           >
             {notice}
           </div>
@@ -327,7 +327,7 @@ export function PostComposer({ currentUser, clubId, onPostCreated }: PostCompose
               maxLength={MAX_BODY_LENGTH}
               placeholder="Share something with the community... use @ to mention a fan"
               aria-label="Post text"
-              className="min-h-[3.25rem] w-full resize-none rounded-control border border-white/10 bg-bg-elevated px-4 py-3 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary sm:text-base"
+              className="min-h-[3.25rem] w-full resize-none rounded-control border border-ink/10 bg-bg-elevated px-4 py-3 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary sm:text-base"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && mentionCandidates.length > 0) {
                   e.preventDefault();
@@ -351,7 +351,7 @@ export function PostComposer({ currentUser, clubId, onPostCreated }: PostCompose
               disabled={submitting}
               onClick={() => setCategory(key)}
               className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary ${
-                category === key ? "bg-red-primary text-white" : "bg-white/5 text-text-muted hover:text-white"
+                category === key ? "bg-red-primary text-white" : "bg-ink/5 text-text-muted hover:text-ink"
               }`}
             >
               {CATEGORY_LABELS[key]}
@@ -391,14 +391,14 @@ export function PostComposer({ currentUser, clubId, onPostCreated }: PostCompose
           </div>
         ) : null}
 
-        <div className="flex items-center justify-between border-t border-white/10 pt-3">
+        <div className="flex items-center justify-between border-t border-ink/10 pt-3">
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => imageInputRef.current?.click()}
               disabled={submitting || images.length >= MAX_IMAGES || video !== null}
               aria-label="Add images"
-              className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+              className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
             >
               <ImageIcon />
               <span className="hidden sm:inline">Photo</span>
@@ -408,7 +408,7 @@ export function PostComposer({ currentUser, clubId, onPostCreated }: PostCompose
               onClick={() => videoInputRef.current?.click()}
               disabled={submitting || images.length > 0}
               aria-label="Add a video"
-              className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+              className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
             >
               <VideoIcon size={20} />
               <span className="hidden sm:inline">Video</span>

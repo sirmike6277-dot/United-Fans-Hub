@@ -20,13 +20,13 @@ export default function MessagesLoading() {
           <Sidebar />
           <div className="min-w-0 flex-1">
             <div className="flex h-[calc(100dvh-4rem)] max-w-6xl">
-              <div className="flex w-full shrink-0 flex-col gap-1 border-r border-white/10 p-2 lg:w-80">
+              <div className="flex w-full shrink-0 flex-col gap-1 border-r border-ink/10 p-2 lg:w-80">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-control p-2" aria-hidden="true">
-                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-white/10" />
+                    <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-ink/10" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3.5 w-28 animate-pulse rounded bg-white/10" />
-                      <div className="h-3 w-40 max-w-full animate-pulse rounded bg-white/5" />
+                      <div className="h-3.5 w-28 animate-pulse rounded bg-ink/10" />
+                      <div className="h-3 w-40 max-w-full animate-pulse rounded bg-ink/5" />
                     </div>
                   </div>
                 ))}

@@ -33,7 +33,7 @@ export function WinnerAnnouncement({ winner }: WinnerAnnouncementProps) {
       <Badge tone="red">{winner.categoryName}</Badge>
       <Avatar url={winner.nomination.nominee.avatar_url} name={name} size={72} />
       <div>
-        <p className="font-display text-xl font-bold text-white">{name}</p>
+        <p className="font-display text-xl font-bold text-ink">{name}</p>
         <p className="text-sm text-text-muted">@{winner.nomination.nominee.username}</p>
       </div>
       <p className="text-sm text-text-body">

@@ -112,7 +112,7 @@ export function ProfileEditForm({ profile, initialSocialLinks }: ProfileEditForm
           disabled={loading}
           rows={3}
           maxLength={280}
-          className="rounded-control border border-white/10 bg-bg-elevated px-4 py-3 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+          className="rounded-control border border-ink/10 bg-bg-elevated px-4 py-3 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
           placeholder="Tell the community about yourself"
         />
       </div>
@@ -188,7 +188,7 @@ export function ProfileEditForm({ profile, initialSocialLinks }: ProfileEditForm
           disabled={loading}
           rows={3}
           maxLength={500}
-          className="rounded-control border border-white/10 bg-bg-elevated px-4 py-3 text-sm text-white placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+          className="rounded-control border border-ink/10 bg-bg-elevated px-4 py-3 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
           placeholder="Your most treasured United moment"
         />
       </div>

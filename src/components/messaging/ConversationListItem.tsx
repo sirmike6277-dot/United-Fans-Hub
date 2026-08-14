@@ -38,7 +38,7 @@ export function ConversationListItem({ conversation, currentUserId }: Conversati
   return (
     <Link
       href={`/messages/${conversation.id}`}
-      className={`flex items-center gap-3 border-b border-white/5 px-4 py-3 transition-colors hover:bg-white/5 ${
+      className={`flex items-center gap-3 border-b border-ink/5 px-4 py-3 transition-colors hover:bg-ink/5 ${
         conversation.unread ? "bg-red-primary/[0.05]" : ""
       }`}
     >
@@ -52,7 +52,7 @@ export function ConversationListItem({ conversation, currentUserId }: Conversati
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className={`truncate text-sm font-semibold ${conversation.unread ? "text-white" : "text-text-body"}`}>
+          <span className={`truncate text-sm font-semibold ${conversation.unread ? "text-ink" : "text-text-body"}`}>
             {title}
           </span>
           <time

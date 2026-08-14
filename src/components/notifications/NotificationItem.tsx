@@ -71,7 +71,7 @@ export function NotificationItem({ notification, onMarkRead }: NotificationItemP
   return (
     <div
       className={`flex items-start gap-3 rounded-card border px-4 py-3 transition-colors ${
-        isUnread ? "border-red-primary/30 bg-red-primary/[0.06]" : "border-white/10 bg-bg-surface"
+        isUnread ? "border-red-primary/30 bg-red-primary/[0.06]" : "border-ink/10 bg-bg-surface"
       }`}
     >
       <button
@@ -83,7 +83,7 @@ export function NotificationItem({ notification, onMarkRead }: NotificationItemP
       >
         <Avatar url={notification.actor?.avatar_url ?? null} name={actorName} size={40} />
         <div className="min-w-0 flex-1">
-          <p className={`text-sm ${isUnread ? "text-white" : "text-text-body"}`}>
+          <p className={`text-sm ${isUnread ? "text-ink" : "text-text-body"}`}>
             {notificationCopy(notification)}
           </p>
           <time dateTime={notification.createdAt} suppressHydrationWarning className="text-xs text-text-muted">
@@ -101,7 +101,7 @@ export function NotificationItem({ notification, onMarkRead }: NotificationItemP
           onClick={() => onMarkRead(notification.id)}
           aria-label="Mark as read"
           title="Mark as read"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
         >
           <CheckIcon />
         </button>

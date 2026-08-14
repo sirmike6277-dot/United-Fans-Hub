@@ -49,13 +49,13 @@ export function NomineeSearchInput({ currentUserId, selected, onSelect }: Nomine
       <div className="flex items-center gap-2.5 rounded-control border border-red-primary/40 bg-red-primary/[0.06] px-3 py-2">
         <Avatar url={selected.avatar_url} name={name} size={28} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-white">{name}</p>
+          <p className="truncate text-sm font-medium text-ink">{name}</p>
           <p className="truncate text-xs text-text-muted">@{selected.username}</p>
         </div>
         <button
           type="button"
           onClick={() => onSelect(null)}
-          className="shrink-0 text-xs text-text-muted underline transition-colors hover:text-white"
+          className="shrink-0 text-xs text-text-muted underline transition-colors hover:text-ink"
         >
           Change
         </button>
@@ -76,7 +76,7 @@ export function NomineeSearchInput({ currentUserId, selected, onSelect }: Nomine
         <div
           role="listbox"
           aria-label="Nominee suggestions"
-          className="absolute z-20 mt-1 w-full overflow-hidden rounded-control border border-white/10 bg-bg-elevated shadow-lg"
+          className="absolute z-20 mt-1 w-full overflow-hidden rounded-control border border-ink/10 bg-bg-elevated shadow-lg"
         >
           {candidates.map((candidate) => {
             const name = candidate.display_name || candidate.username;
@@ -90,11 +90,11 @@ export function NomineeSearchInput({ currentUserId, selected, onSelect }: Nomine
                   onSelect(candidate);
                   setQuery("");
                 }}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-white/5"
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-ink/5"
               >
                 <Avatar url={candidate.avatar_url} name={name} size={28} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-white">{name}</p>
+                  <p className="truncate text-sm font-medium text-ink">{name}</p>
                   <p className="truncate text-xs text-text-muted">@{candidate.username}</p>
                 </div>
               </button>

@@ -10,7 +10,7 @@ export function Wordmark({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/"
-      className={`font-display text-lg font-bold uppercase tracking-wide text-white ${className}`}
+      className={`font-display text-lg font-bold uppercase tracking-wide text-ink ${className}`}
     >
       United <span className="text-red-primary">Fans Hub</span>
     </Link>

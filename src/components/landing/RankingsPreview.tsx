@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { Avatar, crownFor } from "@/components/ui/Avatar";
 import type { LeaderboardEntry } from "@/lib/leaderboard/leaderboard";
 
 export interface RankingsPreviewProps {
@@ -29,25 +30,29 @@ export function RankingsPreview({ entries }: RankingsPreviewProps) {
             </p>
           ) : (
             <ul className="mt-4 flex flex-col gap-3">
-              {entries.map((entry, index) => (
-                <li
-                  key={entry.id}
-                  className="flex items-center justify-between rounded-control bg-bg-elevated px-4 py-3"
-                >
-                  <div className="flex items-center gap-3">
-                    {/* A 0-point entry hasn't actually out-ranked anyone —
-                        see LeaderboardRow's matching note — so it gets "—",
-                        never a fabricated "#1" from the tie-break alone. */}
-                    <span className="font-display text-sm font-bold text-red-primary">
-                      {entry.fan_points > 0 ? `#${index + 1}` : "—"}
+              {entries.map((entry, index) => {
+                const name = entry.display_name || entry.username;
+                return (
+                  <li
+                    key={entry.id}
+                    className="flex items-center justify-between gap-3 rounded-control bg-bg-elevated px-4 py-3"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      {/* A 0-point entry hasn't actually out-ranked anyone —
+                          see LeaderboardRow's matching note — so it gets "—",
+                          never a fabricated "#1" from the tie-break alone. */}
+                      <span className="w-6 shrink-0 text-center font-display text-sm font-bold text-red-primary">
+                        {entry.fan_points > 0 ? `#${index + 1}` : "—"}
+                      </span>
+                      <Avatar url={entry.avatar_url} name={name} size={32} crown={crownFor(entry)} />
+                      <span className="truncate text-sm font-medium text-ink">{name}</span>
+                    </div>
+                    <span className="shrink-0 text-sm text-text-muted">
+                      {entry.fan_points.toLocaleString()} pts
                     </span>
-                    <span className="text-sm font-medium text-ink">
-                      {entry.display_name || entry.username}
-                    </span>
-                  </div>
-                  <span className="text-sm text-text-muted">{entry.fan_points.toLocaleString()} pts</span>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Card>

@@ -326,9 +326,9 @@ export function AwardsHub({ categories, initialPeriods, initialWinners, currentU
         <div className="flex flex-col gap-2 rounded-card border border-ink/10 bg-bg-elevated p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-medium text-ink">Period lifecycle automation</p>
+              <p className="text-sm font-medium text-ink">Award automation</p>
               <p className="text-xs text-text-muted">
-                A Vercel Cron job also runs this automatically — use this to advance every category&apos;s period right now instead of waiting for the next scheduled run.
+                Nominations, voting, and winners are handled automatically. Run now to check for updates immediately.
               </p>
             </div>
             <Button type="button" variant="secondary" size="sm" onClick={handleAdvance} loading={advancing} disabled={advancing} className="shrink-0">

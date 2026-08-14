@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AdminRolesManager } from "@/components/admin/AdminRolesManager";
+import { AdminInviteUserPanel } from "@/components/admin/AdminInviteUserPanel";
 
 export const metadata: Metadata = {
   title: "Admin — United Fans Hub",
@@ -32,6 +33,7 @@ export default async function AdminPage() {
       <main className="flex-1 bg-bg-void">
         <div className="flex flex-col gap-4 py-6 sm:py-8">
           <PageHeader title="Admin" subtitle="Grant or revoke roles — moderator, super admin, and other operational roles." />
+          <AdminInviteUserPanel />
           <AdminRolesManager currentUserId={userId} />
         </div>
       </main>

@@ -13,6 +13,17 @@ export interface TabsProps {
   tabs: TabItem[];
   /** Defaults to the first tab. */
   defaultTab?: string;
+  /**
+   * Pins the tab strip just below the sticky Navbar (top-16, matching its
+   * h-16) instead of scrolling away with the page — opt-in, not the
+   * default, since most Tabs usages (Predictions' Overview/Leaderboard/
+   * History) are short enough that it isn't needed. Match Centre turns
+   * this on: its Results tab can render dozens of matches (FixtureList has
+   * no cap), and without this, scrolling into that list scrolls the
+   * Overview/Fixtures/Results strip itself out of view — there was no way
+   * back to another tab except scrolling all the way back to the top.
+   */
+  sticky?: boolean;
 }
 
 /**
@@ -35,7 +46,7 @@ export interface TabsProps {
  * only current need for a stable, shareable tab link is the one
  * deep-link case this fixes.
  */
-export function Tabs({ tabs, defaultTab }: TabsProps) {
+export function Tabs({ tabs, defaultTab, sticky = false }: TabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const isValidTabParam = (key: string | null): key is string =>
@@ -64,7 +75,10 @@ export function Tabs({ tabs, defaultTab }: TabsProps) {
 
   return (
     <div>
-      <div role="tablist" className="flex gap-1 overflow-x-auto border-b border-white/10">
+      <div
+        role="tablist"
+        className={`flex gap-1 overflow-x-auto border-b border-white/10 ${sticky ? "sticky top-16 z-10 bg-bg-void" : ""}`}
+      >
         {tabs.map((tab) => {
           const isActive = active === tab.key;
           return (

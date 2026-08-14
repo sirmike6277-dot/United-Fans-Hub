@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/Navbar";
@@ -114,6 +115,20 @@ export default async function MatchDetailPage({
 
   const content = (
     <div className="flex flex-col gap-8 py-6 sm:py-8">
+      {/* This page previously had no way back to Match Centre at all
+          besides the browser's own Back button — real gap for anyone who
+          opened a result from a shared link or a notification rather than
+          by clicking through from /matches themselves. */}
+      <Link
+        href="/matches"
+        className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+        Match Centre
+      </Link>
+
       <MatchDetailHeader match={current} opponentExternalRef={opponentExternalRef} />
 
       <PredictionSection

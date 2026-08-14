@@ -97,6 +97,7 @@ export default async function MatchesPage() {
       />
 
       <Tabs
+        sticky
         tabs={[
           {
             key: "overview",

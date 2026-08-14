@@ -130,17 +130,24 @@ apex `manutdfanshub.com` 308-redirects to the `www` subdomain, so `www.` is
 the canonical form used everywhere above) before making this change, and
 re-fetched the config afterward to confirm it actually persisted.
 
-**One related thing this fix could NOT reach — a manual step still needed**:
-`NEXT_PUBLIC_SITE_URL` in the *live Vercel project's own environment
-variables* (Project Settings → Environment Variables — separate from
-anything in this repo) most likely still holds the old
-`https://united-fans-hub.vercel.app` value, per `.env.example`'s own
-previous (now-corrected) guidance to set it that way. This var is only
-consulted server-side, when there's no `window` to read the real origin
-from — currently that's exactly one place: the admin "Invite user" route's
-`redirectTo`. Update it to `https://www.manutdfanshub.com` in Vercel's
-dashboard directly; this repo's code can't set it, only document the
-correct value (now fixed in `.env.example`).
+**Follow-up, no longer a required manual step**: the previous version of
+this section said `NEXT_PUBLIC_SITE_URL` needed to be set in Vercel's own
+project environment variables (separate from anything in this repo) —
+turned out it was **never set at all** there (confirmed directly by the
+project owner, not assumed), which meant the server-side fallback in
+`src/lib/site-url.ts` silently became `http://localhost:3000` in
+*production* — a dead link for a real recipient, not just the wrong domain.
+That one place it mattered: the admin "Invite user" route's `redirectTo`
+(a Route Handler always runs server-only, so it never has `window` to read
+the real origin from).
+
+Fixed in code instead of requiring the dashboard step: `getSiteUrl()` now
+checks Vercel's own auto-injected `VERCEL_ENV` system variable (present in
+every Vercel environment, zero configuration needed) before falling back
+to `http://localhost:3000`, and uses the real production domain when it's
+set. `NEXT_PUBLIC_SITE_URL` still overrides it if ever explicitly set (e.g.
+to pin a specific preview deployment), but is no longer required for
+correctness in production.
 
 ### Email delivery (SMTP) — already configured, nothing to do here
 

@@ -278,6 +278,87 @@ function AccountPanel({ profileId, username, email, initialDisplayName, initialB
           {resetSent ? "Reset link sent" : "Send password reset link"}
         </Button>
       </div>
+
+      <div className="mt-2 border-t border-ink/10 pt-5">
+        <p className="text-sm font-medium text-ink">Change password directly</p>
+        <p className="mt-1 text-xs text-text-muted">
+          {passwordChangeOpen && passwordChangeStep === "code"
+            ? "Enter the verification code we just emailed you to finish changing your password."
+            : "Set a new password right now — we'll email a verification code to confirm it's you first."}
+        </p>
+
+        {passwordChangeDone ? (
+          <p className="mt-3 text-sm text-ink">Your password has been updated.</p>
+        ) : passwordChangeOpen ? (
+          <div className="mt-3 flex flex-col gap-3">
+            {passwordChangeError ? <FormError message={passwordChangeError} /> : null}
+
+            {passwordChangeStep === "password" ? (
+              <>
+                <div className="max-w-xs">
+                  <PasswordInput
+                    label="New password"
+                    aria-label="New password"
+                    placeholder="Create a new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={passwordChangeSaving}
+                    minLength={6}
+                  />
+                  <div className="mt-2">
+                    <PasswordStrength password={newPassword} />
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="self-start"
+                  loading={passwordChangeSaving}
+                  disabled={passwordChangeSaving || newPassword.length < 6}
+                  onClick={handleRequestVerificationCode}
+                >
+                  Send verification code
+                </Button>
+              </>
+            ) : (
+              <>
+                <Input
+                  aria-label="Verification code"
+                  placeholder="6-digit code"
+                  className="max-w-[160px]"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  disabled={passwordChangeSaving}
+                  inputMode="numeric"
+                  maxLength={6}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="self-start"
+                  loading={passwordChangeSaving}
+                  disabled={passwordChangeSaving || !verificationCode.trim()}
+                  onClick={handleConfirmPasswordChange}
+                >
+                  Confirm new password
+                </Button>
+              </>
+            )}
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="mt-3"
+            onClick={() => setPasswordChangeOpen(true)}
+          >
+            Change password
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

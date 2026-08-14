@@ -2,23 +2,30 @@
 
 Nothing in this folder is deployed automatically. Supabase's Auth email
 templates live in the Supabase project itself (Dashboard or Management API),
-not in this repo's build — `confirm-signup.html` here is the source of truth
-to paste in, kept under version control so it's reviewable/diffable like any
-other code.
+not in this repo's build — the five `.html` files here are the source of
+truth to paste in, kept under version control so they're reviewable/diffable
+like any other code. All five share one design system (see "Shared design
+system" below); each has its own subject/variables/application-logic notes.
 
-## 1. Apply the template
+## The five templates
 
-Supabase Dashboard → **Authentication → Email Templates → Confirm signup**:
+| Type | File | Dashboard location | Subject | Real app logic that triggers it |
+| --- | --- | --- | --- | --- |
+| Confirm signup | `confirm-signup.html` | Authentication → Email Templates → Confirm signup | `Confirm your email - United Fans Hub` | `SignupForm.tsx` → `supabase.auth.signUp()` |
+| Invite user | `invite.html` | Authentication → Email Templates → Invite user | `You're invited to United Fans Hub` | `AdminInviteUserPanel.tsx` → `POST /api/admin/invite-user` (super_admin-gated) → `auth.admin.inviteUserByEmail()` |
+| Reset password | `recovery.html` | Authentication → Email Templates → Reset Password | `Reset your password - United Fans Hub` | `ForgotPasswordForm.tsx` / Settings' "Send password reset link" → `resetPasswordForEmail()` |
+| Change email address | `email-change.html` | Authentication → Email Templates → Change Email Address | `Confirm your new email address - United Fans Hub` | Settings → Account → "Change email" → `supabase.auth.updateUser({ email })` |
+| Reauthentication | `reauthentication.html` | Authentication → Email Templates → Reauthentication | `{{ .Token }} is your United Fans Hub verification code` | Settings → Account → "Change password directly" → `reauthenticate()` then `updateUser({ password, nonce })` |
 
-- **Subject**: `Confirm your email — United Fans Hub`
-- **Message body**: paste the full contents of [`confirm-signup.html`](./confirm-signup.html)
+Apply any of them the same way the original was applied — see "Apply the
+templates" below (Dashboard paste, or the generalized `apply-via-api.sh`).
 
-The template uses only real, documented Supabase template variables —
-`{{ .ConfirmationURL }}` and `{{ .Email }}` — nothing invented.
+## Shared design system
 
 **Crest image — a hosted URL, pointing at a real, deployed PNG.**
-This took four attempts to get right — recorded here so it doesn't get
-re-broken by a future edit:
+This took four attempts to get right on the very first template
+(`confirm-signup.html`) — recorded here so it doesn't get re-broken by a
+future edit, and every other template reuses the same fix from the start:
 
 1. Hot-linked to the production PNG before it was ever deployed → 404,
    broken image in the real email — confirmed via `curl -I`.
@@ -29,91 +36,110 @@ re-broken by a future edit:
    clients honor it. **Gmail specifically strips/ignores base64 `data:`
    URIs in `<img src>`** and shows nothing — which is exactly the "broken
    logo" reported after actually receiving the email. It also pushed the
-   template over Supabase's 50,000-character body limit (`Too big: expected
-   string to have <=50000 characters`).
-3. Tried a hosted `.webp` URL instead (it was the one crest file already
-   deployed, confirmed live via `curl -I`) — still reported broken.
-   Researched properly this time instead of assuming: **WebP is only
-   partially/unreliably supported across Gmail and Outlook** — not a safe
-   bet for a hosted email image either.
-4. **Current fix**: hosted URL pointing at
+   template over Supabase's 50,000-character body limit.
+3. Tried a hosted `.webp` URL instead — still reported broken. **WebP is
+   only partially/unreliably supported across Gmail and Outlook** — not a
+   safe bet for a hosted email image either.
+4. **Current fix, used by all five templates**: hosted URL pointing at
    `https://united-fans-hub.vercel.app/images/branding/manchester-united-emblem.png`
-   — PNG is the universal answer for a real `<img src>` in email, supported
-   consistently across Gmail, Outlook, and Apple Mail. **This only works
-   once that exact file is deployed** — it's shipped via the
-   `fix/email-crest-asset` branch/PR, not the branch this template's other
-   changes live on. Before pasting this template into Supabase (or
-   re-pasting after any future edit), confirm the PNG is actually live:
-   `curl -I https://united-fans-hub.vercel.app/images/branding/manchester-united-emblem.png`
-   should return `200`, not `404`.
+   — PNG is the universal answer for a real `<img src>` in email. Before
+   pasting any of these templates into Supabase, confirm the PNG is
+   actually live: `curl -I` that URL should return `200`, not `404`.
 
-**Lesson (matters if this template is touched again): a hosted URL pointing
+**Lesson (matters if any of these are touched again): a hosted URL pointing
 at a real, deployed PNG/JPEG is the only image mechanism that's reliably
-correct across real email clients for this Supabase field.** Neither
-embedding (Gmail strips `data:` URIs) nor WebP (inconsistent client
-support) are safe substitutes, however appealing either looked in
-isolation — verify each assumption against real client behavior, not just
-against a browser render. As a side benefit, a URL reference is trivially
-small, so Supabase's 50,000-character limit is a non-issue either way
-(current total: ~12,900 characters).
+correct across real email clients for this Supabase field.**
 
-**Header — redesigned as a masthead.** Crest and wordmark sit side by side
-(crest in a white circle plate, "United Fans Hub" + an "AN INDEPENDENT
-SUPPORTERS COMMUNITY" tagline beside it) on a red-to-deep-red diagonal
-gradient, with a thin gold trim line underneath — a quiet nod to the gold
-detailing already in the crest artwork itself, not a new invented brand
-color used elsewhere. The CTA button carries a matching subtle gradient and
-soft glow. All gradients/shadows/border-radius are declared alongside a
-solid `bgcolor`/`background-color` fallback on the same element, so Outlook
+**Header — a masthead.** Crest and wordmark side by side (crest in a white
+circle plate, "United Fans Hub" + an "AN INDEPENDENT SUPPORTERS COMMUNITY"
+tagline beside it) on a red-to-deep-red diagonal gradient, thin gold trim
+line underneath. All gradients/shadows/border-radius carry a solid
+`bgcolor`/`background-color` fallback on the same element, so Outlook
 desktop (which ignores all three) falls back to flat brand red with square
 corners rather than breaking.
 
-**Palette — white card on a white page.** The body is light, not dark: the
-outer canvas and the card are both white, with the card defined by a 1px
-light border + soft shadow instead of a background-color difference. The
-header stays the same brand-red gradient regardless. The footer sits on a
-barely-off-white panel (`#f7f7f8`) purely so it still reads as a distinct
-secondary block against the white card above it.
+**Palette — white card on a white page**, 1px light border + soft shadow for
+definition. Footer sits on a barely-off-white panel (`#f7f7f8`).
 
-**Type system — two deliberate voices.** Georgia (serif) is used for
-display moments only — the header wordmark (italic) and the welcome
-headline — for an institutional, heritage feel that suits a supporters'
-club; Arial/Helvetica (sans) handles everything else (body copy, button,
-footer, tagline) for clarity at small sizes. Both are near-universally
-supported web-safe fonts across email clients including Outlook desktop —
-deliberately not `@font-face`/web fonts, which are unreliable in email.
+**Type system.** Georgia (serif, italic) for display moments — header
+wordmark, welcome/headline text; Arial/Helvetica (sans) for everything else.
+No `@font-face`/web fonts — unreliable in email.
 
-**Encoding — ASCII-only.** Every character in the template is plain ASCII
-(typographic dashes/quotes are written as HTML entities — `&mdash;`,
-`&rsquo;` — not literal unicode characters), so pasting it through a browser
-textarea can't silently mangle it via an encoding mismatch.
+**Encoding — ASCII-only** in every template (HTML entities like `&mdash;`,
+`&rsquo;` instead of literal unicode), so pasting through a browser textarea
+can't silently mangle it via an encoding mismatch.
 
-The raw `{{ .ConfirmationURL }}` value (a supabase.co link with a token in
-it) is never printed as visible text — the button and the "Trouble with the
-button?" fallback are both `<a href>` links using clean anchor text
-("Verify your email here"). The link target is unchanged either way.
+**Links never shown as raw text.** A `{{ .ConfirmationURL }}` value (a
+supabase.co link with a token in it) is never printed as visible text — the
+button and the "Trouble with the button?" fallback are both `<a href>` links
+with clean anchor text. The link target is unchanged either way.
 
-## 2. URL Configuration (required for the button to land on this app, not localhost)
+**Reauthentication is deliberately different.** It's the one template with
+no button and no `{{ .ConfirmationURL }}` — Supabase's own documented
+default for this type is Token-only (a 6-digit code, no link variant
+exists). `reauthentication.html` swaps the CTA button for a large,
+letter-spaced code chip instead, keeping the same masthead/footer/palette.
 
-Supabase Dashboard → **Authentication → URL Configuration**:
+## Apply the templates
+
+**Dashboard** (one at a time): Authentication → Email Templates → pick the
+type from the table above → paste the Subject and the file's full contents.
+
+**Or via the Management API**, using the generalized
+[`apply-via-api.sh`](./apply-via-api.sh) (originally written for
+Confirm signup only — three separate dashboard paste-and-save attempts had
+silently kept serving the OLD template despite the editor appearing to
+accept the paste; this script proves definitively what's saved server-side):
+
+```
+./apply-via-api.sh <kind> check   # GET what's currently saved
+./apply-via-api.sh <kind> apply   # PATCH with the local .html file
+./apply-via-api.sh <kind> check   # GET again to confirm it changed
+```
+
+`<kind>` is one of `confirmation | invite | recovery | email_change |
+reauthentication`. Requires `SUPABASE_ACCESS_TOKEN` (see the script's own
+header comment for where to get one and where to put it — never in chat).
+
+## Required manual Supabase Dashboard settings
+
+### URL Configuration (required for every button to land on this app, not localhost)
+
+Authentication → URL Configuration:
 
 - **Site URL**: `https://united-fans-hub.vercel.app`
 - **Redirect URLs** (allowlist) — add both:
   - `https://united-fans-hub.vercel.app/**`
-  - `http://localhost:3000/**` (so local dev signups still verify correctly)
+  - `http://localhost:3000/**` (so local dev still verifies correctly)
 
-Without an entry matching the app's `emailRedirectTo` value, Supabase
-silently falls back to the Site URL instead of honoring the requested
-redirect — this allowlist is also the actual security boundary against an
-open redirect, independent of the `next`-path validation done in
+Without an entry matching the app's `emailRedirectTo`/`redirectTo` value,
+Supabase silently falls back to the Site URL instead of honoring the
+requested redirect — this allowlist is also the actual security boundary
+against an open redirect, independent of the `next`-path validation done in
 `src/app/auth/callback/route.ts`.
 
-## 3. Email delivery (SMTP) — already configured, nothing to do here
+### Email delivery (SMTP) — already configured, nothing to do here
 
-Applying the template above only controls what the email *looks like*.
-Delivery itself (**Authentication → Providers → Email → SMTP Settings**) is
-already working in production: Resend via `smtp.resend.com`, sending as
-`noreply@manutdfanshub.com` on the verified `manutdfanshub.com` domain — a
-real signup has been received and successfully verified end-to-end. No
-action needed here; this section is left only as a record of where that
-setting lives if it ever needs revisiting.
+Resend via `smtp.resend.com`, sending as `noreply@manutdfanshub.com` on the
+verified `manutdfanshub.com` domain — a real signup has been received and
+successfully verified end-to-end, and the Invite/Change-email flows were
+both verified live this same way (real `auth.users` rows created/updated,
+confirmed via SQL) during this build.
+
+### Secure password change — REQUIRED for Reauthentication to actually enforce the code
+
+**This is the one setting that isn't optional if the Reauthentication
+template is meant to do its job.** Verified directly against this project
+this build: with **Secure password change** left at its current (off)
+setting, `supabase.auth.updateUser({ password, nonce })` accepts *any*
+`nonce` value — a deliberately wrong 6-digit code still completed the
+password change successfully (confirmed by then failing to sign in with the
+old password). `reauthenticate()` itself works correctly regardless — a
+real code is generated and really emailed (confirmed via
+`auth.users.reauthentication_token`/`reauthentication_sent_at` being
+populated) — but without this toggle, the server never actually checks that
+the code submitted back matches it.
+
+Turn it on: **Authentication → Providers → Email → Secure password change**.
+Once enabled, `updateUser({ password, nonce })` rejects an incorrect/expired
+nonce instead of silently accepting it.

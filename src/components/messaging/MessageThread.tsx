@@ -107,10 +107,20 @@ export function MessageThread({
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-bg-elevated text-text-muted">
             <MessageBubbleIcon size={18} />
           </span>
+        ) : other ? (
+          <Link href={`/profile/${other.id}`} className="shrink-0">
+            <Avatar url={other.avatar_url} name={title} size={36} />
+          </Link>
         ) : (
-          <Avatar url={other?.avatar_url ?? null} name={title} size={36} />
+          <Avatar url={null} name={title} size={36} />
         )}
-        <span className="font-display font-semibold text-ink">{title}</span>
+        {!isRoom && other ? (
+          <Link href={`/profile/${other.id}`} className="font-display font-semibold text-ink hover:underline">
+            {title}
+          </Link>
+        ) : (
+          <span className="font-display font-semibold text-ink">{title}</span>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4">

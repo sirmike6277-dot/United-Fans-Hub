@@ -849,26 +849,32 @@ export type Database = {
         Row: {
           created_at: string
           duration_seconds: number | null
+          height: number | null
           id: string
           media_type: string
           message_id: string
           storage_path: string
+          width: number | null
         }
         Insert: {
           created_at?: string
           duration_seconds?: number | null
+          height?: number | null
           id?: string
           media_type: string
           message_id: string
           storage_path: string
+          width?: number | null
         }
         Update: {
           created_at?: string
           duration_seconds?: number | null
+          height?: number | null
           id?: string
           media_type?: string
           message_id?: string
           storage_path?: string
+          width?: number | null
         }
         Relationships: [
           {

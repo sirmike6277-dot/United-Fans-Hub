@@ -12,6 +12,7 @@ import { VideoIcon } from "@/components/community/RoomIcons";
 import { MentionAutocomplete } from "./MentionAutocomplete";
 import type { CurrentUser } from "./PostCard";
 import { POST_CATEGORIES, type FeedAuthor, type FeedPost, type PostCategory } from "@/lib/community/posts";
+import { readImageDimensions, readVideoDimensions } from "@/lib/media/dimensions";
 import {
   activeMentionQuery,
   applyMention,
@@ -51,25 +52,6 @@ const CATEGORY_LABELS: Record<PostCategory, string> = {
   matchday: "Matchday",
   transfers: "Transfers",
 };
-
-/** Reads a file's real pixel dimensions before upload — this is what lets the feed size a post's media box to the photo/clip's actual shape instead of cropping or letterboxing it into a fixed one (see PostMedia.tsx and migration add_post_media_dimensions). */
-function readImageDimensions(url: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve) => {
-    const img = new window.Image();
-    img.onload = () => resolve({ width: img.naturalWidth || 1, height: img.naturalHeight || 1 });
-    img.onerror = () => resolve({ width: 1, height: 1 });
-    img.src = url;
-  });
-}
-
-function readVideoDimensions(url: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve) => {
-    const video = document.createElement("video");
-    video.onloadedmetadata = () => resolve({ width: video.videoWidth || 16, height: video.videoHeight || 9 });
-    video.onerror = () => resolve({ width: 16, height: 9 });
-    video.src = url;
-  });
-}
 
 export function PostComposer({ currentUser, clubId, onPostCreated }: PostComposerProps) {
   const [body, setBody] = useState("");

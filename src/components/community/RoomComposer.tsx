@@ -9,6 +9,7 @@ import { ImageIcon, EmojiIcon, CloseIcon, SendIcon } from "@/components/communit
 import { FileGenericIcon, VideoIcon } from "@/components/community/RoomIcons";
 import { MentionAutocomplete } from "@/components/community/MentionAutocomplete";
 import { sendMessage, attachFileToMessage, MESSAGE_REACTION_EMOJIS, type FeedMessage } from "@/lib/messaging/messages";
+import { readImageDimensions } from "@/lib/media/dimensions";
 import {
   activeMentionQuery,
   applyMention,
@@ -45,6 +46,9 @@ interface PendingAttachment {
   file: File;
   previewUrl: string | null;
   kind: "image" | "video" | "file";
+  /** Only ever set for `kind === "image"` — see handleFileSelected. Passed through to attachFileToMessage so MessageBubble can size the box to the photo's real shape instead of the fixed crop box it used before. */
+  width: number | null;
+  height: number | null;
 }
 
 function classifyFile(file: File): { kind: "image" | "video" | "file"; limit: number } {
@@ -132,7 +136,7 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
     });
   }
 
-  function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -145,7 +149,9 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
     }
 
     if (attachment?.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
-    setAttachment({ file, kind, previewUrl: kind === "image" ? URL.createObjectURL(file) : null });
+    const previewUrl = kind === "image" ? URL.createObjectURL(file) : null;
+    const dimensions = previewUrl ? await readImageDimensions(previewUrl) : null;
+    setAttachment({ file, kind, previewUrl, width: dimensions?.width ?? null, height: dimensions?.height ?? null });
   }
 
   function removeAttachment() {
@@ -191,6 +197,8 @@ export function RoomComposer({ conversationId, currentUser, onSent, disabled = f
         messageId: message.id,
         uploaderId: currentUser.id,
         file: attachment.file,
+        width: attachment.width,
+        height: attachment.height,
       });
 
       if (mediaError) {

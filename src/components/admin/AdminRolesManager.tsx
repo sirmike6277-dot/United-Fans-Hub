@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { Input } from "@/components/ui/Input";
@@ -126,13 +127,13 @@ export function AdminRolesManager({ currentUserId }: AdminRolesManagerProps) {
             const granted = grants.get(profile.id) ?? new Set<string>();
             return (
               <div key={profile.id} className="flex flex-col gap-2 rounded-card border border-ink/10 bg-bg-surface p-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
+                <Link href={`/profile/${profile.id}`} className="flex items-center gap-3 hover:underline">
                   <Avatar url={profile.avatar_url} name={name} size={36} />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-ink">{name}</p>
                     <p className="truncate text-xs text-text-muted">@{profile.username}</p>
                   </div>
-                </div>
+                </Link>
                 <div className="flex flex-wrap gap-1.5">
                   {roles.map((role) => {
                     const isGranted = granted.has(role.key);

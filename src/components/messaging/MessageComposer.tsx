@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { FormError } from "@/components/auth/FormError";
 import { ImageIcon, CloseIcon, SendIcon } from "@/components/community/CommunityIcons";
 import { sendMessage, attachImageToMessage, type FeedMessage } from "@/lib/messaging/messages";
+import { readImageDimensions } from "@/lib/media/dimensions";
 import type { ThreadCurrentUser } from "./MessageThread";
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8MB — same client-side courtesy limit as PostComposer, not a storage-level restriction.
@@ -21,6 +22,8 @@ export interface MessageComposerProps {
 interface PendingImage {
   file: File;
   previewUrl: string;
+  width: number | null;
+  height: number | null;
 }
 
 /**
@@ -40,7 +43,7 @@ export function MessageComposer({ conversationId, currentUser, onSent }: Message
 
   const canSubmit = (body.trim().length > 0 || image !== null) && !submitting;
 
-  function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -55,7 +58,9 @@ export function MessageComposer({ conversationId, currentUser, onSent }: Message
       return;
     }
     if (image) URL.revokeObjectURL(image.previewUrl);
-    setImage({ file, previewUrl: URL.createObjectURL(file) });
+    const previewUrl = URL.createObjectURL(file);
+    const { width, height } = await readImageDimensions(previewUrl);
+    setImage({ file, previewUrl, width, height });
   }
 
   function removeImage() {
@@ -100,6 +105,8 @@ export function MessageComposer({ conversationId, currentUser, onSent }: Message
         messageId: message.id,
         uploaderId: currentUser.id,
         file: image.file,
+        width: image.width,
+        height: image.height,
       });
 
       if (mediaError) {

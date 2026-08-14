@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { RoleBadge } from "@/components/ui/RoleBadge";
@@ -38,11 +39,17 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
   return (
     <Card className="!p-4 sm:!p-5">
       <div className="flex items-start gap-3">
-        <Avatar url={post.author.avatar_url} name={authorName} size={44} crown={crownFor(post.author)} />
+        <Link href={`/profile/${post.author.id}`} className="shrink-0">
+          <Avatar url={post.author.avatar_url} name={authorName} size={44} crown={crownFor(post.author)} />
+        </Link>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <span className="font-display font-semibold text-ink">{authorName}</span>
-            <span className="text-sm text-text-muted">@{post.author.username}</span>
+            <Link href={`/profile/${post.author.id}`} className="font-display font-semibold text-ink hover:underline">
+              {authorName}
+            </Link>
+            <Link href={`/profile/${post.author.id}`} className="text-sm text-text-muted hover:underline">
+              @{post.author.username}
+            </Link>
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-text-muted">
             <FanLevelBadge level={post.author.fan_level} />

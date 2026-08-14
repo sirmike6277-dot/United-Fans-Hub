@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -31,11 +32,13 @@ export function WinnerAnnouncement({ winner }: WinnerAnnouncementProps) {
         <CrownIcon size={28} />
       </span>
       <Badge tone="red">{winner.categoryName}</Badge>
-      <Avatar url={winner.nomination.nominee.avatar_url} name={name} size={72} crown={crownFor(winner.nomination.nominee)} />
-      <div>
+      <Link href={`/profile/${winner.nomination.nominee.id}`}>
+        <Avatar url={winner.nomination.nominee.avatar_url} name={name} size={72} crown={crownFor(winner.nomination.nominee)} />
+      </Link>
+      <Link href={`/profile/${winner.nomination.nominee.id}`} className="hover:underline">
         <p className="font-display text-xl font-bold text-ink">{name}</p>
         <p className="text-sm text-text-muted">@{winner.nomination.nominee.username}</p>
-      </div>
+      </Link>
       <p className="text-sm text-text-body">
         {winner.voteCount.toLocaleString()} {winner.voteCount === 1 ? "vote" : "votes"}
       </p>

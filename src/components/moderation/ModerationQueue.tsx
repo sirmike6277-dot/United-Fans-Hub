@@ -93,10 +93,15 @@ function ReportRow({ report, currentUserId, onResolved }: { report: FeedReport; 
         </time>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-text-muted">
+      <a
+        href={`/profile/${report.reporter.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 text-xs text-text-muted hover:text-text-body"
+      >
         <Avatar url={report.reporter.avatar_url} name={reporterName} size={20} />
-        Reported by <span className="text-text-body">{reporterName}</span>
-      </div>
+        Reported by <span className="text-text-body underline">{reporterName}</span>
+      </a>
 
       {report.details ? <p className="text-sm text-text-body">{report.details}</p> : null}
 

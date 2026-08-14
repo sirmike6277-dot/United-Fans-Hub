@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
@@ -49,12 +50,18 @@ export function CommentItem({ comment, currentUserId, onReply, isReply = false }
 
   return (
     <div className="flex gap-3">
-      <Avatar url={comment.author.avatar_url} name={name} size={isReply ? 28 : 32} crown={crownFor(comment.author)} />
+      <Link href={`/profile/${comment.author.id}`} className="shrink-0">
+        <Avatar url={comment.author.avatar_url} name={name} size={isReply ? 28 : 32} crown={crownFor(comment.author)} />
+      </Link>
       <div className="flex-1">
         <div className="rounded-card bg-bg-elevated px-3 py-2">
           <div className="flex flex-wrap items-baseline gap-1.5">
-            <span className="text-sm font-semibold text-ink">{name}</span>
-            <span className="text-xs text-text-muted">@{comment.author.username}</span>
+            <Link href={`/profile/${comment.author.id}`} className="text-sm font-semibold text-ink hover:underline">
+              {name}
+            </Link>
+            <Link href={`/profile/${comment.author.id}`} className="text-xs text-text-muted hover:underline">
+              @{comment.author.username}
+            </Link>
             <FanLevelBadge level={comment.author.fan_level} />
           </div>
           <MentionText

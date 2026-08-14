@@ -105,11 +105,57 @@ export function PostMedia({ media }: PostMediaProps) {
   );
 }
 
-/** The whole image, at its real aspect ratio — never cropped, never letterboxed. Tap/click opens the full-screen lightbox. */
+/** Hard cap on a single-image tile's height — see SingleImageTile's own comment for how the width formula keeps the box itself shaped like the image instead of just clamping height and leaving the width mismatched. */
+const SINGLE_IMAGE_MAX_HEIGHT = 560;
+
+/**
+ * The whole image, at its real aspect ratio — never cropped, never
+ * letterboxed. Tap/click opens the full-screen lightbox.
+ *
+ * The box's `width` is computed as `min(100%, maxHeight * ratio)` rather
+ * than left at 100% — a plain `w-full` + `aspect-ratio` + `max-height`
+ * combination looks right for landscape photos, but for a portrait one
+ * (e.g. a 1080×2340 phone photo) the height clamp fires while the width
+ * stays stretched to the card's full width, leaving a box shaped nothing
+ * like the image — `object-contain` then shrinks the image to fit that
+ * mismatched box, showing it small with big black bars down both sides
+ * (confirmed live: a 434×560 box for a 1080×2340 image rendered the photo
+ * at only ~258px wide). Computing the width in JS from the known ratio,
+ * rather than relying on the browser to derive it purely from CSS
+ * `aspect-ratio` + `width: fit-content` on an otherwise-empty box (tried
+ * first — collapsed to 0×0 in testing, since there's no other content to
+ * size from), sidesteps that entirely: the box is always exactly
+ * image-shaped, up to the card's own width for landscape photos.
+ *
+ * That formula only works when `item.width`/`item.height` are real — for
+ * the handful of posts uploaded before post_media captured them (null on
+ * both), FALLBACK_RATIO (16/9) used to be the box's *permanent* shape, and
+ * for anything not actually 16:9 that reproduces the exact same
+ * mismatched-box-plus-black-bars bug this whole component exists to avoid
+ * (confirmed live with a real portrait poster stored with no dimensions —
+ * a 434×244 16:9 box around a genuinely tall image, visible black bars
+ * down both sides). FALLBACK_RATIO is now only ever the *first* paint for
+ * that narrow case: `onLoad` reads the image's own real naturalWidth/
+ * naturalHeight once the browser has it and reflows the box to the true
+ * ratio — a one-time layout adjustment for legacy rows only, never for
+ * any post uploaded after post_media started capturing dimensions (those
+ * have `knownRatio` immediately and this callback is a no-op).
+ */
 function SingleImageTile({ item, onOpen }: { item: FeedPostMedia; onOpen: () => void }) {
   const [failed, setFailed] = useState(false);
+  const [detectedRatio, setDetectedRatio] = useState<number | null>(null);
   const url = publicUrlFor(item.storage_path);
-  const ratio = item.width && item.height ? item.width / item.height : FALLBACK_RATIO;
+  const knownRatio = item.width && item.height ? item.width / item.height : null;
+  const ratio = knownRatio ?? detectedRatio ?? FALLBACK_RATIO;
+  const widthAtMaxHeight = SINGLE_IMAGE_MAX_HEIGHT * ratio;
+
+  function handleLoad(event: React.SyntheticEvent<HTMLImageElement>) {
+    if (knownRatio) return; // real dimensions already came from post_media — nothing to detect
+    const img = event.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) {
+      setDetectedRatio(img.naturalWidth / img.naturalHeight);
+    }
+  }
 
   if (failed) {
     return (
@@ -124,10 +170,10 @@ function SingleImageTile({ item, onOpen }: { item: FeedPostMedia; onOpen: () => 
       type="button"
       onClick={onOpen}
       aria-label="View image full-screen"
-      className="relative block w-full cursor-zoom-in bg-bg-elevated"
-      style={{ aspectRatio: ratio, maxHeight: 560 }}
+      className="relative mx-auto block cursor-zoom-in bg-bg-elevated"
+      style={{ aspectRatio: ratio, maxHeight: SINGLE_IMAGE_MAX_HEIGHT, width: `min(100%, ${widthAtMaxHeight}px)` }}
     >
-      <Image src={url} alt="" fill sizes="(max-width: 640px) 100vw, 640px" className="object-contain" onError={() => setFailed(true)} />
+      <Image src={url} alt="" fill sizes="(max-width: 640px) 100vw, 640px" className="object-contain" onError={() => setFailed(true)} onLoad={handleLoad} />
     </button>
   );
 }

@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { formatRelativeTime } from "@/lib/format";
-import { getSignedMediaUrl, type MessageReactionSummary } from "@/lib/messaging/messages";
+import { getSignedMediaUrl, getSignedMediaDownloadUrl, type MessageReactionSummary } from "@/lib/messaging/messages";
 import { FileGenericIcon } from "@/components/community/RoomIcons";
 import { ReplyIcon } from "@/components/community/CommunityIcons";
 import { MentionText } from "@/components/community/MentionText";
+import { MediaLightbox } from "@/components/community/MediaLightbox";
 import { MessageReactionBar } from "./MessageReactionBar";
 import { ReportButton } from "@/components/moderation/ReportButton";
 import { FlagIcon } from "@/components/moderation/ModerationIcons";
@@ -42,10 +44,16 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
 
   return (
     <div className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
-      {!isOwn ? <Avatar url={message.sender.avatar_url} name={senderName} size={32} crown={crownFor(message.sender)} /> : null}
+      {!isOwn ? (
+        <Link href={`/profile/${message.sender.id}`} className="shrink-0">
+          <Avatar url={message.sender.avatar_url} name={senderName} size={32} crown={crownFor(message.sender)} />
+        </Link>
+      ) : null}
       <div className={`flex max-w-[75%] flex-col gap-1 ${isOwn ? "items-end" : "items-start"}`}>
         {showSenderName && !isOwn ? (
-          <span className="px-1 text-xs font-medium text-text-muted">{senderName}</span>
+          <Link href={`/profile/${message.sender.id}`} className="px-1 text-xs font-medium text-text-muted hover:underline">
+            {senderName}
+          </Link>
         ) : null}
 
         {message.deletedAt ? (
@@ -139,7 +147,7 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
 }
 
 function MessageAttachment({ media }: { media: NonNullable<FeedMessage["media"]> }) {
-  if (media.mediaType === "image") return <MessageImage storagePath={media.storagePath} />;
+  if (media.mediaType === "image") return <MessageImage media={media} />;
   if (media.mediaType === "video") return <MessageVideo storagePath={media.storagePath} />;
   return <MessageFile storagePath={media.storagePath} />;
 }
@@ -164,23 +172,83 @@ function useSignedUrl(storagePath: string) {
   return { url, failed };
 }
 
-function MessageImage({ storagePath }: { storagePath: string }) {
-  const { url, failed } = useSignedUrl(storagePath);
+/**
+ * Hard caps for a message image's box — same "container matches the
+ * image, not the other way around" principle as PostMedia.tsx's
+ * SingleImageTile, but computed differently: PostMedia's post card has a
+ * definite width to size a percentage against (`min(100%, …px)`); a chat
+ * bubble doesn't — it shrink-wraps to its own content, so that same
+ * `width: min(100%, …)` has no percentage basis to resolve against and
+ * silently collapses to 0×0 (confirmed live: every message image button
+ * measured 0×0 and Playwright couldn't even click it). Both final pixel
+ * dimensions are computed here in JS instead, so the box is never
+ * ambiguous regardless of what the bubble around it does.
+ */
+const MESSAGE_IMAGE_MAX_HEIGHT = 320;
+const MESSAGE_IMAGE_MAX_WIDTH = 280;
+/** Only used for the handful of legacy rows uploaded before migration 055 added message_media.width/height — same rationale as PostMedia's own FALLBACK_RATIO. */
+const MESSAGE_IMAGE_FALLBACK_RATIO = 16 / 9;
+
+function MessageImage({ media }: { media: NonNullable<FeedMessage["media"]> }) {
+  const { url, failed } = useSignedUrl(media.storagePath);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [detectedRatio, setDetectedRatio] = useState<number | null>(null);
+  const knownRatio = media.width && media.height ? media.width / media.height : null;
+  // Same reasoning as PostMedia's SingleImageTile: for the rare legacy row
+  // with no stored width/height, MESSAGE_IMAGE_FALLBACK_RATIO is only ever
+  // the *first* paint — onLoad below corrects the box to the image's real
+  // shape once the browser has it, rather than leaving a permanently
+  // wrong-shaped box for anything that isn't actually 16:9.
+  const ratio = knownRatio ?? detectedRatio ?? MESSAGE_IMAGE_FALLBACK_RATIO;
+  const boxWidth = Math.min(MESSAGE_IMAGE_MAX_WIDTH, MESSAGE_IMAGE_MAX_HEIGHT * ratio);
+  const boxHeight = boxWidth / ratio;
+
+  function handleLoad(event: React.SyntheticEvent<HTMLImageElement>) {
+    if (knownRatio) return;
+    const img = event.currentTarget;
+    if (img.naturalWidth && img.naturalHeight) {
+      setDetectedRatio(img.naturalWidth / img.naturalHeight);
+    }
+  }
+
+  function openLightbox() {
+    setLightboxOpen(true);
+    if (!downloadUrl) {
+      getSignedMediaDownloadUrl(createClient(), "message-media", media.storagePath).then(setDownloadUrl);
+    }
+  }
 
   if (failed) {
     return (
-      <div className="mb-1.5 flex h-32 w-48 items-center justify-center rounded-control bg-black/20 text-xs text-text-muted">
+      <div className="mb-1.5 flex h-32 w-48 items-center justify-center rounded-control bg-bg-elevated text-xs text-text-muted">
         Image unavailable
       </div>
     );
   }
   if (!url) {
-    return <div className="mb-1.5 h-32 w-48 animate-pulse rounded-control bg-black/20" aria-hidden="true" />;
+    return <div className="mb-1.5 h-32 w-48 animate-pulse rounded-control bg-bg-elevated" aria-hidden="true" />;
   }
   return (
-    <div className="relative mb-1.5 h-48 w-64 overflow-hidden rounded-control">
-      <Image src={url} alt="" fill sizes="256px" className="object-cover" />
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={openLightbox}
+        aria-label="View image full-screen"
+        className="relative mb-1.5 block cursor-zoom-in bg-bg-elevated"
+        style={{ width: boxWidth, height: boxHeight }}
+      >
+        <Image src={url} alt="" fill sizes="280px" className="rounded-control object-contain" onLoad={handleLoad} />
+      </button>
+      {lightboxOpen ? (
+        <MediaLightbox
+          images={[{ url, downloadUrl: downloadUrl ?? url, alt: "" }]}
+          index={0}
+          onIndexChange={() => {}}
+          onClose={() => setLightboxOpen(false)}
+        />
+      ) : null}
+    </>
   );
 }
 

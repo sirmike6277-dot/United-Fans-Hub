@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -46,11 +47,13 @@ function AccountList({
         const name = profile.display_name || profile.username;
         return (
           <li key={profile.id} className="flex items-center gap-3 rounded-control bg-bg-elevated p-3">
-            <Avatar url={profile.avatar_url} name={name} size={36} />
-            <div className="min-w-0 flex-1">
+            <Link href={`/profile/${profile.id}`} className="shrink-0">
+              <Avatar url={profile.avatar_url} name={name} size={36} />
+            </Link>
+            <Link href={`/profile/${profile.id}`} className="min-w-0 flex-1 hover:underline">
               <p className="truncate text-sm font-medium text-ink">{name}</p>
               <p className="truncate text-xs text-text-muted">@{profile.username}</p>
-            </div>
+            </Link>
             <Button type="button" variant="secondary" size="sm" onClick={() => onAction(profile.id)} loading={busyId === profile.id} disabled={busyId !== null}>
               {actionLabel}
             </Button>

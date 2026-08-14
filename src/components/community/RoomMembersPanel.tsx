@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
@@ -191,11 +192,13 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                 return (
                   <div key={member.profileId} className="rounded-control bg-bg-elevated p-2.5">
                     <div className="flex items-center gap-2.5">
-                      <Avatar url={member.profile.avatar_url} name={name} size={36} />
-                      <div className="min-w-0 flex-1">
+                      <Link href={`/profile/${member.profileId}`} className="shrink-0">
+                        <Avatar url={member.profile.avatar_url} name={name} size={36} />
+                      </Link>
+                      <Link href={`/profile/${member.profileId}`} className="min-w-0 flex-1 hover:underline">
                         <p className="truncate text-sm font-medium text-ink">{name}</p>
                         <p className="truncate text-xs text-text-muted">@{member.profile.username}</p>
-                      </div>
+                      </Link>
                       {member.role === "admin" ? (
                         <Badge tone="outline" className="!px-1.5 !py-0 shrink-0 text-[10px]">
                           <ShieldIcon size={11} /> Admin
@@ -320,13 +323,15 @@ export function RoomMembersPanel({ conversationId, currentUserId, canModerate, o
                   return (
                     <div key={ban.profileId} className="rounded-control bg-bg-elevated p-2.5">
                       <div className="flex items-center gap-2.5">
-                        <Avatar url={ban.profile.avatar_url} name={name} size={32} />
-                        <div className="min-w-0 flex-1">
+                        <Link href={`/profile/${ban.profileId}`} className="shrink-0">
+                          <Avatar url={ban.profile.avatar_url} name={name} size={32} />
+                        </Link>
+                        <Link href={`/profile/${ban.profileId}`} className="min-w-0 flex-1 hover:underline">
                           <p className="truncate text-sm font-medium text-ink">{name}</p>
                           <p className="truncate text-xs text-text-muted">
                             {ban.bannedUntil ? `Until ${new Date(ban.bannedUntil).toLocaleDateString()}` : "Permanent"}
                           </p>
-                        </div>
+                        </Link>
                         <Button
                           type="button"
                           variant="secondary"

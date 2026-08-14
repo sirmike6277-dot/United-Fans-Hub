@@ -32,7 +32,7 @@ export const MESSAGE_SELECT = `
   deleted_at,
   parent_message_id,
   sender:profiles!messages_sender_id_fkey ( id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season ),
-  message_media ( id, storage_path, media_type, duration_seconds ),
+  message_media ( id, storage_path, media_type, duration_seconds, width, height ),
   reactions:message_reactions ( profile_id, emoji ),
   mentions ( mentioned_profile_id, profile:profiles!mentions_mentioned_profile_id_fkey ( username ) ),
   parent:parent_message_id ( id, body, deleted_at, sender:profiles!messages_sender_id_fkey ( username, display_name ) )
@@ -57,6 +57,8 @@ interface MessageMediaRow {
   storage_path: string;
   media_type: string;
   duration_seconds: number | null;
+  width: number | null;
+  height: number | null;
 }
 
 interface MessageReactionRow {
@@ -97,6 +99,9 @@ export interface FeedMessageMedia {
   storagePath: string;
   mediaType: string;
   durationSeconds: number | null;
+  /** Captured client-side at upload (see attachImageToMessage/attachFileToMessage) — null for rows uploaded before this existed, or when reading dimensions failed. MessageBubble's MessageImage falls back to a generic ratio when either is null. */
+  width: number | null;
+  height: number | null;
 }
 
 export interface MessageReactionSummary {
@@ -168,6 +173,8 @@ function normalize(row: MessageRow, currentUserId: string): FeedMessage {
           storagePath: media.storage_path,
           mediaType: media.media_type,
           durationSeconds: media.duration_seconds,
+          width: media.width,
+          height: media.height,
         }
       : null,
     reactions: summarizeReactions(row.reactions, currentUserId),
@@ -271,7 +278,9 @@ export async function attachImageToMessage(
     messageId,
     uploaderId,
     file,
-  }: { conversationId: string; messageId: string; uploaderId: string; file: File },
+    width,
+    height,
+  }: { conversationId: string; messageId: string; uploaderId: string; file: File; width?: number | null; height?: number | null },
 ): Promise<{ media: FeedMessageMedia | null; error: string | null }> {
   const ext = file.name.split(".").pop() || "jpg";
   const path = `${conversationId}/${uploaderId}/${messageId}-${Date.now()}.${ext}`;
@@ -283,8 +292,8 @@ export async function attachImageToMessage(
 
   const { data, error } = await supabase
     .from("message_media")
-    .insert({ message_id: messageId, media_type: "image", storage_path: path })
-    .select("id, storage_path, media_type, duration_seconds")
+    .insert({ message_id: messageId, media_type: "image", storage_path: path, width: width ?? null, height: height ?? null })
+    .select("id, storage_path, media_type, duration_seconds, width, height")
     .single();
 
   if (error || !data) {
@@ -297,6 +306,8 @@ export async function attachImageToMessage(
       storagePath: data.storage_path,
       mediaType: data.media_type,
       durationSeconds: data.duration_seconds,
+      width: data.width,
+      height: data.height,
     },
     error: null,
   };
@@ -326,7 +337,9 @@ export async function attachFileToMessage(
     messageId,
     uploaderId,
     file,
-  }: { conversationId: string; messageId: string; uploaderId: string; file: File },
+    width,
+    height,
+  }: { conversationId: string; messageId: string; uploaderId: string; file: File; width?: number | null; height?: number | null },
 ): Promise<{ media: FeedMessageMedia | null; error: string | null }> {
   const mediaType = inferMediaType(file);
   const ext = file.name.split(".").pop() || "bin";
@@ -337,10 +350,14 @@ export async function attachFileToMessage(
     return { media: null, error: "Couldn't upload the attachment." };
   }
 
+  // width/height are only ever meaningful for images (Fan Rooms also
+  // accepts video/generic files here, unlike attachImageToMessage) — the
+  // caller only passes them for image files; video/file attachments get
+  // null, same as before this migration existed.
   const { data, error } = await supabase
     .from("message_media")
-    .insert({ message_id: messageId, media_type: mediaType, storage_path: path })
-    .select("id, storage_path, media_type, duration_seconds")
+    .insert({ message_id: messageId, media_type: mediaType, storage_path: path, width: width ?? null, height: height ?? null })
+    .select("id, storage_path, media_type, duration_seconds, width, height")
     .single();
 
   if (error || !data) {
@@ -353,6 +370,8 @@ export async function attachFileToMessage(
       storagePath: data.storage_path,
       mediaType: data.media_type,
       durationSeconds: data.duration_seconds,
+      width: data.width,
+      height: data.height,
     },
     error: null,
   };
@@ -402,6 +421,25 @@ export async function getSignedMediaUrl(
   expiresInSeconds = 3600,
 ): Promise<string | null> {
   const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresInSeconds);
+  if (error || !data) return null;
+  return data.signedUrl;
+}
+
+/**
+ * Same as getSignedMediaUrl, but with Supabase's own `download` option —
+ * the private-bucket equivalent of PostMedia's downloadUrlFor() (which
+ * uses getPublicUrl's `download` option instead, since post-media is
+ * public). This is what actually makes a cross-origin save work — see
+ * PostMedia.tsx's own comment on why a plain `<a download>` isn't enough.
+ * Used by MessageBubble's lightbox Save button.
+ */
+export async function getSignedMediaDownloadUrl(
+  supabase: AnySupabase,
+  bucket: "message-media" | "voice-messages",
+  path: string,
+  expiresInSeconds = 3600,
+): Promise<string | null> {
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresInSeconds, { download: true });
   if (error || !data) return null;
   return data.signedUrl;
 }

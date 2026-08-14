@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { RoleBadge } from "@/components/ui/RoleBadge";
 import { StatTile } from "@/components/ui/StatTile";
 import { Tabs } from "@/components/ui/Tabs";
 import { ClubEmblem } from "@/components/media/ClubEmblem";
@@ -132,9 +133,12 @@ export function ProfileView({
           </div>
           <div className="flex flex-1 flex-wrap items-center justify-between gap-3 pb-2">
             <div>
-              <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
-                {profile.display_name || profile.username}
-              </h1>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
+                  {profile.display_name || profile.username}
+                </h1>
+                <RoleBadge profileId={profile.id} />
+              </div>
               <p className="text-sm text-text-muted">@{profile.username}</p>
             </div>
             {action}

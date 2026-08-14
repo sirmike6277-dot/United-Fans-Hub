@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
+import { RoleBadge } from "@/components/ui/RoleBadge";
 import { Card } from "@/components/ui/Card";
 import { formatRelativeTime } from "@/lib/format";
 import { PostMedia } from "./PostMedia";
 import { ReactionButton } from "./ReactionButton";
 import { CommentSection } from "./CommentSection";
-import { CommentIcon, ShareIcon } from "./CommunityIcons";
+import { ShareMenu } from "./ShareMenu";
+import { CommentIcon } from "./CommunityIcons";
 import { MentionText } from "./MentionText";
 import type { FeedPost } from "@/lib/community/posts";
 
@@ -45,6 +46,7 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-text-muted">
             <FanLevelBadge level={post.author.fan_level} />
+            <RoleBadge profileId={post.author.id} />
             {/* suppressHydrationWarning: relative time legitimately differs between
                 server render and client hydration as real time elapses between
                 them — this is Next.js's documented pattern for that case, not a
@@ -90,15 +92,7 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
             <span>{post.commentCount > 0 ? post.commentCount.toLocaleString() : "Comment"}</span>
           </button>
         )}
-        {hideShare ? null : (
-          <Link
-            href={`/community/${post.id}`}
-            className="inline-flex h-10 min-w-[44px] items-center gap-1.5 rounded-control px-2.5 text-sm font-medium text-text-muted transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary"
-          >
-            <ShareIcon />
-            <span>Share</span>
-          </Link>
-        )}
+        {hideShare ? null : <ShareMenu postId={post.id} shareText={post.body ? `${authorName}: ${post.body}` : undefined} />}
       </div>
 
       {commentsOpen ? (

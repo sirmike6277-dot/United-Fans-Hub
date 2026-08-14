@@ -1407,6 +1407,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          appearance_preferences: Json
           avatar_url: string | null
           bio: string | null
           country: string | null
@@ -1427,10 +1428,13 @@ export type Database = {
           id: string
           location: string | null
           matchday_routine: string | null
+          notification_preferences: Json
+          onboarding_seen_at: string | null
           updated_at: string
           username: string
         }
         Insert: {
+          appearance_preferences?: Json
           avatar_url?: string | null
           bio?: string | null
           country?: string | null
@@ -1451,10 +1455,13 @@ export type Database = {
           id: string
           location?: string | null
           matchday_routine?: string | null
+          notification_preferences?: Json
+          onboarding_seen_at?: string | null
           updated_at?: string
           username: string
         }
         Update: {
+          appearance_preferences?: Json
           avatar_url?: string | null
           bio?: string | null
           country?: string | null
@@ -1475,6 +1482,8 @@ export type Database = {
           id?: string
           location?: string | null
           matchday_routine?: string | null
+          notification_preferences?: Json
+          onboarding_seen_at?: string | null
           updated_at?: string
           username?: string
         }
@@ -2012,6 +2021,10 @@ export type Database = {
         }[]
       }
       email_for_username: { Args: { lookup_username: string }; Returns: string }
+      get_profile_role_badges: {
+        Args: { target_profile_ids: string[] }
+        Returns: { profile_id: string; role_key: string; role_name: string }[]
+      }
       has_blocked_participant_in_conversation: {
         Args: { p_conversation_id: string; p_profile_id: string }
         Returns: boolean

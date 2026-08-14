@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import type { FeedPostMedia } from "@/lib/community/posts";
+import { MediaLightbox, type LightboxImage } from "./MediaLightbox";
+import { DownloadIcon, ExpandIcon } from "./CommunityIcons";
 
 export interface PostMediaProps {
   media: FeedPostMedia[];
@@ -13,6 +15,19 @@ export interface PostMediaProps {
 function publicUrlFor(storagePath: string): string {
   const supabase = createClient();
   return supabase.storage.from("post-media").getPublicUrl(storagePath).data.publicUrl;
+}
+
+/**
+ * Same file, but with Supabase's own `download` option — this sets
+ * Content-Disposition: attachment server-side, which is what actually
+ * makes a cross-origin file save instead of just navigating to it (a plain
+ * `<a download>` attribute is silently ignored cross-origin in most
+ * browsers, so this is the real mechanism behind every "Save" button
+ * below, not that attribute alone).
+ */
+function downloadUrlFor(storagePath: string): string {
+  const supabase = createClient();
+  return supabase.storage.from("post-media").getPublicUrl(storagePath, { download: true }).data.publicUrl;
 }
 
 /** A safe, sane aspect ratio to size the container to before the browser knows the media's real one — only ever used for the (now legacy) rows uploaded before width/height were captured. */
@@ -26,8 +41,23 @@ const FALLBACK_RATIO = 16 / 9;
  * and nothing is letterboxed with visible bars: the box is shaped like the
  * media, not the other way around. Multiple images still use a grid (the
  * normal, expected "photo grid" convention once there's more than one).
+ *
+ * Tapping any image opens it full-screen (MediaLightbox) with Save; a
+ * multi-image post's lightbox can step between all of them. Video plays
+ * inline with native controls plus an explicit fullscreen button, and its
+ * own Save button — video isn't part of the shared lightbox since native
+ * `<video controls>` already covers playback/scrubbing/volume far better
+ * than a custom viewer would.
  */
 export function PostMedia({ media }: PostMediaProps) {
+  const images = media.filter((m) => m.media_type === "image");
+  const lightboxImages: LightboxImage[] = images.map((item) => ({
+    url: publicUrlFor(item.storage_path),
+    downloadUrl: downloadUrlFor(item.storage_path),
+    alt: "",
+  }));
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
   if (media.length === 0) return null;
 
   if (media.length === 1) {
@@ -37,26 +67,46 @@ export function PostMedia({ media }: PostMediaProps) {
         {item.media_type === "video" ? (
           <SingleVideoTile item={item} />
         ) : (
-          <SingleImageTile item={item} />
+          <SingleImageTile item={item} onOpen={() => setLightboxIndex(0)} />
         )}
+        {lightboxIndex !== null ? (
+          <MediaLightbox
+            images={lightboxImages}
+            index={lightboxIndex}
+            onIndexChange={setLightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+          />
+        ) : null}
       </div>
     );
   }
 
-  const images = media.filter((m) => m.media_type === "image");
   const gridClass = images.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-2";
 
   return (
     <div className={`mt-3 grid gap-1 overflow-hidden rounded-card ${gridClass}`}>
       {images.slice(0, 4).map((item, index) => (
-        <MediaTile key={item.id} storagePath={item.storage_path} tall={images.length === 3 && index === 0} />
+        <MediaTile
+          key={item.id}
+          storagePath={item.storage_path}
+          tall={images.length === 3 && index === 0}
+          onOpen={() => setLightboxIndex(index)}
+        />
       ))}
+      {lightboxIndex !== null ? (
+        <MediaLightbox
+          images={lightboxImages}
+          index={lightboxIndex}
+          onIndexChange={setLightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      ) : null}
     </div>
   );
 }
 
-/** The whole image, at its real aspect ratio — never cropped, never letterboxed. */
-function SingleImageTile({ item }: { item: FeedPostMedia }) {
+/** The whole image, at its real aspect ratio — never cropped, never letterboxed. Tap/click opens the full-screen lightbox. */
+function SingleImageTile({ item, onOpen }: { item: FeedPostMedia; onOpen: () => void }) {
   const [failed, setFailed] = useState(false);
   const url = publicUrlFor(item.storage_path);
   const ratio = item.width && item.height ? item.width / item.height : FALLBACK_RATIO;
@@ -70,25 +120,70 @@ function SingleImageTile({ item }: { item: FeedPostMedia }) {
   }
 
   return (
-    <div className="relative w-full bg-bg-elevated" style={{ aspectRatio: ratio, maxHeight: 560 }}>
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label="View image full-screen"
+      className="relative block w-full cursor-zoom-in bg-bg-elevated"
+      style={{ aspectRatio: ratio, maxHeight: 560 }}
+    >
       <Image src={url} alt="" fill sizes="(max-width: 640px) 100vw, 640px" className="object-contain" onError={() => setFailed(true)} />
-    </div>
+    </button>
   );
 }
 
-/** Real HTML5 video playback, sized the same way — real aspect ratio, no crop. */
+/**
+ * Real HTML5 video playback, sized the same way — real aspect ratio, no
+ * crop. Native `controls` already includes a fullscreen toggle in most
+ * browsers, but it's small and easy to miss, so there's also an explicit
+ * "Expand" button here that calls the same Fullscreen API directly — and a
+ * Save button using the same download-URL mechanism the image lightbox
+ * uses.
+ */
 function SingleVideoTile({ item }: { item: FeedPostMedia }) {
   const url = publicUrlFor(item.storage_path);
+  const downloadUrl = downloadUrlFor(item.storage_path);
   const ratio = item.width && item.height ? item.width / item.height : FALLBACK_RATIO;
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  function handleFullscreen() {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.requestFullscreen) {
+      video.requestFullscreen();
+    } else if ("webkitEnterFullscreen" in video) {
+      // iOS Safari's own API — it doesn't implement the standard
+      // Fullscreen API on <video> at all, only this vendor-prefixed one.
+      (video as HTMLVideoElement & { webkitEnterFullscreen: () => void }).webkitEnterFullscreen();
+    }
+  }
 
   return (
-    <div className="w-full bg-black" style={{ aspectRatio: ratio, maxHeight: 560 }}>
-      <video src={url} controls className="h-full w-full" />
+    <div className="group relative w-full bg-black" style={{ aspectRatio: ratio, maxHeight: 560 }}>
+      <video ref={videoRef} src={url} controls className="h-full w-full" />
+      <div className="pointer-events-none absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <a
+          href={downloadUrl}
+          download
+          aria-label="Save video"
+          className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-control bg-black/60 text-white transition-colors hover:bg-black/80"
+        >
+          <DownloadIcon />
+        </a>
+        <button
+          type="button"
+          onClick={handleFullscreen}
+          aria-label="Fullscreen"
+          className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-control bg-black/60 text-white transition-colors hover:bg-black/80"
+        >
+          <ExpandIcon />
+        </button>
+      </div>
     </div>
   );
 }
 
-function MediaTile({ storagePath, tall }: { storagePath: string; tall: boolean }) {
+function MediaTile({ storagePath, tall, onOpen }: { storagePath: string; tall: boolean; onOpen: () => void }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const url = publicUrlFor(storagePath);
@@ -102,8 +197,11 @@ function MediaTile({ storagePath, tall }: { storagePath: string; tall: boolean }
   }
 
   return (
-    <div
-      className={`relative bg-bg-elevated ${tall ? "row-span-2 aspect-square sm:aspect-auto" : "aspect-video"}`}
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label="View image full-screen"
+      className={`relative block cursor-zoom-in bg-bg-elevated ${tall ? "row-span-2 aspect-square sm:aspect-auto" : "aspect-video"}`}
     >
       {!loaded ? <div className="absolute inset-0 animate-pulse bg-white/5" aria-hidden="true" /> : null}
       <Image
@@ -115,6 +213,6 @@ function MediaTile({ storagePath, tall }: { storagePath: string; tall: boolean }
         onLoad={() => setLoaded(true)}
         onError={() => setFailed(true)}
       />
-    </div>
+    </button>
   );
 }

@@ -3,6 +3,7 @@ import { Navbar } from "./Navbar";
 import { Brand } from "./Brand";
 import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
+import { AppearanceEffect } from "./AppearanceEffect";
 import { ClubEmblem } from "@/components/media/ClubEmblem";
 
 export interface AppShellProps {
@@ -27,6 +28,10 @@ export interface AppShellProps {
  * in the app is still fully opaque on top of it, so it never touches
  * legibility, only the void between them.
  *
+ * Also renders <AppearanceEffect /> once, applying the signed-in visitor's
+ * real Settings → Appearance preferences (reduced motion, text size) to
+ * every page under this shell — see that component's own doc comment.
+ *
  * Used by every auth-gated page and, conditionally, by the public /matches
  * page (only when the visitor is signed in — see its own doc comment) and
  * /community/rooms/[roomId] uses a hand-composed equivalent for its
@@ -35,6 +40,7 @@ export interface AppShellProps {
 export function AppShell({ children, rail }: AppShellProps) {
   return (
     <>
+      <AppearanceEffect />
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute -right-40 -top-40 opacity-[0.035]">
           <ClubEmblem size={720} />

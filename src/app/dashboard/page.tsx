@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
+import { WelcomeRulesModal } from "@/components/onboarding/WelcomeRulesModal";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -37,7 +38,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username, display_name, avatar_url, fan_level, fan_points")
+    .select("id, username, display_name, avatar_url, fan_level, fan_points, onboarding_seen_at")
     .eq("id", profileId)
     .single();
 
@@ -69,6 +70,9 @@ export default async function DashboardPage() {
 
   return (
     <AppShell>
+      {profile.onboarding_seen_at === null ? (
+        <WelcomeRulesModal profileId={profile.id} logo={<ClubEmblem size={56} />} />
+      ) : null}
       <main className="flex-1 bg-bg-void">
         <div className="flex flex-col gap-6 py-6 sm:py-8">
           {/* Welcome header + stat row */}

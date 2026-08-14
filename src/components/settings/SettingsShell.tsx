@@ -9,6 +9,9 @@ import { FormError } from "@/components/auth/FormError";
 import { GearIcon } from "@/components/layout/ShellIcons";
 import { BellIcon } from "@/components/notifications/NotificationIcons";
 import { BlockedMutedPanel } from "./BlockedMutedPanel";
+import { NotificationsPanel } from "./NotificationsPanel";
+import { AppearancePanel } from "./AppearancePanel";
+import { HelpPanel } from "./HelpPanel";
 
 export interface SettingsShellProps {
   profileId: string;
@@ -131,19 +134,6 @@ function AccountPanel({ profileId, username, email, initialDisplayName, initialB
   );
 }
 
-function ComingSoonPanel({ title }: { title: string }) {
-  return (
-    <div>
-      <h2 className="font-display text-xl font-bold uppercase text-white">{title}</h2>
-      <div className="mt-4 rounded-card border border-dashed border-white/15 bg-bg-elevated p-8 text-center">
-        <p className="text-sm text-text-muted">
-          {title} controls aren&apos;t live yet — they&apos;re on the way.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export function SettingsShell(props: SettingsShellProps) {
   const router = useRouter();
   const [active, setActive] = useState<string>("account");
@@ -165,9 +155,12 @@ export function SettingsShell(props: SettingsShellProps) {
     panel = <AccountPanel {...props} />;
   } else if (active === "privacy") {
     panel = <BlockedMutedPanel currentUserId={props.profileId} />;
+  } else if (active === "notifications") {
+    panel = <NotificationsPanel currentUserId={props.profileId} />;
+  } else if (active === "appearance") {
+    panel = <AppearancePanel currentUserId={props.profileId} />;
   } else {
-    const tab = STATIC_TABS.find((t) => t.key === active);
-    panel = <ComingSoonPanel title={tab?.label ?? "Settings"} />;
+    panel = <HelpPanel />;
   }
 
   return (

@@ -47,6 +47,28 @@
   }
 }
 
+/*
+ * Settings → Appearance (see AppearanceEffect.tsx, AppearancePanel.tsx) —
+ * an explicit, account-level opt-in alongside the OS-level media query
+ * above, not a replacement for it: a visitor who can't or doesn't know how
+ * to change their OS setting can still turn this on here, and it follows
+ * their account across devices. `data-reduce-motion`/`data-text-size` are
+ * set on <html> by AppearanceEffect once the signed-in user's real
+ * profiles.appearance_preferences loads.
+ */
+:root[data-reduce-motion="true"] *,
+:root[data-reduce-motion="true"] *::before,
+:root[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-text-size="large"] {
+  font-size: 112.5%;
+}
+
 body {
   background: var(--color-bg-void);
   color: var(--color-text-body);

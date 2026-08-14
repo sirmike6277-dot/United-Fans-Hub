@@ -30,6 +30,55 @@ export const KNOWN_NOTIFICATION_TYPES = [
 ] as const;
 
 /**
+ * Which of the 13 real types each Settings → Notifications category
+ * controls (see profiles.notification_preferences, NotificationsPanel.tsx).
+ * `moderation_action` deliberately belongs to no category — an
+ * account-safety notice, never user-suppressible, always shown regardless
+ * of preferences.
+ */
+const NOTIFICATION_CATEGORY_TYPES = {
+  community: ["like", "comment", "reply", "follow", "mention"],
+  messages: ["message"],
+  matches: ["prediction_reminder", "match_reminder", "match_event"],
+  awards: ["award_nomination", "voting_open", "achievement_unlocked"],
+} as const;
+
+type NotificationCategory = keyof typeof NOTIFICATION_CATEGORY_TYPES;
+
+const DEFAULT_NOTIFICATION_PREFERENCES: Record<NotificationCategory, boolean> = {
+  community: true,
+  messages: true,
+  matches: true,
+  awards: true,
+};
+
+/**
+ * Reads `profiles.notification_preferences` for `currentUserId` and
+ * returns the concrete list of `type` values currently allowed to show —
+ * every type in an enabled category, plus `moderation_action`
+ * unconditionally. Malformed/missing preference data (a genuinely new
+ * profile row not yet touched by Settings, or an unexpected shape) falls
+ * back to "everything on," matching this column's own DB default and
+ * never silently hiding notifications a user never chose to hide.
+ */
+async function resolveAllowedTypes(supabase: AnySupabase, currentUserId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("notification_preferences")
+    .eq("id", currentUserId)
+    .maybeSingle();
+
+  const raw = (data?.notification_preferences ?? {}) as Partial<Record<NotificationCategory, boolean>>;
+  const prefs = { ...DEFAULT_NOTIFICATION_PREFERENCES, ...raw };
+
+  const allowed: string[] = ["moderation_action"];
+  for (const category of Object.keys(NOTIFICATION_CATEGORY_TYPES) as NotificationCategory[]) {
+    if (prefs[category] !== false) allowed.push(...NOTIFICATION_CATEGORY_TYPES[category]);
+  }
+  return allowed;
+}
+
+/**
  * Shared select shape — mirrors community/posts.ts's POST_SELECT pattern.
  * actor_id is a single, well-defined FK to profiles (not a polymorphic
  * join) — safe and explicit. subject_type/subject_id are read as plain
@@ -86,14 +135,26 @@ type AnySupabase = SupabaseClient<Database>;
  * the explicit .eq() below matches that intent for clarity/index-use,
  * mirroring the same convention already used for posts.status.
  */
+/**
+ * One page of the current user's notifications, newest first — now
+ * filtered by their real Settings → Notifications preferences (see
+ * resolveAllowedTypes above). This is a "hide what you see" filter, not a
+ * "don't create the row" filter: the underlying notifications row still
+ * gets written by its DB trigger regardless of this preference (see
+ * profiles.notification_preferences' own comment for why — touching
+ * every notify_on_* trigger was explicitly out of scope for this phase).
+ */
 export async function fetchNotificationsPage(
   supabase: AnySupabase,
   { from, to, currentUserId }: { from: number; to: number; currentUserId: string },
 ): Promise<{ notifications: FeedNotification[]; error: string | null }> {
+  const allowedTypes = await resolveAllowedTypes(supabase, currentUserId);
+
   const { data, error } = await supabase
     .from("notifications")
     .select(NOTIFICATION_SELECT)
     .eq("recipient_id", currentUserId)
+    .in("type", allowedTypes)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .range(from, to);
@@ -106,15 +167,17 @@ export async function fetchNotificationsPage(
   return { notifications: rows.map(normalize), error: null };
 }
 
-/** Unread count for the navbar badge. Uses the existing partial index (recipient_id) WHERE read_at IS NULL. */
+/** Unread count for the navbar badge. Uses the existing partial index (recipient_id) WHERE read_at IS NULL, plus the same preference filter as fetchNotificationsPage — a muted category never inflates the badge either. */
 export async function fetchUnreadCount(
   supabase: AnySupabase,
   currentUserId: string,
 ): Promise<number> {
+  const allowedTypes = await resolveAllowedTypes(supabase, currentUserId);
   const { count } = await supabase
     .from("notifications")
     .select("*", { count: "exact", head: true })
     .eq("recipient_id", currentUserId)
+    .in("type", allowedTypes)
     .is("read_at", null);
   return count ?? 0;
 }

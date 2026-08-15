@@ -128,3 +128,27 @@ export async function fetchComments(
   const normalized = rows.map((row) => normalizeRow(row, reactedCommentIds));
   return { comments: buildThreads(normalized), error: null };
 }
+
+/**
+ * Edits a comment's own body. RLS already scopes this to the author
+ * ("Users can update their own comments", migration 004_community_content)
+ * — this function doesn't re-check ownership itself. `updated_at` bumps
+ * automatically via the existing `on_comment_updated` trigger.
+ */
+export async function updateComment({ commentId, body }: { commentId: string; body: string }): Promise<{ error: string | null }> {
+  const supabase = createClient();
+  const { error } = await supabase.from("comments").update({ body }).eq("id", commentId);
+  return { error: error ? "Couldn't save your changes. Please try again." : null };
+}
+
+/**
+ * Soft-deletes a comment the caller authored — comments have no media, so
+ * unlike deletePost there's nothing to clean up in storage. Migration 050
+ * fixed comments' own SELECT policy to check deleted_at, so this actually
+ * hides it from every reader once set.
+ */
+export async function deleteComment({ commentId }: { commentId: string }): Promise<{ error: string | null }> {
+  const supabase = createClient();
+  const { error } = await supabase.from("comments").update({ deleted_at: new Date().toISOString() }).eq("id", commentId);
+  return { error: error ? "Couldn't delete this comment. Please try again." : null };
+}

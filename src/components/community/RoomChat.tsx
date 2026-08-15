@@ -226,6 +226,23 @@ export function RoomChat({
         },
       )
       .on(
+        // Real-time propagation for edit/delete — another room member's
+        // MessageBubble otherwise only reflects an edit/delete on their own
+        // screen, not everyone else's, until they reload. Refetches the
+        // full row (not a partial patch off payload.new) so an edited body
+        // and a deleted tombstone both render correctly either way.
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${room.conversationId}` },
+        (payload) => {
+          const messageId = (payload.new as { id: string }).id;
+          if (!messageIdsRef.current.has(messageId)) return;
+          fetchMessageById(supabase, messageId, currentUser.id).then((message) => {
+            if (!message) return;
+            setMessages((prev) => prev.map((m) => (m.id === messageId ? message : m)));
+          });
+        },
+      )
+      .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "room_polls", filter: `conversation_id=eq.${room.conversationId}` },
         (payload) => {

@@ -2,18 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import { Avatar, crownFor } from "@/components/ui/Avatar";
 import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { RoleBadge } from "@/components/ui/RoleBadge";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatRelativeTime } from "@/lib/format";
 import { PostMedia } from "./PostMedia";
 import { ReactionButton } from "./ReactionButton";
 import { CommentSection } from "./CommentSection";
 import { ShareMenu } from "./ShareMenu";
+import { ContentActionsMenu } from "./ContentActionsMenu";
 import { CommentIcon } from "./CommunityIcons";
 import { MentionText } from "./MentionText";
-import type { FeedPost } from "@/lib/community/posts";
+import { updatePost, deletePost, type FeedPost } from "@/lib/community/posts";
 
 export interface CurrentUser {
   id: string;
@@ -32,12 +36,57 @@ export interface PostCardProps {
   hideShare?: boolean;
 }
 
-export function PostCard({ post, currentUser, forceCommentsOpen = false, hideShare = false }: PostCardProps) {
+export function PostCard({ post: initialPost, currentUser, forceCommentsOpen = false, hideShare = false }: PostCardProps) {
   const [commentsOpen, setCommentsOpen] = useState(forceCommentsOpen);
+  const [post, setPost] = useState(initialPost);
+  const [editing, setEditing] = useState(false);
+  const [editBody, setEditBody] = useState(post.body ?? "");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleted, setDeleted] = useState(false);
   const authorName = post.author.display_name || post.author.username;
+  const isOwn = post.author.id === currentUser.id;
+
+  async function handleSaveEdit() {
+    const trimmed = editBody.trim();
+    if (!trimmed || trimmed === post.body) {
+      setEditing(false);
+      return;
+    }
+    setSavingEdit(true);
+    setEditError(null);
+    const { error } = await updatePost(createClient(), { postId: post.id, body: trimmed });
+    setSavingEdit(false);
+    if (error) {
+      setEditError(error);
+      return;
+    }
+    setPost((prev) => ({ ...prev, body: trimmed }));
+    setEditing(false);
+  }
+
+  async function handleConfirmDelete(): Promise<string | null> {
+    const { error } = await deletePost(createClient(), {
+      postId: post.id,
+      mediaPaths: post.media.map((m) => m.storage_path),
+    });
+    if (error) return error;
+    setDeleted(true);
+    return null;
+  }
+
+  if (deleted) {
+    return (
+      <Card className="!p-4 text-center sm:!p-5">
+        <p className="text-sm text-text-muted">Post deleted.</p>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="!p-4 sm:!p-5">
+    <>
+      <Card className="!p-4 sm:!p-5">
       <div className="flex items-start gap-3">
         <Link href={`/profile/${post.author.id}`} className="shrink-0">
           <Avatar url={post.author.avatar_url} name={authorName} size={44} crown={crownFor(post.author)} />
@@ -63,9 +112,47 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
             </time>
           </div>
         </div>
+        {isOwn ? (
+          <ContentActionsMenu
+            label="post"
+            onEdit={post.body ? () => setEditing(true) : undefined}
+            onDelete={() => setConfirmDeleteOpen(true)}
+          />
+        ) : null}
       </div>
 
-      {post.body ? (
+      {editing ? (
+        <div className="mt-3 flex flex-col gap-2">
+          {editError ? <p className="text-xs text-red-hover">{editError}</p> : null}
+          <textarea
+            value={editBody}
+            onChange={(e) => setEditBody(e.target.value)}
+            disabled={savingEdit}
+            rows={3}
+            autoFocus
+            maxLength={2000}
+            className="w-full resize-none rounded-control border border-ink/10 bg-bg-elevated px-3 py-2 text-sm text-ink placeholder:text-text-muted/70 outline-none transition-colors focus:border-red-primary"
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={savingEdit}
+              onClick={() => {
+                setEditing(false);
+                setEditBody(post.body ?? "");
+                setEditError(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="button" size="sm" loading={savingEdit} disabled={savingEdit || !editBody.trim()} onClick={handleSaveEdit}>
+              Save
+            </Button>
+          </div>
+        </div>
+      ) : post.body ? (
         <MentionText
           text={post.body}
           mentions={post.mentions}
@@ -113,5 +200,15 @@ export function PostCard({ post, currentUser, forceCommentsOpen = false, hideSha
         />
       ) : null}
     </Card>
+    {confirmDeleteOpen ? (
+      <ConfirmDialog
+        title="Delete post?"
+        message="This removes the post and any attached photos or videos for everyone. This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={handleConfirmDelete}
+        onClose={() => setConfirmDeleteOpen(false)}
+      />
+    ) : null}
+    </>
   );
 }

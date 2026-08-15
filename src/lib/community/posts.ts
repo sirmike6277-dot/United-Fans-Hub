@@ -247,3 +247,44 @@ export async function fetchPostById(
 
   return { post: normalizePost(row, new Set(myReaction ? [row.id] : [])), error: null };
 }
+
+/**
+ * Edits a post's own body — text only, not its media (swapping an image is
+ * a distinct, bigger feature that wasn't asked for). RLS already scopes
+ * this to the author ("Users can update their own posts", migration
+ * 004_community_content) — this function doesn't re-check ownership
+ * itself, the database is the real boundary. `updated_at` bumps
+ * automatically via the existing `on_post_updated` trigger; nothing else
+ * to set here.
+ */
+export async function updatePost(
+  supabase: AnySupabase,
+  { postId, body }: { postId: string; body: string },
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("posts").update({ body }).eq("id", postId);
+  return { error: error ? "Couldn't save your changes. Please try again." : null };
+}
+
+/**
+ * Deletes a post the caller authored — actually removes any attached media
+ * (storage object + post_media row), not just hides it, since "I posted
+ * the wrong image" means the image itself should be gone, not merely
+ * unlisted. Storage/row cleanup is best-effort and happens before the
+ * final soft-delete, which is the one step that actually hides the post
+ * from every reader (migration 050 fixed posts' own SELECT policy to
+ * check deleted_at, matching post_media's) — if cleanup partially fails,
+ * the post still disappears rather than leaving a broken half-deleted
+ * post visible.
+ */
+export async function deletePost(
+  supabase: AnySupabase,
+  { postId, mediaPaths }: { postId: string; mediaPaths: string[] },
+): Promise<{ error: string | null }> {
+  if (mediaPaths.length > 0) {
+    await supabase.storage.from("post-media").remove(mediaPaths);
+    await supabase.from("post_media").delete().eq("post_id", postId);
+  }
+
+  const { error } = await supabase.from("posts").update({ deleted_at: new Date().toISOString() }).eq("id", postId);
+  return { error: error ? "Couldn't delete this post. Please try again." : null };
+}

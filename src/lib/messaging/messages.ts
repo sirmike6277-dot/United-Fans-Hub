@@ -266,6 +266,52 @@ export async function sendMessage(
 }
 
 /**
+ * Edits a message's own body — text only, not its attachment (swapping an
+ * image/video is a distinct feature, not asked for here). RLS already
+ * scopes this to the sender ("Senders can edit or soft-delete their own
+ * messages", migration 005_messaging — named for exactly this) — this
+ * function doesn't re-check ownership itself. Sets `edited_at` explicitly
+ * (unlike posts/comments' `updated_at`, nothing bumps this automatically),
+ * which is what MessageBubble already renders as "· edited".
+ */
+export async function updateMessage(
+  supabase: AnySupabase,
+  { messageId, body }: { messageId: string; body: string },
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from("messages")
+    .update({ body, edited_at: new Date().toISOString() })
+    .eq("id", messageId);
+  return { error: error ? "Couldn't save your changes. Please try again." : null };
+}
+
+/**
+ * Deletes a message the caller sent — actually removes any attached media
+ * (storage object + message_media row, migration 050 added the DELETE
+ * policy that makes the row-delete possible; only SELECT/INSERT existed
+ * before), not just hides it, same "the wrong photo should really be gone"
+ * reasoning as deletePost. The final `deleted_at` update is what
+ * MessageBubble already renders as the "This message was deleted"
+ * tombstone — that display logic needed no changes, only this real trigger
+ * for it.
+ */
+export async function deleteMessage(
+  supabase: AnySupabase,
+  { messageId, mediaStoragePath }: { messageId: string; mediaStoragePath: string | null },
+): Promise<{ error: string | null }> {
+  if (mediaStoragePath) {
+    await supabase.storage.from("message-media").remove([mediaStoragePath]);
+    await supabase.from("message_media").delete().eq("message_id", messageId);
+  }
+
+  const { error } = await supabase
+    .from("messages")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", messageId);
+  return { error: error ? "Couldn't delete this message. Please try again." : null };
+}
+
+/**
  * Uploads an image and attaches it to an existing message — the message
  * must already exist (create-message-first, then-attach-media, same order
  * as PostComposer), using the private message-media bucket with the

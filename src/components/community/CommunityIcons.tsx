@@ -101,6 +101,28 @@ export function ReplyIcon() {
   );
 }
 
+/** Edit — used on a caller's own post/comment/message only (see PostCard/CommentItem/MessageBubble). */
+export function PencilIcon() {
+  return (
+    <svg {...iconProps(2)}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+/** Delete — used on a caller's own post/comment/message only, always behind a ConfirmDialog. */
+export function TrashIcon() {
+  return (
+    <svg {...iconProps(2)}>
+      <path d="M4 7h16" />
+      <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" />
+      <path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}
+
 /** Share-menu icons — platform glyphs (recognisable brand shapes, used only for outbound share links, the standard fair-use case every share sheet relies on) plus the generic link/copy/check states. */
 
 export function XIcon() {

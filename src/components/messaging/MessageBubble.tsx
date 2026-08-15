@@ -5,10 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, crownFor } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatRelativeTime } from "@/lib/format";
-import { getSignedMediaUrl, getSignedMediaDownloadUrl, type MessageReactionSummary } from "@/lib/messaging/messages";
+import { getSignedMediaUrl, getSignedMediaDownloadUrl, updateMessage, deleteMessage, type MessageReactionSummary } from "@/lib/messaging/messages";
 import { FileGenericIcon } from "@/components/community/RoomIcons";
-import { ReplyIcon } from "@/components/community/CommunityIcons";
+import { ReplyIcon, PencilIcon, TrashIcon } from "@/components/community/CommunityIcons";
 import { MentionText } from "@/components/community/MentionText";
 import { MediaLightbox } from "@/components/community/MediaLightbox";
 import { MessageReactionBar } from "./MessageReactionBar";
@@ -41,6 +43,61 @@ export interface MessageBubbleProps {
 export function MessageBubble({ message, isOwn, showSenderName, interactive = false, currentUserId, onReply, onJumpToParent }: MessageBubbleProps) {
   const senderName = message.sender.display_name || message.sender.username;
   const [reactions, setReactions] = useState<MessageReactionSummary[]>(message.reactions);
+  // Local overrides for the three fields editing/deleting can change —
+  // seeded from the prop, re-seeded whenever the prop itself changes (e.g.
+  // Fan Rooms' realtime UPDATE listener refetching this same message; see
+  // RoomChat.tsx). DMs have no such realtime listener yet, so there this
+  // is purely the editor's own optimistic view until their next reload —
+  // no worse than DMs' existing non-realtime baseline for everything else.
+  // Adjusted during render (React's own documented pattern for "reset
+  // local state when a prop changes"), not in a useEffect — avoids an
+  // extra render + effect round-trip, and this file's lint config flags
+  // synchronous setState-in-effect for exactly that reason.
+  const [prevMessage, setPrevMessage] = useState(message);
+  const [body, setBody] = useState(message.body);
+  const [editedAt, setEditedAt] = useState(message.editedAt);
+  const [deletedAt, setDeletedAt] = useState(message.deletedAt);
+  if (message !== prevMessage) {
+    setPrevMessage(message);
+    setBody(message.body);
+    setEditedAt(message.editedAt);
+    setDeletedAt(message.deletedAt);
+  }
+
+  const [editing, setEditing] = useState(false);
+  const [editBody, setEditBody] = useState(body ?? "");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  async function handleSaveEdit() {
+    const trimmed = editBody.trim();
+    if (!trimmed || trimmed === body) {
+      setEditing(false);
+      return;
+    }
+    setSavingEdit(true);
+    setEditError(null);
+    const { error } = await updateMessage(createClient(), { messageId: message.id, body: trimmed });
+    setSavingEdit(false);
+    if (error) {
+      setEditError(error);
+      return;
+    }
+    setBody(trimmed);
+    setEditedAt(new Date().toISOString());
+    setEditing(false);
+  }
+
+  async function handleConfirmDelete(): Promise<string | null> {
+    const { error } = await deleteMessage(createClient(), {
+      messageId: message.id,
+      mediaStoragePath: message.media?.storagePath ?? null,
+    });
+    if (error) return error;
+    setDeletedAt(new Date().toISOString());
+    return null;
+  }
 
   return (
     <div className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
@@ -56,9 +113,53 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
           </Link>
         ) : null}
 
-        {message.deletedAt ? (
+        {deletedAt ? (
           <div className="rounded-card border border-ink/10 bg-bg-elevated px-3 py-2 text-sm italic text-text-muted">
             This message was deleted
+          </div>
+        ) : editing ? (
+          <div className={`w-64 rounded-card px-3 py-2 text-sm ${isOwn ? "bg-red-primary" : "bg-bg-elevated"}`}>
+            {editError ? <p className={`mb-1.5 text-xs ${isOwn ? "text-white" : "text-red-hover"}`}>{editError}</p> : null}
+            <textarea
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              disabled={savingEdit}
+              rows={2}
+              autoFocus
+              maxLength={2000}
+              className={`w-full resize-none rounded-control border px-2 py-1.5 text-sm outline-none transition-colors ${
+                isOwn
+                  ? "border-white/30 bg-black/10 text-white placeholder:text-white/60 focus:border-white/60"
+                  : "border-ink/10 bg-bg-surface text-ink placeholder:text-text-muted/70 focus:border-red-primary"
+              }`}
+            />
+            <div className="mt-1.5 flex justify-end gap-1.5">
+              <Button
+                type="button"
+                variant={isOwn ? "secondary" : "ghost"}
+                size="sm"
+                className={isOwn ? "!h-7 !border-white/30 !px-2.5 !text-white" : "!h-7 !px-2.5"}
+                disabled={savingEdit}
+                onClick={() => {
+                  setEditing(false);
+                  setEditBody(body ?? "");
+                  setEditError(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant={isOwn ? "secondary" : "primary"}
+                size="sm"
+                className={isOwn ? "!h-7 !border-white/30 !bg-white/10 !px-2.5 !text-white" : "!h-7 !px-2.5"}
+                loading={savingEdit}
+                disabled={savingEdit || !editBody.trim()}
+                onClick={handleSaveEdit}
+              >
+                Save
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="group relative">
@@ -90,9 +191,9 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
                 )
               ) : null}
               {message.media ? <MessageAttachment media={message.media} /> : null}
-              {message.body ? (
+              {body ? (
                 <MentionText
-                  text={message.body}
+                  text={body}
                   mentions={message.mentions}
                   className="whitespace-pre-wrap break-words"
                   mentionClassName={isOwn ? "font-semibold text-white underline hover:text-white/80" : undefined}
@@ -130,18 +231,61 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
                 <FlagIcon />
               </ReportButton>
             ) : null}
+
+            {/* Edit/Delete — own messages only, same hover-reveal treatment
+                as Reply/Report, stacked further out on the left (Reply's
+                side for an own message) so the two never overlap. */}
+            {isOwn && body ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditBody(body ?? "");
+                  setEditing(true);
+                }}
+                aria-label="Edit this message"
+                title="Edit"
+                className={`absolute top-0 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-muted opacity-0 shadow-md transition-opacity hover:text-ink focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary group-hover:opacity-100 ${
+                  interactive && onReply ? "-left-16" : "-left-8"
+                }`}
+              >
+                <PencilIcon />
+              </button>
+            ) : null}
+            {isOwn ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteOpen(true)}
+                aria-label="Delete this message"
+                title="Delete"
+                className={`absolute top-0 flex h-7 w-7 items-center justify-center rounded-full bg-bg-elevated text-text-muted opacity-0 shadow-md transition-opacity hover:text-ink focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-primary group-hover:opacity-100 ${
+                  interactive && onReply ? (body ? "-left-24" : "-left-16") : body ? "-left-16" : "-left-8"
+                }`}
+              >
+                <TrashIcon />
+              </button>
+            ) : null}
           </div>
         )}
 
-        {interactive && currentUserId && !message.deletedAt ? (
+        {interactive && currentUserId && !deletedAt ? (
           <MessageReactionBar messageId={message.id} currentUserId={currentUserId} reactions={reactions} onChange={setReactions} />
         ) : null}
 
         <time dateTime={message.createdAt} suppressHydrationWarning className="px-1 text-xs text-text-muted">
           {formatRelativeTime(message.createdAt)}
-          {message.editedAt ? " · edited" : ""}
+          {editedAt ? " · edited" : ""}
         </time>
       </div>
+
+      {confirmDeleteOpen ? (
+        <ConfirmDialog
+          title="Delete message?"
+          message="This removes the message and any attached photo or video for everyone in this conversation. This can't be undone."
+          confirmLabel="Delete"
+          onConfirm={handleConfirmDelete}
+          onClose={() => setConfirmDeleteOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

@@ -2059,6 +2059,7 @@ export type Database = {
         Args: { p_key: string; p_ttl_seconds: number }
         Returns: boolean
       }
+      delete_award_period: { Args: { p_period_id: string }; Returns: undefined }
       delete_award_winner: { Args: { p_winner_id: string }; Returns: undefined }
       determine_award_winner: {
         Args: { p_period_id: string }

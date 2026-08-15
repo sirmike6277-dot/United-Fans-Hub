@@ -141,7 +141,7 @@ export function Avatar({ url, name, size = 40, className = "", crown = null }: A
 
       {crown ? (
         <span
-          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 drop-shadow-sm"
+          className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-[70%] drop-shadow-sm"
           aria-hidden="true"
         >
           <CrownIcon size={Math.max(14, Math.round(size * 0.45))} season={crown === "season"} />

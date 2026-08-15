@@ -75,15 +75,17 @@ export function FanOfMonthTeaser({ categoryLabel, winner }: FanOfMonthTeaserProp
                 — the spinning aura teases what the badge actually looks
                 like, rather than just a plain "?" like Month gets. */}
             {isSeason ? <SeasonAura inset={-4} /> : null}
-            <span className="absolute -top-3" style={{ color: isSeason ? undefined : "#f2c14e" }} aria-hidden="true">
-              <CrownIcon size={22} season={isSeason} />
-            </span>
             <div
               className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed bg-bg-elevated text-xs text-text-muted"
               style={{ borderColor: isSeason ? "rgba(201,165,242,0.5)" : "rgba(242,193,78,0.5)" }}
             >
               ?
             </div>
+            {/* After the circle in DOM (not before) so it paints on top,
+                not underneath the circle's opaque background. */}
+            <span className="absolute -top-3 z-10" style={{ color: isSeason ? undefined : "#f2c14e" }} aria-hidden="true">
+              <CrownIcon size={22} season={isSeason} />
+            </span>
           </div>
         )}
 

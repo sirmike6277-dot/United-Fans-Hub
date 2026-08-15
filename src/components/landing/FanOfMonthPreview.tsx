@@ -24,15 +24,17 @@ function EmptyCrownCard({ label, accent, season, hasPeriod }: { label: string; a
     >
       <div className="relative flex h-20 w-20 items-center justify-center">
         {season ? <SeasonAura inset={-4} /> : null}
-        <span className="absolute -top-4" style={{ color: season ? undefined : accent }} aria-hidden="true">
-          <CrownIcon size={24} season={season} />
-        </span>
         <div
           className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed bg-bg-surface text-xs text-text-muted"
           style={{ borderColor: `${accent}80` }}
         >
           ?
         </div>
+        {/* After the circle in DOM (not before) so it paints on top, not
+            underneath the circle's opaque background. */}
+        <span className="absolute -top-4 z-10" style={{ color: season ? undefined : accent }} aria-hidden="true">
+          <CrownIcon size={24} season={season} />
+        </span>
       </div>
       <Badge tone="red">{label}</Badge>
       <Badge tone="outline">{hasPeriod ? "Voting live" : "Coming soon"}</Badge>

@@ -52,3 +52,10 @@ next-env.d.ts
 # design references — not app source; may contain unlicensed/AI-generated
 # material not meant for the shipped product (see docs/architecture)
 /reference designs/
+
+# mobile app + shared package — deliberately isolated on the
+# feature/mobile-app branch, not main. Ignored here so it can't get swept
+# back in by a future "commit everything" on this branch; already-tracked
+# on feature/mobile-app, where .gitignore has no effect on tracked files.
+/apps/
+/packages/

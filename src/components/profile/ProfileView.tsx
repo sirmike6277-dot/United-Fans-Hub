@@ -7,6 +7,7 @@ import { StatTile } from "@/components/ui/StatTile";
 import { Tabs } from "@/components/ui/Tabs";
 import { ClubEmblem } from "@/components/media/ClubEmblem";
 import { crownFor, SeasonAura } from "@/components/ui/Avatar";
+import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { PostCard, type CurrentUser } from "@/components/community/PostCard";
 import { AchievementCard } from "@/components/achievements/AchievementCard";
 import { PredictionHistoryList } from "@/components/predictions/PredictionHistoryList";
@@ -232,7 +233,7 @@ export function ProfileView({
               👑 Fan of the Month
             </Badge>
           ) : null}
-          <Badge tone="red">Level {profile.fan_level}</Badge>
+          <FanLevelBadge level={profile.fan_level} title={levelProgress?.currentTitle} size="lg" />
           <Badge tone="neutral">{profile.fan_points.toLocaleString()} pts</Badge>
           {/* A rank computed purely from a fan_points-desc/id-asc tie-break
               is meaningless at 0 points (right now, that's most fans — see

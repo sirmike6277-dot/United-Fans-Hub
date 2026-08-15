@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, crownFor } from "@/components/ui/Avatar";
+import { FanLevelBadge } from "@/components/ui/FanLevelBadge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatRelativeTime } from "@/lib/format";
@@ -108,9 +109,12 @@ export function MessageBubble({ message, isOwn, showSenderName, interactive = fa
       ) : null}
       <div className={`flex max-w-[75%] flex-col gap-1 ${isOwn ? "items-end" : "items-start"}`}>
         {showSenderName && !isOwn ? (
-          <Link href={`/profile/${message.sender.id}`} className="px-1 text-xs font-medium text-text-muted hover:underline">
-            {senderName}
-          </Link>
+          <div className="flex items-center gap-1.5 px-1">
+            <Link href={`/profile/${message.sender.id}`} className="text-xs font-medium text-text-muted hover:underline">
+              {senderName}
+            </Link>
+            <FanLevelBadge level={message.sender.fan_level} />
+          </div>
         ) : null}
 
         {deletedAt ? (

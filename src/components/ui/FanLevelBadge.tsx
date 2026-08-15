@@ -1,38 +1,48 @@
 export interface FanLevelBadgeProps {
   level: number;
-  /** Shown only when passed (the profile page's own richer badge) — every other caller (posts, comments, messages, member cards, nominee cards) stays compact with just the star + number. */
-  title?: string;
-  /** "sm" (default) matches every inline caller; "lg" is just the profile page's own header row, which sits among full-size Badge pills (points, rank, crown). */
+  /** "sm" (default) matches every inline caller (posts, comments, messages, member/nominee cards); "lg" is just the profile page's own header row, which sits among full-size Badge pills (points, rank, crown). */
   size?: "sm" | "lg";
   className?: string;
 }
 
 /**
- * The "Level N" pill was hand-copied with the exact same classes in
- * PostCard/MemberCard/LeaderboardRow, and re-copied *incorrectly* in
- * CommentItem (which said "Lvl N" instead of "Level N") — a real, visible
- * inconsistency the Phase 15 audit found. One component now, everywhere.
+ * One entry per real `fan_levels` row (level, title, star colour) — kept
+ * here rather than fetched per-caller because every existing caller
+ * (PostCard/CommentItem/MessageBubble/MemberCard/NomineeVoteCard) already
+ * has the numeric fan_level on hand and nothing else; requiring each of
+ * them to also fetch/join the title would touch five unrelated queries
+ * for a lookup table that's effectively static seed data (migration
+ * 031/048). If `fan_levels.title` is ever edited in the database, update
+ * the titles below to match - there is currently no admin UI that could
+ * change them out from under this file silently.
  *
- * Star + colour now escalate across four tiers of the real fan_levels
- * ladder (1-7: Fan → Regular → Supporter → Loyal Fan → Superfan → Legend →
- * Icon), so the badge itself signals standing at a glance next to a
- * username wherever someone posts, comments, or messages — not just a
- * plain outline pill with a number. Deliberately red/gold, not purple —
- * purple is reserved for the Fan of the Season crown (see Avatar.tsx) and
- * reusing it here would blur two unrelated signals together.
+ * Colour escalates once per level (not just once per few levels) and
+ * stays inside the app's own red/gold/neutral palette rather than
+ * introducing new hues - Icon (7) gets the one gradient treatment as the
+ * rarest tier. Deliberately never purple - that's reserved for the Fan of
+ * the Season crown (see Avatar.tsx) and reusing it here would blur two
+ * unrelated signals together.
  */
-function tierFor(level: number): { stroke: string; fill: string; border: string } {
-  if (level >= 7) return { stroke: "#7a4a00", fill: "url(#levelGradIcon)", border: "border-[#f2c14e]/50" };
-  if (level >= 5) return { stroke: "#8b5e00", fill: "#f2c14e", border: "border-[#f2c14e]/40" };
-  if (level >= 3) return { stroke: "#8a2a20", fill: "#da291c", border: "border-red-primary/30" };
-  return { stroke: "#5a5a5f", fill: "#9a9aa0", border: "border-ink/15" };
+const LEVEL_META: Record<number, { title: string; fill: string; stroke: string }> = {
+  1: { title: "Fan", fill: "#8a8a90", stroke: "#5a5a5f" },
+  2: { title: "Regular", fill: "#a8895a", stroke: "#6b5637" },
+  3: { title: "Supporter", fill: "#c17a4a", stroke: "#7a4a26" },
+  4: { title: "Loyal Fan", fill: "#da291c", stroke: "#8a2a20" },
+  5: { title: "Superfan", fill: "#b8202f", stroke: "#6e1420" },
+  6: { title: "Legend", fill: "#f2c14e", stroke: "#8b5e00" },
+  7: { title: "Icon", fill: "url(#levelGradIcon)", stroke: "#7a4a00" },
+};
+const HIGHEST_META = LEVEL_META[7];
+
+function metaFor(level: number) {
+  return LEVEL_META[level] ?? (level > 7 ? HIGHEST_META : LEVEL_META[1]);
 }
 
 function StarIcon({ level, size }: { level: number; size: number }) {
-  const tier = tierFor(level);
+  const meta = metaFor(level);
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={tier.fill} stroke={tier.stroke} strokeWidth={1} strokeLinejoin="round" aria-hidden="true" className="shrink-0">
-      {level >= 7 ? (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={meta.fill} stroke={meta.stroke} strokeWidth={1} strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+      {meta.fill.startsWith("url(") ? (
         <defs>
           <linearGradient id="levelGradIcon" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#fde08a" />
@@ -45,15 +55,28 @@ function StarIcon({ level, size }: { level: number; size: number }) {
   );
 }
 
-export function FanLevelBadge({ level, title, size = "sm", className = "" }: FanLevelBadgeProps) {
-  const tier = tierFor(level);
+/**
+ * The "Level N" pill was hand-copied with the exact same classes in
+ * PostCard/MemberCard/LeaderboardRow, and re-copied *incorrectly* in
+ * CommentItem (which said "Lvl N" instead of "Level N") — a real, visible
+ * inconsistency the Phase 15 audit found. One component now, everywhere.
+ *
+ * Shows a coloured star + the level's real title (e.g. "Superfan") — not
+ * the raw number, which read as a bare stat rather than an actual named
+ * rank. Every caller just passes the numeric fan_level it already has;
+ * this resolves both the colour and the title from that alone.
+ */
+export function FanLevelBadge({ level, size = "sm", className = "" }: FanLevelBadgeProps) {
+  const meta = metaFor(level);
   const sizeClasses = size === "lg" ? "gap-1.5 px-3 py-1 text-xs" : "gap-1 px-1.5 py-0 text-[10px]";
   return (
     <span
-      className={`inline-flex items-center rounded-full border ${tier.border} bg-bg-elevated font-semibold uppercase tracking-wide text-text-muted ${sizeClasses} ${className}`}
+      title={`Fan Level ${level} — ${meta.title}`}
+      className={`inline-flex items-center rounded-full border bg-bg-elevated font-semibold uppercase tracking-wide text-text-muted ${sizeClasses} ${className}`}
+      style={{ borderColor: `${meta.stroke}66` }}
     >
       <StarIcon level={level} size={size === "lg" ? 14 : 11} />
-      {title ? `Lv.${level} ${title}` : `Level ${level}`}
+      {meta.title}
     </span>
   );
 }

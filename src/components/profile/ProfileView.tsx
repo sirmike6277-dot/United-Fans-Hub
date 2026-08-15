@@ -233,7 +233,7 @@ export function ProfileView({
               👑 Fan of the Month
             </Badge>
           ) : null}
-          <FanLevelBadge level={profile.fan_level} title={levelProgress?.currentTitle} size="lg" />
+          <FanLevelBadge level={profile.fan_level} size="lg" />
           <Badge tone="neutral">{profile.fan_points.toLocaleString()} pts</Badge>
           {/* A rank computed purely from a fan_points-desc/id-asc tie-break
               is meaningless at 0 points (right now, that's most fans — see

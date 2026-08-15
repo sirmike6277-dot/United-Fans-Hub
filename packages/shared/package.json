@@ -1,0 +1,8 @@
+{
+  "name": "@fanhub/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Framework-agnostic types, constants, and Supabase business logic shared between the FanHub web app (Next.js) and mobile app (Expo). No React, DOM, or Next.js imports allowed here — see README.md.",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

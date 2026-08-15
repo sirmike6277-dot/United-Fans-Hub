@@ -176,3 +176,65 @@ h4 {
   font-family: var(--font-display);
   letter-spacing: 0.01em;
 }
+
+/*
+ * Fan of the Season — the one visual flourish in this app meant to read as
+ * "legendary tier" at a glance, not just "a slightly different colour
+ * ring" (see Avatar.tsx/ProfileView.tsx/CrownBadge.tsx). Plain CSS
+ * `animation`, so both reduced-motion rules above (OS-level media query
+ * and the in-app Appearance toggle's [data-reduce-motion] attribute
+ * selector) already neutralise these for anyone who needs that — zero
+ * extra handling required here.
+ */
+@keyframes season-aura-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes season-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes season-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes season-crown-shimmer {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(253, 224, 138, 0.35));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(253, 224, 138, 0.9));
+  }
+}
+
+.season-aura {
+  animation: season-aura-spin 5s linear infinite;
+}
+
+.season-aura-glow {
+  animation: season-aura-spin 5s linear infinite, season-glow-pulse 2.4s ease-in-out infinite;
+}
+
+.season-shimmer-bg {
+  background-size: 200% 200%;
+  animation: season-shimmer 3s ease-in-out infinite;
+}
+
+.season-shimmer-drop {
+  animation: season-crown-shimmer 2.6s ease-in-out infinite;
+}

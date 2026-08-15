@@ -6,7 +6,7 @@ import { RoleBadge } from "@/components/ui/RoleBadge";
 import { StatTile } from "@/components/ui/StatTile";
 import { Tabs } from "@/components/ui/Tabs";
 import { ClubEmblem } from "@/components/media/ClubEmblem";
-import { crownFor } from "@/components/ui/Avatar";
+import { crownFor, SeasonAura } from "@/components/ui/Avatar";
 import { PostCard, type CurrentUser } from "@/components/community/PostCard";
 import { AchievementCard } from "@/components/achievements/AchievementCard";
 import { PredictionHistoryList } from "@/components/predictions/PredictionHistoryList";
@@ -119,11 +119,24 @@ export function ProfileView({
         */}
         <div className="-mt-12 flex flex-col gap-4 sm:-mt-16 sm:flex-row sm:items-end">
           <div className="relative h-28 w-28 shrink-0 sm:h-36 sm:w-36">
+            {/* Behind the avatar circle (DOM order = paint order) so only
+                the spinning ring peeks out around its edge — same effect
+                as the small Avatar component, scaled up here. */}
+            {crown === "season" ? <SeasonAura inset={-6} /> : null}
             <div
               title={crown === "season" ? "Fan of the Season" : crown === "month" ? "Fan of the Month" : undefined}
-              className={`h-full w-full overflow-hidden rounded-full border-4 border-bg-void bg-bg-elevated shadow-[0_8px_24px_rgba(0,0,0,0.5)] ${
-                crown ? "ring-2 ring-[#f2c14e] ring-offset-2 ring-offset-bg-void" : ""
+              className={`relative h-full w-full overflow-hidden rounded-full border-4 border-bg-void bg-bg-elevated shadow-[0_8px_24px_rgba(0,0,0,0.5)] ${
+                crown === "month" ? "ring-2 ring-[#f2c14e] ring-offset-2 ring-offset-bg-void" : ""
               }`}
+              // Season: same two-tone gold→purple treatment as the small
+              // Avatar component elsewhere, plus the rotating SeasonAura
+              // behind it — a plain single-colour ring would read
+              // identically to Month at this larger size too.
+              style={
+                crown === "season"
+                  ? { boxShadow: "0 0 0 2px var(--color-bg-void), 0 0 0 5px #f2c14e, 0 0 14px 3px rgba(124,58,237,0.65)" }
+                  : undefined
+              }
             >
               {profile.avatar_url ? (
                 <Image
@@ -144,10 +157,34 @@ export function ProfileView({
                 className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 drop-shadow-sm"
                 aria-hidden="true"
               >
-                <svg width={30} height={30} viewBox="0 0 24 24" fill="#f2c14e" stroke="#8b5e00" strokeWidth={0.75} strokeLinejoin="round">
-                  <path d="M4 17h16l-1.4-7-4.1 3.2L12 8l-2.5 5.2L5.4 10 4 17Z" />
-                  <path d="M4 20h16" strokeWidth={1.5} />
-                </svg>
+                {crown === "season" ? (
+                  <svg width={40} height={40} viewBox="0 0 24 24" fill="none" className="season-shimmer-drop">
+                    <defs>
+                      <linearGradient id="profileCrownSeason" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#fde08a" />
+                        <stop offset="50%" stopColor="#c9a5f2" />
+                        <stop offset="100%" stopColor="#7c3aed" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M3 17.5h18l-1.6-8-4.6 3.6L12 6.5l-2.8 6.6-4.6-3.6L3 17.5Z"
+                      fill="url(#profileCrownSeason)"
+                      stroke="#4c1d95"
+                      strokeWidth={0.6}
+                      strokeLinejoin="round"
+                    />
+                    <path d="M3 20.5h18" stroke="url(#profileCrownSeason)" strokeWidth={1.5} />
+                    <circle cx="12" cy="6.5" r="1.6" fill="#fff4d6" stroke="#4c1d95" strokeWidth={0.4} />
+                    <circle cx="7.5" cy="17.5" r="1" fill="#fde08a" />
+                    <circle cx="12" cy="17.5" r="1.2" fill="#fff4d6" />
+                    <circle cx="16.5" cy="17.5" r="1" fill="#fde08a" />
+                  </svg>
+                ) : (
+                  <svg width={32} height={32} viewBox="0 0 24 24" fill="#f2c14e" stroke="#8b5e00" strokeWidth={0.75} strokeLinejoin="round">
+                    <path d="M4 17h16l-1.4-7-4.1 3.2L12 8l-2.5 5.2L5.4 10 4 17Z" />
+                    <path d="M4 20h16" strokeWidth={1.5} />
+                  </svg>
+                )}
               </span>
             ) : null}
           </div>
@@ -180,8 +217,15 @@ export function ProfileView({
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {profile.is_current_fan_of_season ? (
-            <Badge tone="red" style={{ backgroundColor: "#f2c14e", color: "#3a2600" }}>
-              👑 Fan of the Season
+            <Badge
+              tone="red"
+              className="season-shimmer-bg"
+              style={{
+                backgroundImage: "linear-gradient(120deg, #fde08a, #c9a5f2 35%, #7c3aed 60%, #c9a5f2 85%, #fde08a)",
+                color: "#2e1065",
+              }}
+            >
+              👑 Season Royalty
             </Badge>
           ) : profile.is_current_fan_of_month ? (
             <Badge tone="red" style={{ backgroundColor: "#f2c14e", color: "#3a2600" }}>

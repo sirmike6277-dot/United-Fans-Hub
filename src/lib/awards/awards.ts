@@ -199,6 +199,20 @@ export async function createAwardPeriod(
   return { periodId: data.id, error: null };
 }
 
+/**
+ * Award-manager/super-admin only — permanently removes a period (and its
+ * nominations/votes, cascaded via the existing FKs; and its winner + crown
+ * flag, if any, via the migration 056 SECURITY DEFINER function). Exists
+ * because a period in *any* status is always picked as "the" current one
+ * for its category (AwardsHub sorts by period_start desc) — without a way
+ * to delete one, a mistaken/test period permanently blocks creating a real
+ * replacement.
+ */
+export async function deleteAwardPeriod(supabase: AnySupabase, periodId: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.rpc("delete_award_period", { p_period_id: periodId });
+  return { error: error ? error.message : null };
+}
+
 /** Moderator/admin only — advances (or reverts) a period's status. The UI only ever offers the forward sequence; this itself doesn't enforce ordering beyond the column's own CHECK constraint. */
 export async function transitionPeriodStatus(
   supabase: AnySupabase,

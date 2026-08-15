@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PredictionHistoryList } from "@/components/predictions/PredictionHistoryList";
 import { PredictionStatsCard } from "@/components/predictions/PredictionStatsCard";
 import { LeaderboardSection } from "@/components/leaderboard/LeaderboardSection";
+import { CrownedFansWidget } from "@/components/awards/CrownedFansWidget";
 import { SectionBanner } from "@/components/layout/SectionBanner";
 import { Tabs } from "@/components/ui/Tabs";
 import { Card } from "@/components/ui/Card";
@@ -88,6 +89,7 @@ export default async function PredictionsPage() {
               <Card className="text-center text-sm text-text-muted">No upcoming fixture right now.</Card>
             )}
           </section>
+          <CrownedFansWidget />
           <Card>
             <PullQuote quotes={pickLegendQuotes("predictions-rail")} />
           </Card>

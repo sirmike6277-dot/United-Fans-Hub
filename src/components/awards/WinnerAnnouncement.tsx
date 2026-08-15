@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Avatar, crownFor } from "@/components/ui/Avatar";
+import { Avatar, crownFor, CrownIcon } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { CrownIcon } from "@/components/achievements/AchievementIcons";
 import { formatRelativeTime } from "@/lib/format";
 import type { AwardWinner } from "@/lib/awards/awards";
 
@@ -18,20 +17,39 @@ export interface WinnerAnnouncementProps {
  * 009's own denormalization — see determine_award_winner()), not
  * recomputed from award_votes live, so it can never drift even if vote
  * rows are ever touched afterward.
+ *
+ * Fan of the Season gets a visibly richer, royal purple/gold treatment
+ * instead of Month's flat gold — the season crown is meant to read as the
+ * bigger honour of the two wherever a winner is announced, not just on the
+ * small Avatar ring.
  */
 export function WinnerAnnouncement({ winner }: WinnerAnnouncementProps) {
   const name = winner.nomination.nominee.display_name || winner.nomination.nominee.username;
+  const isSeason = winner.categoryKey === "fan_of_season";
 
   return (
     <Card
       featured
       className="relative flex flex-col items-center gap-3 overflow-hidden py-8 text-center"
-      style={{ backgroundImage: "radial-gradient(circle at 50% 0%, rgba(242,193,78,0.18), transparent 60%)" }}
+      style={{
+        backgroundImage: isSeason
+          ? "radial-gradient(circle at 50% 0%, rgba(124,58,237,0.22), rgba(242,193,78,0.14) 45%, transparent 70%)"
+          : "radial-gradient(circle at 50% 0%, rgba(242,193,78,0.18), transparent 60%)",
+      }}
     >
-      <span className="text-[#f2c14e]" aria-hidden="true">
-        <CrownIcon size={28} />
-      </span>
-      <Badge tone="red">{winner.categoryName}</Badge>
+      {isSeason ? <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a5f2]">Season Royalty</p> : null}
+      <CrownIcon size={isSeason ? 40 : 28} season={isSeason} />
+      <Badge
+        tone="red"
+        className={isSeason ? "season-shimmer-bg" : undefined}
+        style={
+          isSeason
+            ? { backgroundImage: "linear-gradient(120deg, #fde08a, #c9a5f2 35%, #7c3aed 60%, #c9a5f2 85%, #fde08a)", color: "#2e1065" }
+            : undefined
+        }
+      >
+        {winner.categoryName}
+      </Badge>
       <Link href={`/profile/${winner.nomination.nominee.id}`}>
         <Avatar url={winner.nomination.nominee.avatar_url} name={name} size={72} crown={crownFor(winner.nomination.nominee)} />
       </Link>

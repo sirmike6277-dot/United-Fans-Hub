@@ -3,6 +3,7 @@ import { PullQuote } from "@/components/ui/PullQuote";
 import { pickLegendQuotes } from "@/lib/quotes/legends";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { TopFansWidget } from "@/components/dashboard/TopFansWidget";
+import { CrownedFansWidget } from "@/components/awards/CrownedFansWidget";
 import type { MatchSummary } from "@/lib/matches/matches";
 import type { LeaderboardEntry } from "@/lib/leaderboard/leaderboard";
 
@@ -34,6 +35,8 @@ export function CommunityRail({ nextMatch, topFans, currentUserId }: CommunityRa
           </Card>
         )}
       </section>
+
+      <CrownedFansWidget />
 
       <TopFansWidget entries={topFans} currentUserId={currentUserId} />
 

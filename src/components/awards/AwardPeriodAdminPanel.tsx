@@ -12,6 +12,7 @@ import {
   reviewNomination,
   determineWinner,
   deleteAwardWinner,
+  deleteAwardPeriod,
   reassignAwardWinner,
   autoNominateForPeriod,
   type AwardCategory,
@@ -65,6 +66,8 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, wi
   const [error, setError] = useState<string | null>(null);
   const [correcting, setCorrecting] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [confirmingDeletePeriod, setConfirmingDeletePeriod] = useState(false);
+  const [deletingPeriod, setDeletingPeriod] = useState(false);
   const [reassignTo, setReassignTo] = useState("");
   const [autoNominating, setAutoNominating] = useState(false);
   const [autoNominateResult, setAutoNominateResult] = useState<string | null>(null);
@@ -104,6 +107,21 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, wi
       setError(advanceError);
       return;
     }
+    onChanged();
+  }
+
+  async function handleDeletePeriod() {
+    if (!period || deletingPeriod) return;
+    setDeletingPeriod(true);
+    setError(null);
+    const supabase = createClient();
+    const { error: deleteError } = await deleteAwardPeriod(supabase, period.id);
+    setDeletingPeriod(false);
+    if (deleteError) {
+      setError(deleteError);
+      return;
+    }
+    setConfirmingDeletePeriod(false);
     onChanged();
   }
 
@@ -170,26 +188,30 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, wi
     onChanged();
   }
 
+  const createForm = (
+    <form onSubmit={handleCreate} className="flex flex-col gap-3">
+      {error ? <FormError message={error} /> : null}
+      <Input id={`period-label-${category.key}`} label="Period label" placeholder="e.g. August 2026" value={label} onChange={(e) => setLabel(e.target.value)} required />
+      <div className="grid grid-cols-2 gap-3">
+        <Input id={`period-start-${category.key}`} label="Start date" type="date" value={start} onChange={(e) => setStart(e.target.value)} required />
+        <Input id={`period-end-${category.key}`} label="End date" type="date" value={end} onChange={(e) => setEnd(e.target.value)} required />
+      </div>
+      <div className="flex gap-2">
+        <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)} disabled={busy}>
+          Cancel
+        </Button>
+        <Button type="submit" size="sm" loading={busy} disabled={busy}>
+          Create period
+        </Button>
+      </div>
+    </form>
+  );
+
   if (!period) {
     return (
       <div className="rounded-card border border-dashed border-ink/15 p-4">
         {creating ? (
-          <form onSubmit={handleCreate} className="flex flex-col gap-3">
-            {error ? <FormError message={error} /> : null}
-            <Input id={`period-label-${category.key}`} label="Period label" placeholder="e.g. August 2026" value={label} onChange={(e) => setLabel(e.target.value)} required />
-            <div className="grid grid-cols-2 gap-3">
-              <Input id={`period-start-${category.key}`} label="Start date" type="date" value={start} onChange={(e) => setStart(e.target.value)} required />
-              <Input id={`period-end-${category.key}`} label="End date" type="date" value={end} onChange={(e) => setEnd(e.target.value)} required />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)} disabled={busy}>
-                Cancel
-              </Button>
-              <Button type="submit" size="sm" loading={busy} disabled={busy}>
-                Create period
-              </Button>
-            </div>
-          </form>
+          createForm
         ) : (
           <Button type="button" variant="secondary" size="sm" onClick={() => setCreating(true)}>
             Start a new {category.name} period
@@ -204,6 +226,41 @@ export function AwardPeriodAdminPanel({ category, period, pendingNominations, wi
   return (
     <div className="flex flex-col gap-3 rounded-card border border-ink/10 bg-bg-elevated p-4">
       {error ? <FormError message={error} /> : null}
+
+      {/*
+        Super-admin/award-manager escape hatches, available regardless of
+        this period's status — a period stuck in any state (e.g. a test
+        period) is always picked as "the" current one for its category
+        (AwardsHub sorts by period_start desc), which otherwise silently
+        blocks ever starting a real replacement.
+      */}
+      {creating ? (
+        <div className="rounded-control border border-dashed border-ink/15 p-3">{createForm}</div>
+      ) : confirmingDeletePeriod ? (
+        <div className="flex flex-col gap-2 rounded-control border border-red-primary/30 bg-red-primary/5 p-3">
+          <p className="text-sm text-ink">
+            Delete <span className="font-semibold">{period.periodLabel}</span> entirely? This removes its nominations, votes, and winner (if
+            announced) — the crown is cleared too. This can&apos;t be undone.
+          </p>
+          <div className="flex gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmingDeletePeriod(false)} disabled={deletingPeriod}>
+              Cancel
+            </Button>
+            <Button type="button" size="sm" loading={deletingPeriod} disabled={deletingPeriod} onClick={handleDeletePeriod} className="!bg-red-primary">
+              Yes, delete period
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-3 border-b border-ink/10 pb-3">
+          <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(true)} className="text-text-muted">
+            + Start another {category.name} period
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setConfirmingDeletePeriod(true)} className="text-red-hover">
+            Delete this period
+          </Button>
+        </div>
+      )}
 
       {period.status === "upcoming" || period.status === "nominations_open" ? (
         <div className="flex flex-col gap-2 border-b border-ink/10 pb-3">

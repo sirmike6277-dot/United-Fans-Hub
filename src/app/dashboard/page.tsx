@@ -55,9 +55,12 @@ export default async function DashboardPage() {
       fetchWinners(supabase),
     ]);
 
-  // Most recent "Fan of the Month" winner (if any) — fetchWinners() already
+  // Most recent winner per category (if any) — fetchWinners() already
   // orders newest-first across every category, so the first match here is
-  // the latest one for this specific category.
+  // the latest one for that specific category. Both render as their own
+  // card below — a single merged card previously hid Fan of the Season
+  // entirely whenever it had no winner yet, even with a real period live.
+  const latestFanOfSeasonWinner = awardWinners.find((w) => w.categoryKey === "fan_of_season") ?? null;
   const latestFanOfMonthWinner = awardWinners.find((w) => w.categoryKey === "fan_of_month") ?? null;
 
   const { rank, error: rankError } = await fetchMyRank(supabase, {
@@ -146,7 +149,8 @@ export default async function DashboardPage() {
             {/* Side column */}
             <div className="flex flex-col gap-6">
               <TopFansWidget entries={topFans} currentUserId={profileId} />
-              <FanOfMonthTeaser winner={latestFanOfMonthWinner} />
+              <FanOfMonthTeaser categoryLabel="Fan of the Season" winner={latestFanOfSeasonWinner} />
+              <FanOfMonthTeaser categoryLabel="Fan of the Month" winner={latestFanOfMonthWinner} />
             </div>
           </div>
         </div>

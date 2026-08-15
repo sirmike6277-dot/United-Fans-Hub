@@ -258,7 +258,15 @@ function WinnersHistory({ winners }: { winners: AwardWinner[] }) {
 }
 
 export function AwardsHub({ categories, initialPeriods, initialWinners, currentUserId, canManage }: AwardsHubProps) {
-  const [activeCategoryKey, setActiveCategoryKey] = useState(categories[0]?.key ?? "");
+  // Defaults to whichever category actually has a period underway, not
+  // just the alphabetically-first tab — otherwise a category with zero
+  // periods (e.g. Fan of the Month between cycles) opens by default and
+  // silently hides a category that has a real, live period (e.g. Fan of
+  // the Season) one tab over.
+  const [activeCategoryKey, setActiveCategoryKey] = useState(() => {
+    const categoryWithPeriod = categories.find((c) => initialPeriods.some((p) => p.categoryId === c.id));
+    return (categoryWithPeriod ?? categories[0])?.key ?? "";
+  });
   const [periods, setPeriods] = useState(initialPeriods);
   const [winners, setWinners] = useState(initialWinners);
   const [advancing, setAdvancing] = useState(false);

@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { StatTile } from "@/components/ui/StatTile";
+import { FanLevelStar, titleForLevel } from "@/components/ui/FanLevelBadge";
 import { ClubEmblem } from "@/components/media/ClubEmblem";
 import { MatchCard } from "@/components/matches/MatchCard";
 import { CommunityTeaser } from "@/components/dashboard/CommunityTeaser";
@@ -100,7 +101,12 @@ export default async function DashboardPage() {
 
             <div className="relative mt-5 grid grid-cols-3 gap-3">
               <StatTile label="Fan Points" value={profile.fan_points.toLocaleString()} />
-              <StatTile label="Fan Level" value={`Level ${profile.fan_level}`} />
+              <StatTile
+                label="Fan Level"
+                value={titleForLevel(profile.fan_level)}
+                icon={<FanLevelStar level={profile.fan_level} size={20} />}
+                caption={`Level ${profile.fan_level}`}
+              />
               <StatTile
                 label="Rank"
                 // 0 fan_points means nothing's actually been earned yet — the

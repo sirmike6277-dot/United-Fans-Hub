@@ -38,6 +38,16 @@ function metaFor(level: number) {
   return LEVEL_META[level] ?? (level > 7 ? HIGHEST_META : LEVEL_META[1]);
 }
 
+/** The real title for a level (e.g. "Superfan") — see LEVEL_META above for why this is a static lookup rather than a fetch. */
+export function titleForLevel(level: number): string {
+  return metaFor(level).title;
+}
+
+/** The coloured star alone, exported for callers that want it outside the full pill (e.g. the dashboard's Fan Level stat tile). */
+export function FanLevelStar({ level, size }: { level: number; size: number }) {
+  return <StarIcon level={level} size={size} />;
+}
+
 function StarIcon({ level, size }: { level: number; size: number }) {
   const meta = metaFor(level);
   return (

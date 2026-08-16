@@ -48,25 +48,40 @@ export async function fetchAllRoleGrants(supabase: AnySupabase): Promise<{ grant
   };
 }
 
-/** Search profiles to grant/revoke a role against — same sanitize-then-ilike pattern as members.ts, standalone here since admin search intentionally does not exclude "yourself". */
-export async function searchProfiles(supabase: AnySupabase, query: string): Promise<FeedAuthor[]> {
-  const trimmed = query.trim();
-  if (trimmed.length === 0) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season")
-      .order("username")
-      .limit(20);
-    return data ?? [];
-  }
+export const ADMIN_PROFILES_PAGE_SIZE = 20;
 
-  const term = trimmed.replace(/[\\%_]/g, (c) => `\\${c}`).replace(/[,()]/g, "");
-  const { data } = await supabase
+/**
+ * One page of profiles to grant/revoke a role against — same
+ * sanitize-then-ilike-then-range pattern as fetchMembersPage()
+ * (lib/members/members.ts), standalone here since admin search
+ * intentionally does not exclude "yourself" the way the public member
+ * directory does. Was a hardcoded `.limit(20)` with no `from`/`to` at
+ * all — meaning any member past the first 20 (alphabetically) was simply
+ * unreachable, with no page 2 to get to them. That's the actual bug
+ * behind "why can't I see all the members" — the 20-per-page UI itself
+ * was never wired up, not a rendering issue.
+ */
+export async function searchProfiles(
+  supabase: AnySupabase,
+  { query, from, to }: { query: string; from: number; to: number },
+): Promise<{ profiles: FeedAuthor[]; error: string | null }> {
+  let request = supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url, fan_level, is_current_fan_of_month, is_current_fan_of_season")
-    .or(`username.ilike.%${term}%,display_name.ilike.%${term}%`)
-    .limit(20);
-  return data ?? [];
+    .order("username", { ascending: true })
+    .range(from, to);
+
+  const trimmed = query.trim();
+  if (trimmed.length > 0) {
+    const term = trimmed.replace(/[\\%_]/g, (c) => `\\${c}`).replace(/[,()]/g, "");
+    request = request.or(`username.ilike.%${term}%,display_name.ilike.%${term}%`);
+  }
+
+  const { data, error } = await request;
+  if (error) {
+    return { profiles: [], error: "Couldn't load profiles. Please try again." };
+  }
+  return { profiles: data ?? [], error: null };
 }
 
 export async function grantRole(
